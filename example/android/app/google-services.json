@@ -14,24 +14,24 @@
       },
       "oauth_client": [
         {
-          "client_id": "987851207632-djc17m1i6tfhaqu54uvd6hsmarvif54t.apps.googleusercontent.com",
+          "client_id": "<your-client-id>",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCal1hJWpLP8aMgIghttDNWHE5W93uJZwg"
+          "current_key": "<your-key>"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "987851207632-djc17m1i6tfhaqu54uvd6hsmarvif54t.apps.googleusercontent.com",
+              "client_id": "<your-client-id>",
               "client_type": 3
             },
             {
-              "client_id": "987851207632-omjfmtk9ot112ii9gbs73irpeqqtahlr.apps.googleusercontent.com",
+              "client_id": "<your-client-id>",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "com.reteno.example-app"
