@@ -3,7 +3,6 @@ description: The Reteno Flutter Plugin for Mobile Customer Engagement and Analyt
 version: 1.0.0
 homepage: https://github.com/reteno-com/reteno-flutter
 issue_tracker: https://github.com/reteno-com/reteno-flutter/issues?q=is%3Aissue+is%3Aopen
-author: Reteno<mobile-sdk@reteno.com>
 
 environment:
   sdk: '>=2.18.2 <3.0.0'
