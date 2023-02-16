@@ -1,0 +1,24 @@
+name: reteno_plugin_example
+description: Demonstrates how to use the reteno_plugin plugin.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+version: 1.0.0+120
+environment:
+  sdk: '>=2.18.2 <3.0.0'
+
+dependencies:
+
+  flutter_form_builder: ^7.7.0
+  form_builder_validators: ^8.4.0
+  flutter:
+    sdk: flutter
+
+  reteno_plugin:
+    path: ../
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+flutter:
+  uses-material-design: true

@@ -1,0 +1,16 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.reteno.reteno_plugin">
+    <application>
+        <receiver
+            android:name="com.reteno.reteno_plugin.RetenoPushReceiver"
+            android:enabled="true"
+            android:exported="true">
+        </receiver>
+        <meta-data
+            android:name="com.reteno.Receiver.PushReceived"
+            android:value="com.reteno.reteno_plugin.RetenoPushReceiver" />
+        <meta-data
+            android:name="com.reteno.Receiver.NotificationClicked"
+            android:value="com.example.CustomReceiverNotificationClicked" />
+    </application>
+</manifest>

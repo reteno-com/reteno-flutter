@@ -1,0 +1,20 @@
+import 'package:reteno_plugin/reteno_user.dart';
+
+import 'reteno_plugin_platform_interface.dart';
+
+class Reteno {
+  Future<bool> setUserAttributes({
+    required String userExternalId,
+    RetenoUser? user,
+  }) {
+    return RetenoPluginPlatform.instance
+        .setUserAttributes(userExternalId, user);
+  }
+
+  static Stream<Map<String, dynamic>> get onRetenoNotificationReceived =>
+      RetenoPluginPlatform.instance.onRetenoNotificationReceived.stream;
+
+  Future<dynamic> getInitialNotification() {
+    return RetenoPluginPlatform.instance.getInitialNotification();
+  }
+}
