@@ -48,21 +48,24 @@ PODS:
   - nanopb/decode (2.30909.0)
   - nanopb/encode (2.30909.0)
   - PromisesObjC (2.1.1)
-  - Reteno (1.5.0):
+  - Reteno (1.5.4):
     - Alamofire (= 5.6.2)
-    - Sentry (= 7.28.0)
+    - Sentry (= 8.2.0)
   - reteno_plugin (0.0.1):
     - Flutter
-    - Reteno (= 1.5.0)
-  - Sentry (7.28.0):
-    - Sentry/Core (= 7.28.0)
-  - Sentry/Core (7.28.0)
+    - Reteno (= 1.5.4)
+  - Sentry (8.2.0):
+    - Sentry/Core (= 8.2.0)
+    - SentryPrivate (= 8.2.0)
+  - Sentry/Core (8.2.0):
+    - SentryPrivate (= 8.2.0)
+  - SentryPrivate (8.2.0)
 
 DEPENDENCIES:
   - FirebaseCore
   - FirebaseMessaging
   - Flutter (from `Flutter`)
-  - Reteno (= 1.5.0)
+  - Reteno (= 1.5.4)
   - reteno_plugin (from `.symlinks/plugins/reteno_plugin/ios`)
 
 SPEC REPOS:
@@ -78,6 +81,7 @@ SPEC REPOS:
     - PromisesObjC
     - Reteno
     - Sentry
+    - SentryPrivate
 
 EXTERNAL SOURCES:
   Flutter:
@@ -96,10 +100,11 @@ SPEC CHECKSUMS:
   GoogleUtilities: c2bdc4cf2ce786c4d2e6b3bcfd599a25ca78f06f
   nanopb: b552cce312b6c8484180ef47159bc0f65a1f0431
   PromisesObjC: ab77feca74fa2823e7af4249b8326368e61014cb
-  Reteno: 63e644b6814bef4984550e8f4566ccf8b6348140
-  reteno_plugin: c16e85a002d4db8da40c3dd409c01ddb7e091912
-  Sentry: 2c6053e4cfe6dea6608135dea1928ffbb4ecfba5
+  Reteno: ee1a0fee38c6caa591a75a1b082b59eed51735bc
+  reteno_plugin: 1819c3ddd008f27297cc407b39f181db84877247
+  Sentry: cf1d35c866266da58964fe7b62526bda93ffcb38
+  SentryPrivate: 2909bcc7b19a827b49e9bde0e56116b08d40dfdf
 
-PODFILE CHECKSUM: 96f80262c49d75fec66269110e523809714cf42e
+PODFILE CHECKSUM: cfa310eb3d05dfe74bbb7578b42f43ee111857d9
 
 COCOAPODS: 1.11.3

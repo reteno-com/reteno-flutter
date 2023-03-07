@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:reteno_plugin/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/reteno_plugin_platform_interface.dart';
 import 'package:reteno_plugin/reteno_plugin_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -13,7 +14,7 @@ class MockRetenoPluginPlatform
   Future<bool> setUserAttributes(String externalUserId, RetenoUser? user) {
     throw UnimplementedError();
   }
-  
+
   @override
   Future<Map<dynamic, dynamic>?> getInitialNotification() {
     throw UnimplementedError();
@@ -21,6 +22,12 @@ class MockRetenoPluginPlatform
 
   @override
   late StreamController<Map<String, dynamic>> onRetenoNotificationReceived;
+
+  @override
+  Future<bool> setAnonymousUserAttributes(
+      AnonymousUserAttributes anonymousUserAttributes) {
+    throw UnimplementedError();
+  }
 }
 
 void main() {

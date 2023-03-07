@@ -1,7 +1,4 @@
-import com.reteno.core.domain.model.user.Address
-import com.reteno.core.domain.model.user.User
-import com.reteno.core.domain.model.user.UserAttributes
-import com.reteno.core.domain.model.user.UserCustomField
+import com.reteno.core.domain.model.user.*
 
 class UserUtils {
     companion object {
@@ -39,8 +36,7 @@ class UserUtils {
 
             val userFields = customFieldsListMap?.map {
                 UserCustomField(
-                    it["key"] as String,
-                    it["value"] as String?
+                    it["key"] as String, it["value"] as String?
                 )
             }
 
@@ -49,13 +45,43 @@ class UserUtils {
                     phone, email, firstName, lastName, languageCode, timeZone,
                     userAddress,
                     userFields,
-                ),
-                subscriptionKeys, groupNamesInclude, groupNamesExclude
+                ), subscriptionKeys, groupNamesInclude, groupNamesExclude
             )
         }
 
         private fun getStringOrNull(input: String?): String? {
             return if (input.isNullOrEmpty()) null else input
+        }
+
+        fun parseAnonymousAttributes(map: HashMap<*, *>): UserAttributesAnonymous {
+            val firstName = getStringOrNull(map["firstName"] as String?)
+            val lastName = getStringOrNull(map["lastName"] as String?)
+            val languageCode = getStringOrNull(map["languageCode"] as String?)
+            val timeZone = getStringOrNull(map["timeZone"] as String?)
+
+            val addressMap = map["address"] as HashMap<*, *>?
+            var userAddress: Address? = null
+            if (addressMap != null) {
+                val region = getStringOrNull(addressMap["region"] as String?)
+                val town = getStringOrNull(addressMap["town"] as String?)
+                val address = getStringOrNull(addressMap["address"] as String?)
+                val postcode = getStringOrNull(addressMap["postcode"] as String?)
+                userAddress = Address(
+                    region, town, address, postcode,
+                )
+            }
+
+            val customFieldsListMap = map["fields"] as List<HashMap<*, *>>?
+
+            val userFields = customFieldsListMap?.map {
+                UserCustomField(
+                    it["key"] as String, it["value"] as String?
+                )
+            }
+
+            return UserAttributesAnonymous(
+                firstName, lastName, languageCode, timeZone, userAddress, userFields
+            )
         }
     }
 }

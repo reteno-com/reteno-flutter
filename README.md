@@ -9,56 +9,30 @@ Reteno Flutter SDK
 ### iOS
 #### Installation
 
+1. Follow `Step 1` described in iOS SDK setup guide: [link](https://docs.reteno.com/reference/ios#step-1-add-the-notification-service-extension)
 
-1. Run next command from root of your project:
+
+2. Modify your cocoapod file to contain next dependencies:
+```
+
+target 'NotificationServiceExtension' do
+  pod 'Reteno', '1.5.4'
+
+end
+
+target 'RetenoSdkExample' do
+  ...
+  pod 'Reteno', '1.5.4'
+end
+
+```
+
+3. Run next command from root of your project:
 
 ```sh
-flutter pub add reteno_plugin 
+flutter pub add reteno_plugin
 ```
-2. Add mavenCentral repository in your project level `build.gradle`:
-```groovy
-buildscript { 
-    repositories { 
-        mavenCentral() 
-    } 
-... 
-}
-```
-3. Also you may need to increase `minSdkVersion` in project level `build.gradle` to `26`, since `Reteno` uses this version as minimal;
-
-#### Setting up SDK
-
-1. Follow `Step 1` described in Android SDK setup guide: [link](https://docs.reteno.com/reference/android-sdk-setup#step-1-make-sure-to-enable-androidx-in-your-gradleproperties-file);
-
-2. Follow `Step 2` described in Android SDK setup guide: [link](https://docs.reteno.com/reference/android-sdk-setup#step-2-make-sure-to-add-comretenofcm-and-firebase-dependencies-in-buildgradle);
-
-3. Edit your MainApplication class and provider API Access-Key at SDK initialization.
-
-Below is sample code you can add to your application class which gets you started with `RetenoSDK`.
-
-```kotlin
-package [com.YOUR_PACKAGE];
-
-import com.reteno.core.Reteno
-import com.reteno.core.RetenoApplication
-import com.reteno.core.RetenoImpl
-import io.flutter.app.FlutterApplication
-
-class CustomApplication : FlutterApplication(), RetenoApplication {
-    override fun onCreate() {
-        super.onCreate()
-        retenoInstance = RetenoImpl(this, "630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05")
-    }
-
-    private lateinit var retenoInstance: Reteno
-    override fun getRetenoInstance(): Reteno {
-        return retenoInstance
-    }
-}
-
-```
-
-4. Follow `Step 5` described in Android SDK setup guide: [link](https://docs.reteno.com/reference/android-sdk-setup#step-5-make-sure-to-set-up-your-firebase-application-for-firebase-cloud-messaging);
+4. Next step for iOS is to call `Reteno.start` inside of your `AppDelegate` file. If you have migrated to `AppDelegate.swift`, follow `Step 3` in iOS SDK setup guide: [link](https://docs.reteno.com/reference/ios#step-3-import-reteno-into-your-app-delegate)
 
 ### Android
 #### Installation
@@ -78,7 +52,7 @@ buildscript {
 ... 
 }
 ```
-3. Also you may need to increase `minSdkVersion` in project level `build.gradle` to `26`, since `Reteno` uses this version as minimal;
+3. Also you may need to increase `minSdkVersion` in project level `build.gradle` to `21`, since `Reteno` uses this version as minimal;
 
 #### Setting up SDK
 
@@ -101,7 +75,7 @@ import io.flutter.app.FlutterApplication
 class CustomApplication : FlutterApplication(), RetenoApplication {
     override fun onCreate() {
         super.onCreate()
-        retenoInstance = RetenoImpl(this, "630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05")
+        retenoInstance = RetenoImpl(this, "<your_access_key>")
     }
 
     private lateinit var retenoInstance: Reteno
@@ -244,6 +218,38 @@ class UserCustomField {
   final String? value;
 }
 ```
+
+### Anonymous User Attributes
+>Available for reteno_plugin starting from version **1.1.0**
+`Reteno` plugin allows tracking anonymous user attributes `(no externalUserId required)`. To set user attributes without externalUserId use method `setAnonymousUserAttributes()`:
+
+```dart
+Reteno.setAnonymousUserAttributes(AnonymousUserAttributes attributes);
+
+**AnonymousUserAttributes** model:
+
+```dart
+class AnonymousUserAttributes {
+  AnonymousUserAttributes({
+    this.lastName,
+    this.firstName,
+    this.address,
+    this.fields,
+    this.languageCode,
+    this.timeZone,
+  });
+  final String? firstName;
+  final String? lastName;
+  final String? languageCode;
+  final String? timeZone;
+  final Address? address;
+  final List<UserCustomField>? fields;
+}
+
+```
+
+> **Note**: you can't provide anonymous user attributes with **phone** or/and **email**. For that purpose use `setUserAttributes()` method with externalUserId
+
 
 **Note**
 

@@ -48,6 +48,13 @@ class RetenoPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 reteno.setUserAttributes(userId, user)
                 result.success(true)
             }
+            "setAnonymousUserAttributes" -> {
+                val arguments = call.arguments as HashMap<*, *>
+                val userMap = arguments["anonymousUserAttributes"] as HashMap<*, *>
+                val anonymousAttributes = UserUtils.parseAnonymousAttributes(userMap)
+                reteno.setAnonymousUserAttributes(anonymousAttributes)
+                result.success(true)
+            }
             else -> {
                 result.notImplemented()
             }

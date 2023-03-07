@@ -13,7 +13,7 @@ import FirebaseMessaging
         GeneratedPluginRegistrant.register(with: self)
         FirebaseApp.configure()
         Messaging.messaging().delegate = self
-        Reteno.start(apiKey: "630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05")
+        Reteno.start(apiKey: "")
         
         Reteno.userNotificationService.registerForRemoteNotifications(with: [.sound, .alert, .badge], application: application)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)

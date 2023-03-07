@@ -1,3 +1,4 @@
+import 'package:reteno_plugin/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/reteno_user.dart';
 
 import 'reteno_plugin_platform_interface.dart';
@@ -9,6 +10,13 @@ class Reteno {
   }) {
     return RetenoPluginPlatform.instance
         .setUserAttributes(userExternalId, user);
+  }
+
+  Future<bool> setAnomymousUserAttributes({
+    required AnonymousUserAttributes anonymousUserAttributes,
+  }) {
+    return RetenoPluginPlatform.instance
+        .setAnonymousUserAttributes(anonymousUserAttributes);
   }
 
   static Stream<Map<String, dynamic>> get onRetenoNotificationReceived =>

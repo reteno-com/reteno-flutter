@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:reteno_plugin/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/reteno_user.dart';
 
 import 'reteno_plugin_platform_interface.dart';
@@ -30,6 +31,18 @@ class MethodChannelRetenoPlugin extends RetenoPluginPlatform {
       {
         'externalUserId': externalUserId,
         'user_info': user?.toMap(),
+      },
+    );
+    return res ?? false;
+  }
+
+  @override
+  Future<bool> setAnonymousUserAttributes(
+      AnonymousUserAttributes anonymousUserAttributes) async {
+    var res = await methodChannel.invokeMethod<bool>(
+      'setAnonymousUserAttributes',
+      {
+        'anonymousUserAttributes': anonymousUserAttributes.toMap(),
       },
     );
     return res ?? false;

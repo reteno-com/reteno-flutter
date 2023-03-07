@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:reteno_plugin/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/reteno_user.dart';
 
 import 'reteno_plugin_method_channel.dart';
@@ -28,6 +29,10 @@ abstract class RetenoPluginPlatform extends PlatformInterface {
 
   Future<bool> setUserAttributes(String externalUserId, RetenoUser? user){
     throw UnimplementedError('setUserAtrributes() has not been implemented.');
+  }
+
+  Future<bool> setAnonymousUserAttributes(AnonymousUserAttributes anonymousUserAttributes){
+    throw UnimplementedError('setAnonymousUserAttributes() has not been implemented.');
   }
 
   StreamController<Map<String,dynamic>> onRetenoNotificationReceived =
