@@ -4,8 +4,6 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+120
 environment:
   sdk: '>=2.18.2 <3.0.0'
-false_secrets:
- - /android/app/google-services.json
 
 dependencies:
 

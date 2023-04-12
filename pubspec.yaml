@@ -5,6 +5,9 @@ homepage: https://github.com/reteno-com/reteno-flutter
 issue_tracker: https://github.com/reteno-com/reteno-flutter/issues?q=is%3Aissue+is%3Aopen
 documentation: https://docs.reteno.com/reference/flutter-sdk
 
+false_secrets:
+ - example/
+
 environment:
   sdk: '>=2.18.2 <3.0.0'
   flutter: ">=2.5.0"
