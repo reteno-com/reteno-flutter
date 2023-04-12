@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/android.iml" filepath="$PROJECT_DIR$/.idea/modules/android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/reteno_plugin.iml" filepath="$PROJECT_DIR$/.idea/modules/reteno_plugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/reteno_plugin.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/reteno_plugin.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/reteno_plugin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/reteno_plugin.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/reteno_plugin.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/reteno_plugin.unitTest.iml" />
     </modules>
   </component>
 </project>

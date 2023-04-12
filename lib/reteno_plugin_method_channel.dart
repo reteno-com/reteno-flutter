@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:reteno_plugin/anonymous_user_attributes.dart';
+import 'package:reteno_plugin/reteno_custom_event.dart';
 import 'package:reteno_plugin/reteno_user.dart';
-
 import 'reteno_plugin_platform_interface.dart';
 
 /// An implementation of [RetenoPluginPlatform] that uses method channels.
@@ -26,7 +26,7 @@ class MethodChannelRetenoPlugin extends RetenoPluginPlatform {
   @override
   Future<bool> setUserAttributes(
       String externalUserId, RetenoUser? user) async {
-    var res = await methodChannel.invokeMethod<bool>(
+    final res = await methodChannel.invokeMethod<bool>(
       'setUserAttributes',
       {
         'externalUserId': externalUserId,
@@ -39,7 +39,7 @@ class MethodChannelRetenoPlugin extends RetenoPluginPlatform {
   @override
   Future<bool> setAnonymousUserAttributes(
       AnonymousUserAttributes anonymousUserAttributes) async {
-    var res = await methodChannel.invokeMethod<bool>(
+    final res = await methodChannel.invokeMethod<bool>(
       'setAnonymousUserAttributes',
       {
         'anonymousUserAttributes': anonymousUserAttributes.toMap(),
@@ -50,10 +50,24 @@ class MethodChannelRetenoPlugin extends RetenoPluginPlatform {
 
   @override
   Future<Map<dynamic, dynamic>?> getInitialNotification() async {
-    var res = await methodChannel.invokeMapMethod('getInitialNotification');
+    final res = await methodChannel.invokeMapMethod('getInitialNotification');
     if (res == null) {
       return null;
     }
     return Map<String, dynamic>.from(res);
+  }
+
+  @override
+  Future<bool> logEvent({
+    required RetenoCustomEvent event,
+  }) async {
+    final res = await methodChannel.invokeMethod<bool>(
+      'logEvent',
+      {'event': event.toMap()},
+    );
+    if (res == null) {
+      return false;
+    }
+    return res;
   }
 }

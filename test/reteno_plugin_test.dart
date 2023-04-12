@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reteno_plugin/anonymous_user_attributes.dart';
+import 'package:reteno_plugin/reteno_custom_event.dart';
 import 'package:reteno_plugin/reteno_plugin_platform_interface.dart';
 import 'package:reteno_plugin/reteno_plugin_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -26,6 +27,11 @@ class MockRetenoPluginPlatform
   @override
   Future<bool> setAnonymousUserAttributes(
       AnonymousUserAttributes anonymousUserAttributes) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> logEvent({required RetenoCustomEvent event}) {
     throw UnimplementedError();
   }
 }

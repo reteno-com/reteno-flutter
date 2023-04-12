@@ -4,7 +4,7 @@ import UIKit
 
 public class SwiftRetenoPlugin: NSObject, FlutterPlugin {
     
-    var _initialNotitication : [String: Any]?
+    var _initialNotification : [String: Any]?
     var _flutterResult : FlutterResult?
     
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -73,6 +73,28 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin {
             ))
             result(true)
         }
+        else if(call.method == "logEvent"){
+            let args = call.arguments as! NSDictionary
+            let eventDictionary = args["event"] as? NSDictionary
+            if(eventDictionary == nil){
+                result(false)
+            }else{
+                do {
+                    let requestPayload = try RetenoEvent.buildEventPayload(payload: eventDictionary!);
+                    Reteno.logEvent(
+                        eventTypeKey: requestPayload.eventName,
+                        date: requestPayload.date,
+                        parameters: requestPayload.parameters,
+                        forcePush: requestPayload.forcePush
+                    );
+                    result(true);
+                } catch {
+                    result(FlutterError(code:"100", message:"Reteno iOS SDK Error",details: error))
+                }
+                
+                result(true)
+            }
+        }
         else if(call.method == "getInitialNotification"){
             _flutterResult = result
             updateInitialResult()
@@ -80,9 +102,9 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin {
     }
     
     private func updateInitialResult() -> Void {
-        if(_flutterResult != nil && _initialNotitication != nil){
-            _flutterResult?(_initialNotitication)
-            _initialNotitication = nil
+        if(_flutterResult != nil && _initialNotification != nil){
+            _flutterResult?(_initialNotification)
+            _initialNotification = nil
         }
         else{
             _flutterResult?(nil)
@@ -91,13 +113,12 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin {
     }
     
     private func getStringOrNil(input: String?) -> String? {
-        return (input ?? "").isEmpty ? nil : input!
+        return input?.isEmpty == true ? nil : input
     }
     
     @objc func application_onDidFinishLaunchingNotification(notification: NSNotification){
-        let remoteNotification = notification.userInfo?[UIApplication.LaunchOptionsKey.remoteNotification] as? NSDictionary;
-        if (remoteNotification != nil) {
-            _initialNotitication = remoteNotification as? [String:Any]
+        if let remoteNotification = notification.userInfo?[UIApplication.LaunchOptionsKey.remoteNotification] as? NSDictionary {
+            _initialNotification = remoteNotification as? [String: Any]
         }
     }
 }

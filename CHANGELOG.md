@@ -1,3 +1,7 @@
+## 1.2.0
+
+* Add `Reteno.logEvent` method to send custom events
+
 ## 1.1.0
 
 * Add support for reteno android sdk 1.5.4

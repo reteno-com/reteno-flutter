@@ -4,6 +4,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:reteno_plugin/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/reteno.dart';
 import 'package:reteno_plugin/reteno_user.dart';
+import 'package:reteno_plugin_example/events_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -271,27 +272,49 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                   ),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        if (isAnonymousUser) {
-                          await updateAnonymousUserAttributes();
-                        } else {
-                          await updateUserAttributes();
-                        }
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(
-                            vertical: 16.0, horizontal: 32),
-                        child: Text(
-                          'Update',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              if (isAnonymousUser) {
+                                await updateAnonymousUserAttributes();
+                              } else {
+                                await updateUserAttributes();
+                              }
+                            },
+                            child: const Text(
+                              'Update User Attributes',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              Navigator.of(context)
+                                  .push(MaterialPageRoute<void>(builder: (context) {
+                                return const EventsPage();
+                              }));
+                            },
+                            child: const Text(
+                              'Go to custom events page',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

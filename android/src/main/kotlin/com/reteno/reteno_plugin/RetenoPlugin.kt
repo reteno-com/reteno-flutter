@@ -1,6 +1,4 @@
 package com.reteno.reteno_plugin
-
-import androidx.annotation.NonNull
 import com.reteno.core.Reteno
 import com.reteno.core.RetenoApplication
 
@@ -25,13 +23,13 @@ class RetenoPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private var initialNotification: HashMap<String, Any?>? = null
 
 
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         methodChannel = MethodChannel(flutterPluginBinding.binaryMessenger, "reteno_plugin")
         methodChannel.setMethodCallHandler(this)
         reteno = (flutterPluginBinding.applicationContext as RetenoApplication).getRetenoInstance()
     }
 
-    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+    override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "getInitialNotification" -> {
                 if (initialNotification != null) {
@@ -55,13 +53,26 @@ class RetenoPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 reteno.setAnonymousUserAttributes(anonymousAttributes)
                 result.success(true)
             }
+            "logEvent" -> {
+                val arguments = call.arguments as HashMap<*, *>
+                val eventMap = arguments["event"] as? Map<String, Any>
+
+                if (eventMap == null) {
+                    result.success(false)
+                    return
+                } else {
+                    val event = RetenoEvent.buildEventFromPayload(eventMap)
+                    reteno.logEvent(event)
+                    result.success(true)
+                }
+            }
             else -> {
                 result.notImplemented()
             }
         }
     }
 
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         methodChannel.setMethodCallHandler(null)
         binding.applicationContext.unregisterReceiver(receiver)
     }
