@@ -1,3 +1,7 @@
+## 1.2.1
+* Update example with required proguard rules if you want to use `minifyEnable=true`
+* Fix issue with unitialized `RetenoPushReceiver`
+
 ## 1.2.0
 
 * Add `Reteno.logEvent` method to send custom events

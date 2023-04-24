@@ -19,7 +19,6 @@ class RetenoPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     }
 
     private lateinit var reteno: Reteno
-    private lateinit var receiver: RetenoPushReceiver
     private var initialNotification: HashMap<String, Any?>? = null
 
 
@@ -74,7 +73,6 @@ class RetenoPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         methodChannel.setMethodCallHandler(null)
-        binding.applicationContext.unregisterReceiver(receiver)
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
