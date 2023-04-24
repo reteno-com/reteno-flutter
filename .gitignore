@@ -1,4 +1,5 @@
 android/.idea/modules.xml
+android/.idea/
 *.iml
 .gradle
 **.idea
