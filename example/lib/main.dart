@@ -1,14 +1,41 @@
+import 'dart:async';
+import 'dart:developer';
+import 'dart:math' show Random;
+
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:go_router/go_router.dart';
 import 'package:reteno_plugin/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/reteno.dart';
 import 'package:reteno_plugin/reteno_user.dart';
 import 'package:reteno_plugin_example/events_page.dart';
+import 'package:uuid/uuid.dart';
 
 void main() {
   runApp(const MyApp());
 }
+
+final GoRouter _router = GoRouter(
+  initialLocation: '/',
+  routes: <RouteBase>[
+    GoRoute(
+      path: '/',
+      builder: (BuildContext context, GoRouterState state) {
+        return const MyHomePage(title: 'Flutter Demo Home Page');
+      },
+      routes: <RouteBase>[
+        GoRoute(
+          path: 'recom',
+          builder: (BuildContext context, GoRouterState state) {
+            return const EventsPage();
+          },
+        ),
+      ],
+    ),
+  ],
+);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -16,13 +43,13 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Reteno Plugin Example',
       theme: ThemeData(
         primarySwatch: Colors.blueGrey,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      routerConfig: _router,
     );
   }
 }
@@ -59,6 +86,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final Reteno _reteno = Reteno();
 
+  late AppLinks _appLinks;
+  StreamSubscription<Uri>? _linkSubscription;
+  StreamSubscription<String>? _stringLinkSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -70,6 +101,46 @@ class _MyHomePageState extends State<MyHomePage> {
     Reteno.onRetenoNotificationReceived.listen((event) {
       _showAlert(context, event.toString());
     });
+    initDeepLinks();
+  }
+
+  Future<void> initDeepLinks() async {
+    _appLinks = AppLinks();
+
+    // Check initial link if app was in cold state (terminated)
+    final appLink = await _appLinks.getInitialAppLink();
+    if (appLink != null) {
+      log('getInitialAppLink: $appLink');
+      openAppLink(appLink);
+    }
+
+    // Handle link when app is in warm state (front or background)
+    _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
+      log('onAppLink: $uri');
+
+      openAppLink(uri);
+    });
+
+    // _stringLinkSubscription = _appLinks.stringLinkStream.listen((uri) {
+    //   log('onAppLink: $uri');
+    //   //openAppLink(uri);
+    // });
+  }
+
+  void openAppLink(Uri uri) {
+    var path = uri.path;
+    if (path.isEmpty) {
+      path = '/${uri.authority}';
+    }
+    context.go(path);
+    log(uri.toString());
+  }
+
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    _stringLinkSubscription?.cancel();
+    super.dispose();
   }
 
   final _formKey = GlobalKey<FormBuilderState>();
@@ -163,19 +234,79 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                                 const SizedBox(height: 8),
                                 if (!isAnonymousUser)
-                                  FormBuilderTextField(
-                                    name: 'externalUserId',
-                                    decoration:
-                                        inputDecoration('External User Id'),
-                                    validator: FormBuilderValidators.compose([
-                                      FormBuilderValidators.required(),
-                                    ]),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: FormBuilderTextField(
+                                          name: 'externalUserId',
+                                          decoration: inputDecoration(
+                                              'External User Id'),
+                                          validator:
+                                              FormBuilderValidators.compose([
+                                            FormBuilderValidators.required(),
+                                          ]),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 8.0),
+                                        child: ElevatedButton(
+                                          onPressed: () async {
+                                            const uuid = Uuid();
+                                            final generatedId = uuid.v4();
+                                            _formKey.currentState
+                                                ?.fields['externalUserId']
+                                                ?.didChange(generatedId
+                                                    .substring(0, 25));
+                                          },
+                                          child: const Text(
+                                            'Generate',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 if (!isAnonymousUser) const SizedBox(height: 8),
                                 if (!isAnonymousUser)
-                                  FormBuilderTextField(
-                                    name: 'phone',
-                                    decoration: inputDecoration('Phone number'),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: FormBuilderTextField(
+                                          name: 'phone',
+                                          decoration:
+                                              inputDecoration('Phone number'),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 8.0),
+                                        child: ElevatedButton(
+                                          onPressed: () async {
+                                            final random = Random();
+                                            final randomPhoneNumber =
+                                                random.nextInt(8999999) +
+                                                    1000000;
+                                            _formKey
+                                                .currentState?.fields['phone']
+                                                ?.didChange(
+                                                    '+38068$randomPhoneNumber');
+                                          },
+                                          child: const Text(
+                                            'Random',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 if (!isAnonymousUser) const SizedBox(height: 8),
                                 if (!isAnonymousUser)
@@ -299,10 +430,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () async {
-                              Navigator.of(context)
-                                  .push(MaterialPageRoute<void>(builder: (context) {
-                                return const EventsPage();
-                              }));
+                              context.go('/recom');
                             },
                             child: const Text(
                               'Go to custom events page',
