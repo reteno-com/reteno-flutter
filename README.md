@@ -324,6 +324,9 @@ The tags for identifying language must be in compliance with [RFC 5646](https://
 The time zone format must comply with [TZ database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). Example: `Europe/Kyiv`.
 
 
+**Note**
+In versions before 1.2.2 you can not use [sentry_fltter](https://pub.dev/packages/sentry_flutter) due to sentry iOS versions mismatch. If you want to use sentry_flutter in your application. Please use `flutter_plugin : 1.2.2` and `sentry_flutter: 7.8.0`
+
 ## License
 
 MIT
