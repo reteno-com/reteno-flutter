@@ -19,3 +19,4 @@ pubspec.lock
 example/pubspec.lock
 .dart_tool/
 reteno_plugin.iml
+example/.fvm/flutter_sdk

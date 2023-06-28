@@ -28,15 +28,15 @@
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>CFBundleURLName</key>
-			<string>com.reteno.example-app</string>
+			<string>url for tests</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>retenoapp</string>
+				<string>com.reteno.example-app</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>139</string>
+	<string>167</string>
 	<key>FlutterDeeplinkEnabled</key>
 	<true/>
 	<key>LSRequiresIPhoneOS</key>
