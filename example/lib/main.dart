@@ -3,18 +3,45 @@ import 'dart:developer';
 import 'dart:math' show Random;
 
 import 'package:app_links/app_links.dart';
+// import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_messaging/firebase_messaging.dart';
+// import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reteno_plugin/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/reteno.dart';
 import 'package:reteno_plugin/reteno_user.dart';
 import 'package:reteno_plugin_example/events_page.dart';
+import 'package:reteno_plugin_example/secrets.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:uuid/uuid.dart';
 
-void main() {
-  runApp(const MyApp());
+// @pragma('vm:entry-point')
+// Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+//   // If you're going to use other Firebase services in the background, such as Firestore,
+//   // make sure you call `initializeApp` before using other Firebase services.
+//   await Firebase.initializeApp();
+
+//   print("Handling a background message: ${message.messageId}");
+// }
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SentryFlutter.init(
+    (options) {
+      options.dsn = Constants.sentryDsn;
+      // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+      // We recommend adjusting this value in production.
+      options.tracesSampleRate = 1.0;
+    },
+    appRunner: () => runApp(const MyApp()),
+  );
+  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  // runApp(const MyApp());
 }
 
 final GoRouter _router = GoRouter(
@@ -79,6 +106,14 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    try {
+      throw Exception('Testing Sentry');
+    } catch (exception, stackTrace) {
+      Sentry.captureException(
+        exception,
+        stackTrace: stackTrace,
+      );
+    }
     _reteno.getInitialNotification().then((value) {
       if (value != null) {
         _showAlert(context, value.toString());
@@ -87,7 +122,68 @@ class _MyHomePageState extends State<MyHomePage> {
     Reteno.onRetenoNotificationReceived.listen((event) {
       _showAlert(context, event.toString());
     });
+    _initFirebaseNotifications();
     initDeepLinks();
+  }
+
+  AndroidNotificationChannel channel = const AndroidNotificationChannel(
+    'reteno_id', // id
+    'High Importance Notifications', // title
+    description:
+        'This channel is used for important notifications.', // description
+    importance: Importance.max,
+  );
+
+  Future<void> _initFirebaseNotifications() async {
+    // const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    // const iosInit = DarwinInitializationSettings();
+
+    // const initSetting =
+    //     InitializationSettings(android: androidInit, iOS: iosInit);
+    // final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    // await flutterLocalNotificationsPlugin
+    //     .resolvePlatformSpecificImplementation<
+    //         AndroidFlutterLocalNotificationsPlugin>()
+    //     ?.createNotificationChannel(channel);
+    // await flutterLocalNotificationsPlugin
+    //     .resolvePlatformSpecificImplementation<
+    //         AndroidFlutterLocalNotificationsPlugin>()
+    //     ?.requestPermission();
+    // await flutterLocalNotificationsPlugin.initialize(initSetting,
+    //     onDidReceiveNotificationResponse: (response) {
+    //   print(response.payload.toString());
+    // });
+
+    // FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+    //   print('Got a message whilst in the foreground!');
+    //   print('Message data: ${message.data}');
+
+    //   if (message.notification != null) {
+    //     print('Message also contained a notification: ${message.notification}');
+    //   }
+    //   final notification = message.notification;
+    //   final android = message.notification?.android;
+
+    //   // if (notification != null && android != null) {
+    //     await flutterLocalNotificationsPlugin.show(
+    //       notification.hashCode,
+    //       'notification.title',
+    //       'notification.body',
+    //       NotificationDetails(
+    //         android: AndroidNotificationDetails(
+    //           channel.id,
+    //           channel.name,
+    //           channelDescription: channel.description,
+    //         ),
+    //         iOS: const DarwinNotificationDetails(),
+    //       ),
+    //       payload: json.encode(message.data),
+    //     );
+    //   // }
+    // });
+    // FirebaseMessaging.instance.getToken().then((value) {
+    //   _showAlert(context, value?.toString() ?? '');
+    // });
   }
 
   Future<void> initDeepLinks() async {

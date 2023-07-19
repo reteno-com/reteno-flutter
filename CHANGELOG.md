@@ -1,3 +1,6 @@
+## 1.2.3
+* Bump iOS sdk to 1.6.6
+
 ## 1.2.2
 ### Updates
  Supports push notifications with in-App messages
