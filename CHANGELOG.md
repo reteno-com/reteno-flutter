@@ -1,3 +1,6 @@
+## 1.3.0
+* Add `Reteno.onRetenoNotificationClicked` to get push data on clicked events
+
 ## 1.2.3
 * Bump iOS sdk to 1.6.6
 
