@@ -4,7 +4,7 @@ import UIKit
 
 public class SwiftRetenoPlugin: NSObject, FlutterPlugin {
     
-    var _initialNotification : [String: Any]?
+    static var _initialNotification : [String: Any]?
     var _flutterResult : FlutterResult?
     
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -13,11 +13,23 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin {
         let instance = SwiftRetenoPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
         NotificationCenter.default.addObserver(instance, selector: #selector(application_onDidFinishLaunchingNotification), name: UIApplication.didFinishLaunchingNotification, object: nil)
-        Reteno.userNotificationService.didReceiveNotificationUserInfo = {userInfo in
-            channel.invokeMethod("onRetenoNotificationReceived", arguments: userInfo)               }
         Reteno.userNotificationService.didReceiveNotificationResponseHandler = { response in
-            // Handle the UNNotificationResponse
-            print("Received notification response: \(response)")
+            let remoteNotification = response.notification.request.content.userInfo
+            let openId = remoteNotification["gcm.message_id"]
+            if(openId != nil && (openId as! String) != _initialNotification?["gcm.message_id"] as? String){
+                channel.invokeMethod("onRetenoNotificationClicked", arguments: remoteNotification)
+            }
+        }
+        Reteno.userNotificationService.willPresentNotificationHandler = { notification in
+            let userInfo = notification.request.content.userInfo
+            channel.invokeMethod("onRetenoNotificationReceived", arguments: userInfo)
+            let presentationOptions: UNNotificationPresentationOptions
+            if #available(iOS 14.0, *) {
+                presentationOptions = [.badge, .sound, .banner]
+            } else {
+                presentationOptions = [.badge, .sound, .alert]
+            }
+            return presentationOptions
         }
     }
     
@@ -102,9 +114,9 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin {
     }
     
     private func updateInitialResult() -> Void {
-        if(_flutterResult != nil && _initialNotification != nil){
-            _flutterResult?(_initialNotification)
-            _initialNotification = nil
+        if(_flutterResult != nil && SwiftRetenoPlugin._initialNotification != nil){
+            _flutterResult?(SwiftRetenoPlugin._initialNotification)
+            SwiftRetenoPlugin._initialNotification = nil
         }
         else{
             _flutterResult?(nil)
@@ -118,7 +130,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin {
     
     @objc func application_onDidFinishLaunchingNotification(notification: NSNotification){
         if let remoteNotification = notification.userInfo?[UIApplication.LaunchOptionsKey.remoteNotification] as? NSDictionary {
-            _initialNotification = remoteNotification as? [String: Any]
+            SwiftRetenoPlugin._initialNotification = remoteNotification as? [String: Any]
         }
     }
 }

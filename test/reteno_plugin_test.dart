@@ -25,6 +25,9 @@ class MockRetenoPluginPlatform
   late StreamController<Map<String, dynamic>> onRetenoNotificationReceived;
 
   @override
+  late StreamController<Map<String, dynamic>> onRetenoNotificationClicked;
+
+  @override
   Future<bool> setAnonymousUserAttributes(
       AnonymousUserAttributes anonymousUserAttributes) {
     throw UnimplementedError();

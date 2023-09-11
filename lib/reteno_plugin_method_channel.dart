@@ -14,6 +14,10 @@ class MethodChannelRetenoPlugin extends RetenoPluginPlatform {
           RetenoPluginPlatform.instance.onRetenoNotificationReceived
               .add(Map<String, dynamic>.from(call.arguments));
           break;
+        case 'onRetenoNotificationClicked':
+          RetenoPluginPlatform.instance.onRetenoNotificationClicked
+              .add(Map<String, dynamic>.from(call.arguments));
+          break;
         default:
       }
     });

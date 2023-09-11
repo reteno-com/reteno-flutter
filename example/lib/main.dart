@@ -46,7 +46,7 @@ void main() async {
 
 final GoRouter _router = GoRouter(
   initialLocation: '/',
-  routes: <RouteBase>[
+  routes: <RouteBase>[  
     GoRoute(
       path: '/',
       builder: (BuildContext context, GoRouterState state) {
@@ -116,11 +116,14 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     _reteno.getInitialNotification().then((value) {
       if (value != null) {
-        _showAlert(context, value.toString());
+        _showAlert(context, 'getInitialNotification: ${value.toString()}');
       }
     });
     Reteno.onRetenoNotificationReceived.listen((event) {
-      _showAlert(context, event.toString());
+      _showAlert(context, 'onRetenoNotificationReceived: ${event.toString()}');
+    });
+    Reteno.onRetenoNotificationClicked.listen((event) {
+      _showAlert(context, 'onRetenoClicked: ${event.toString()}');
     });
     _initFirebaseNotifications();
     initDeepLinks();

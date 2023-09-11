@@ -41,6 +41,9 @@ abstract class RetenoPluginPlatform extends PlatformInterface {
   StreamController<Map<String, dynamic>> onRetenoNotificationReceived =
       StreamController<Map<String, dynamic>>.broadcast();
 
+  StreamController<Map<String, dynamic>> onRetenoNotificationClicked =
+      StreamController<Map<String, dynamic>>.broadcast();
+
   Future<Map<dynamic, dynamic>?> getInitialNotification() {
     throw UnimplementedError(
         'getInitialNotification() has not been implemented.');
