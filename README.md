@@ -121,6 +121,19 @@ Reteno.onRetenoNotificationReceived.listen((Map<String, dynamic> payload) {
 
 ```
 
+### Getting notification data when interacting with push
+
+When you want to handle interaction with received notification you can use `onRetenoNotificationClicked` stream, so you can listen to it and receive notification data:
+
+```dart
+import 'package:reteno_plugin/reteno.dart';
+
+Reteno.onRetenoNotificationClicked.listen((Map<String, dynamic> payload) {
+      // Process payload...
+});
+
+```
+
 ## Tracking user behaviour
 
 ### Track Custom Events
