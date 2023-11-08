@@ -8,8 +8,8 @@ environment:
 dependencies:
   app_links: ^3.4.3
   cupertino_icons: ^1.0.2
-  # firebase_core: ^2.14.0
-  # firebase_messaging: ^14.6.4
+  firebase_core: ^2.14.0
+  firebase_messaging: ^14.6.4
   flutter_local_notifications: ^15.1.0
   flutter:
     sdk: flutter

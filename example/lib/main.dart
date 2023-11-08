@@ -1,11 +1,12 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 import 'dart:developer';
 import 'dart:math' show Random;
 
 import 'package:app_links/app_links.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// import 'package:firebase_messaging/firebase_messaging.dart';
-// import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -19,17 +20,22 @@ import 'package:reteno_plugin_example/secrets.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:uuid/uuid.dart';
 
-// @pragma('vm:entry-point')
-// Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-//   // If you're going to use other Firebase services in the background, such as Firestore,
-//   // make sure you call `initializeApp` before using other Firebase services.
-//   await Firebase.initializeApp();
+const String _firebaseLogTag = 'FirebaseMessaging';
+const String _retenoPluginLogTag = 'RetenoPlugin';
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // If you're going to use other Firebase services in the background, such as Firestore,
+  // make sure you call `initializeApp` before using other Firebase services.
+  await Firebase.initializeApp();
 
-//   print("Handling a background message: ${message.messageId}");
-// }
+  print(
+      "$_firebaseLogTag: _firebaseMessagingBackgroundHandler:\n ${message.messageId}");
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await SentryFlutter.init(
     (options) {
       options.dsn = Constants.sentryDsn;
@@ -39,14 +45,13 @@ void main() async {
     },
     appRunner: () => runApp(const MyApp()),
   );
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   // runApp(const MyApp());
 }
 
 final GoRouter _router = GoRouter(
   initialLocation: '/',
-  routes: <RouteBase>[  
+  routes: <RouteBase>[
     GoRoute(
       path: '/',
       builder: (BuildContext context, GoRouterState state) {
@@ -106,24 +111,25 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    try {
-      throw Exception('Testing Sentry');
-    } catch (exception, stackTrace) {
-      Sentry.captureException(
-        exception,
-        stackTrace: stackTrace,
-      );
-    }
+
     _reteno.getInitialNotification().then((value) {
       if (value != null) {
-        _showAlert(context, 'getInitialNotification: ${value.toString()}');
+        print(
+            '$_retenoPluginLogTag: getInitialNotification: ${value.toString()}');
+        _showAlert(context,
+            '$_retenoPluginLogTag: getInitialNotification: ${value.toString()}');
       }
     });
     Reteno.onRetenoNotificationReceived.listen((event) {
-      _showAlert(context, 'onRetenoNotificationReceived: ${event.toString()}');
+      print(
+          '$_retenoPluginLogTag: onRetenoNotificationReceived: ${event.toString()}');
+      _showAlert(context,
+          '$_retenoPluginLogTag: onRetenoNotificationReceived: ${event.toString()}');
     });
     Reteno.onRetenoNotificationClicked.listen((event) {
-      _showAlert(context, 'onRetenoClicked: ${event.toString()}');
+      print('$_retenoPluginLogTag: onRetenoClicked: ${event.toString()}');
+      _showAlert(context,
+          '$_retenoPluginLogTag: onRetenoClicked: ${event.toString()}');
     });
     _initFirebaseNotifications();
     initDeepLinks();
@@ -138,55 +144,23 @@ class _MyHomePageState extends State<MyHomePage> {
   );
 
   Future<void> _initFirebaseNotifications() async {
-    // const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-    // const iosInit = DarwinInitializationSettings();
+    FirebaseMessaging.onMessageOpenedApp.listen((event) {
+      print('$_firebaseLogTag onMessageOpenedApp \n ${event.data}');
+    });
 
-    // const initSetting =
-    //     InitializationSettings(android: androidInit, iOS: iosInit);
-    // final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-    // await flutterLocalNotificationsPlugin
-    //     .resolvePlatformSpecificImplementation<
-    //         AndroidFlutterLocalNotificationsPlugin>()
-    //     ?.createNotificationChannel(channel);
-    // await flutterLocalNotificationsPlugin
-    //     .resolvePlatformSpecificImplementation<
-    //         AndroidFlutterLocalNotificationsPlugin>()
-    //     ?.requestPermission();
-    // await flutterLocalNotificationsPlugin.initialize(initSetting,
-    //     onDidReceiveNotificationResponse: (response) {
-    //   print(response.payload.toString());
-    // });
+    final message = await FirebaseMessaging.instance.getInitialMessage();
+    print('$_firebaseLogTag getInitialMessage: $message');
 
-    // FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-    //   print('Got a message whilst in the foreground!');
-    //   print('Message data: ${message.data}');
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      print('$_firebaseLogTag onMessage \n ${message.data}');
 
-    //   if (message.notification != null) {
-    //     print('Message also contained a notification: ${message.notification}');
-    //   }
-    //   final notification = message.notification;
-    //   final android = message.notification?.android;
-
-    //   // if (notification != null && android != null) {
-    //     await flutterLocalNotificationsPlugin.show(
-    //       notification.hashCode,
-    //       'notification.title',
-    //       'notification.body',
-    //       NotificationDetails(
-    //         android: AndroidNotificationDetails(
-    //           channel.id,
-    //           channel.name,
-    //           channelDescription: channel.description,
-    //         ),
-    //         iOS: const DarwinNotificationDetails(),
-    //       ),
-    //       payload: json.encode(message.data),
-    //     );
-    //   // }
-    // });
-    // FirebaseMessaging.instance.getToken().then((value) {
-    //   _showAlert(context, value?.toString() ?? '');
-    // });
+      if (message.notification != null) {
+        print('Message also contained a notification: ${message.notification}');
+      }
+    });
+    FirebaseMessaging.instance.getToken().then((value) {
+      print('$_firebaseLogTag getToken \n $value');
+    });
   }
 
   Future<void> initDeepLinks() async {

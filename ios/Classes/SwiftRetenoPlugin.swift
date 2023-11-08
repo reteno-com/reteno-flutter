@@ -14,21 +14,27 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin {
         registrar.addMethodCallDelegate(instance, channel: channel)
         NotificationCenter.default.addObserver(instance, selector: #selector(application_onDidFinishLaunchingNotification), name: UIApplication.didFinishLaunchingNotification, object: nil)
         Reteno.userNotificationService.didReceiveNotificationResponseHandler = { response in
-            let remoteNotification = response.notification.request.content.userInfo
-            let openId = remoteNotification["gcm.message_id"]
-            if(openId != nil && (openId as! String) != _initialNotification?["gcm.message_id"] as? String){
-                channel.invokeMethod("onRetenoNotificationClicked", arguments: remoteNotification)
+            let userInfo = response.notification.request.content.userInfo
+            if userInfo.keys.contains("es_interaction_id") == false{
+                return
+            }
+            let openId = userInfo["es_interaction_id"]
+            if(openId != nil && (openId as! String) != _initialNotification?["es_interaction_id"] as? String){
+                channel.invokeMethod("onRetenoNotificationClicked", arguments: userInfo)
             }
         }
         Reteno.userNotificationService.willPresentNotificationHandler = { notification in
-            let userInfo = notification.request.content.userInfo
-            channel.invokeMethod("onRetenoNotificationReceived", arguments: userInfo)
             let presentationOptions: UNNotificationPresentationOptions
             if #available(iOS 14.0, *) {
                 presentationOptions = [.badge, .sound, .banner]
             } else {
                 presentationOptions = [.badge, .sound, .alert]
             }
+            let userInfo = notification.request.content.userInfo
+            if userInfo.keys.contains("es_interaction_id"){
+                channel.invokeMethod("onRetenoNotificationReceived", arguments: userInfo)
+            }
+            
             return presentationOptions
         }
     }
@@ -129,7 +135,13 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin {
     }
     
     @objc func application_onDidFinishLaunchingNotification(notification: NSNotification){
-        if let remoteNotification = notification.userInfo?[UIApplication.LaunchOptionsKey.remoteNotification] as? NSDictionary {
+        guard let userInfo = notification.userInfo else {
+          return
+        }
+        if userInfo.keys.contains("es_interaction_id") {
+            return
+        }
+        if let remoteNotification = userInfo[UIApplication.LaunchOptionsKey.remoteNotification] as? NSDictionary {
             SwiftRetenoPlugin._initialNotification = remoteNotification as? [String: Any]
         }
     }
