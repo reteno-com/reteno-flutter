@@ -5,10 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.app.ActivityManager
 import android.app.KeyguardManager
+import android.util.Log
 
 class RetenoPushReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
-        if(intent == null || intent.extras == null){
+        if (intent == null || intent.extras == null) {
             return
         }
         val map = HashMap<String, Any?>()
@@ -17,10 +18,12 @@ class RetenoPushReceiver : BroadcastReceiver() {
             map[key] = value
         }
         try {
-            if(isApplicationForeground(context)){
+            if (isApplicationForeground(context)) {
                 RetenoPlugin.methodChannel.invokeMethod("onRetenoNotificationReceived", map)
             }
-        } catch (e: java.lang.Exception){
+
+        } catch (e: java.lang.Exception) {
+            e.message?.let { Log.e("RetenoPushReceiver", it) };
         }
     }
 
@@ -39,7 +42,8 @@ class RetenoPushReceiver : BroadcastReceiver() {
         val packageName = context.packageName
         for (appProcess in appProcesses) {
             if (appProcess.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND &&
-                appProcess.processName == packageName) {
+                appProcess.processName == packageName
+            ) {
                 return true
             }
         }
