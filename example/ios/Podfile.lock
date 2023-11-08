@@ -84,6 +84,9 @@ PODS:
     - FlutterMacOS
     - Sentry/HybridSDK (= 8.8.0)
   - SentryPrivate (8.8.0)
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
 
 DEPENDENCIES:
   - app_links (from `.symlinks/plugins/app_links/ios`)
@@ -98,6 +101,7 @@ DEPENDENCIES:
   - reteno_plugin (from `.symlinks/plugins/reteno_plugin/ios`)
   - Sentry/HybridSDK
   - sentry_flutter (from `.symlinks/plugins/sentry_flutter/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/ios`)
 
 SPEC REPOS:
   trunk:
@@ -132,6 +136,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/reteno_plugin/ios"
   sentry_flutter:
     :path: ".symlinks/plugins/sentry_flutter/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/ios"
 
 SPEC CHECKSUMS:
   Alamofire: d368e1ff8a298e6dde360e35a3e68e6c610e7204
@@ -155,6 +161,7 @@ SPEC CHECKSUMS:
   Sentry: 927dfb29d18a14d924229a59cc2ad149f43349f2
   sentry_flutter: cf7da03b65520b631330ecb498deb592aa7640be
   SentryPrivate: 4350d865f898224ab9fa02b37d6ee7fbb623f47e
+  shared_preferences_foundation: 5b919d13b803cadd15ed2dc053125c68730e5126
 
 PODFILE CHECKSUM: cadc371f55d2c75ee88bf91b116c16bee4c461f4
 

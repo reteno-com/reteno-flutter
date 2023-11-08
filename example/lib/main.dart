@@ -18,15 +18,16 @@ import 'package:reteno_plugin/reteno_user.dart';
 import 'package:reteno_plugin_example/events_page.dart';
 import 'package:reteno_plugin_example/secrets.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 const String _firebaseLogTag = 'FirebaseMessaging';
 const String _retenoPluginLogTag = 'RetenoPlugin';
+
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // If you're going to use other Firebase services in the background, such as Firestore,
-  // make sure you call `initializeApp` before using other Firebase services.
-  await Firebase.initializeApp();
+  final prefs = await SharedPreferences.getInstance();
+  prefs.setString('notification_id', message.messageId?.toString() ?? 'null');
 
   print(
       "$_firebaseLogTag: _firebaseMessagingBackgroundHandler:\n ${message.messageId}");
@@ -246,6 +247,29 @@ class _MyHomePageState extends State<MyHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.reload();
+                        print(prefs.getString('notification_id'));
+                        if (context.mounted) {
+                          _showAlert(context,
+                              '$_retenoPluginLogTag: ${prefs.getString('notification_id')}');
+                        }
+                      },
+                      child: const Text(
+                        'Get latest notification id that was consumed in background',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
                   Expanded(
                     child: GestureDetector(
                       onTap: () {

@@ -11,7 +11,7 @@ import FirebaseMessaging
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         GeneratedPluginRegistrant.register(with: self)
-        FirebaseApp.configure()
+        //FirebaseApp.configure()
         Messaging.messaging().delegate = self
         Reteno.start(apiKey: "630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05")
         

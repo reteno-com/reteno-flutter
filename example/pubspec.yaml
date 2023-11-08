@@ -10,15 +10,16 @@ dependencies:
   cupertino_icons: ^1.0.2
   firebase_core: ^2.14.0
   firebase_messaging: ^14.6.4
-  flutter_local_notifications: ^15.1.0
   flutter:
     sdk: flutter
   flutter_form_builder: ^7.7.0
+  flutter_local_notifications: ^15.1.0
   form_builder_validators: ^8.4.0
   go_router: ^7.1.1
-  reteno_plugin: 
+  reteno_plugin:
     path: ../
   sentry_flutter: ^7.6.3
+  shared_preferences: ^2.2.2
   uuid: ^3.0.7
 
 dev_dependencies:
