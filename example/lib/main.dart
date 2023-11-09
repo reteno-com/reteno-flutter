@@ -119,6 +119,11 @@ class _MyHomePageState extends State<MyHomePage> {
             '$_retenoPluginLogTag: getInitialNotification: ${value.toString()}');
         _showAlert(context,
             '$_retenoPluginLogTag: getInitialNotification: ${value.toString()}');
+      }else{
+        print(
+            '$_retenoPluginLogTag: getInitialNotification: null');
+        _showAlert(context,
+            '$_retenoPluginLogTag: getInitialNotification: null');
       }
     });
     Reteno.onRetenoNotificationReceived.listen((event) {
@@ -223,7 +228,7 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: [
           Row(
             children: [
-              const Text('Anonymous User  '),
+              const Text('Anonymous User'),
               ValueListenableBuilder(
                 valueListenable: _isAnonymousUser,
                 builder: (context, value, _) {

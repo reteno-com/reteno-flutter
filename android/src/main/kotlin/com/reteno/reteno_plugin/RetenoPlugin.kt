@@ -85,7 +85,7 @@ class RetenoPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, NewIntentL
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         binding.addOnNewIntentListener(this)
         mainActivity = binding.activity
-        val extras = binding.activity.intent.extras
+        val extras = mainActivity?.intent?.extras
         if (extras != null && extras.containsKey(ES_INTERACTION_ID_KEY)) {
             initialNotification = HashMap()
             for (key in extras.keySet()) {
