@@ -113,7 +113,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
 
-    _reteno.getInitialNotification().then((value) {
+    try {
+      _reteno.getInitialNotification().then((value) {
       if (value != null) {
         print(
             '$_retenoPluginLogTag: getInitialNotification: ${value.toString()}');
@@ -126,6 +127,11 @@ class _MyHomePageState extends State<MyHomePage> {
             '$_retenoPluginLogTag: getInitialNotification: null');
       }
     });
+    } catch (e) {
+      _showAlert(context,
+            '$_retenoPluginLogTag: getInitialNotification: $e');
+    }
+    
     Reteno.onRetenoNotificationReceived.listen((event) {
       print(
           '$_retenoPluginLogTag: onRetenoNotificationReceived: ${event.toString()}');

@@ -1,3 +1,5 @@
+## 1.3.2
+* Fix method channels initialization not properly working in pair with firebase messaging plugin
 ## 1.3.1
 * Fix plugin not working when adding FirebaseMessaging.onBackgroundMessage handler due to spawning background isolate
 * Update handling of config changes in android plugin
