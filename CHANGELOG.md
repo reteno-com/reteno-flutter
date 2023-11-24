@@ -1,3 +1,8 @@
+## 1.4.0
+### Dependencies
+* Bump Android sdk to 1.7.0
+* Bump iOS sdk to 1.7.1
+
 ## 1.3.2
 * Fix method channels initialization not properly working in pair with firebase messaging plugin
 ## 1.3.1

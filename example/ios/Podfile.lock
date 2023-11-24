@@ -63,27 +63,12 @@ PODS:
     - nanopb/encode (= 2.30909.1)
   - nanopb/decode (2.30909.1)
   - nanopb/encode (2.30909.1)
-  - package_info_plus (0.4.5):
-    - Flutter
   - PromisesObjC (2.3.1)
-  - Reteno (1.6.6):
+  - Reteno (1.7.1):
     - Alamofire (= 5.6.2)
-    - Sentry (>= 8.7.3)
   - reteno_plugin (0.0.1):
     - Flutter
-    - Reteno (= 1.6.6)
-  - Sentry (8.8.0):
-    - Sentry/Core (= 8.8.0)
-    - SentryPrivate (= 8.8.0)
-  - Sentry/Core (8.8.0):
-    - SentryPrivate (= 8.8.0)
-  - Sentry/HybridSDK (8.8.0):
-    - SentryPrivate (= 8.8.0)
-  - sentry_flutter (0.0.1):
-    - Flutter
-    - FlutterMacOS
-    - Sentry/HybridSDK (= 8.8.0)
-  - SentryPrivate (8.8.0)
+    - Reteno (= 1.7.1)
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -96,11 +81,8 @@ DEPENDENCIES:
   - FirebaseMessaging
   - Flutter (from `Flutter`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
-  - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
-  - Reteno (= 1.6.6)
+  - Reteno (= 1.7.1)
   - reteno_plugin (from `.symlinks/plugins/reteno_plugin/ios`)
-  - Sentry/HybridSDK
-  - sentry_flutter (from `.symlinks/plugins/sentry_flutter/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/ios`)
 
 SPEC REPOS:
@@ -116,8 +98,6 @@ SPEC REPOS:
     - nanopb
     - PromisesObjC
     - Reteno
-    - Sentry
-    - SentryPrivate
 
 EXTERNAL SOURCES:
   app_links:
@@ -130,12 +110,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_local_notifications:
     :path: ".symlinks/plugins/flutter_local_notifications/ios"
-  package_info_plus:
-    :path: ".symlinks/plugins/package_info_plus/ios"
   reteno_plugin:
     :path: ".symlinks/plugins/reteno_plugin/ios"
-  sentry_flutter:
-    :path: ".symlinks/plugins/sentry_flutter/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/ios"
 
@@ -154,15 +130,11 @@ SPEC CHECKSUMS:
   GoogleDataTransport: 54dee9d48d14580407f8f5fbf2f496e92437a2f2
   GoogleUtilities: 0759d1a57ebb953965c2dfe0ba4c82e95ccc2e34
   nanopb: d4d75c12cd1316f4a64e3c6963f879ecd4b5e0d5
-  package_info_plus: fd030dabf36271f146f1f3beacd48f564b0f17f7
   PromisesObjC: c50d2056b5253dadbd6c2bea79b0674bd5a52fa4
-  Reteno: 4a17eca0249ad9fdb0f107cc85e41137d535225c
-  reteno_plugin: e904ced67b719232320e2eb2f632f86addd6dfe1
-  Sentry: 927dfb29d18a14d924229a59cc2ad149f43349f2
-  sentry_flutter: cf7da03b65520b631330ecb498deb592aa7640be
-  SentryPrivate: 4350d865f898224ab9fa02b37d6ee7fbb623f47e
+  Reteno: de4da3e324e43f1e058ea30ab630a2b65fa84c3d
+  reteno_plugin: 1aa7a182beb4a601d8a6b327463405498f10bc4a
   shared_preferences_foundation: 5b919d13b803cadd15ed2dc053125c68730e5126
 
-PODFILE CHECKSUM: cadc371f55d2c75ee88bf91b116c16bee4c461f4
+PODFILE CHECKSUM: 5e68946416dde1ef0c9798be211bef4423532c9f
 
 COCOAPODS: 1.12.1

@@ -16,8 +16,6 @@ import 'package:reteno_plugin/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/reteno.dart';
 import 'package:reteno_plugin/reteno_user.dart';
 import 'package:reteno_plugin_example/events_page.dart';
-import 'package:reteno_plugin_example/secrets.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
@@ -37,17 +35,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  await SentryFlutter.init(
-    (options) {
-      options.dsn = Constants.sentryDsn;
-      // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
-      // We recommend adjusting this value in production.
-      options.tracesSampleRate = 1.0;
-    },
-    appRunner: () => runApp(const MyApp()),
-  );
-
-  // runApp(const MyApp());
+  runApp(const MyApp());
 }
 
 final GoRouter _router = GoRouter(
@@ -115,23 +103,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
     try {
       _reteno.getInitialNotification().then((value) {
-      if (value != null) {
-        print(
-            '$_retenoPluginLogTag: getInitialNotification: ${value.toString()}');
-        _showAlert(context,
-            '$_retenoPluginLogTag: getInitialNotification: ${value.toString()}');
-      }else{
-        print(
-            '$_retenoPluginLogTag: getInitialNotification: null');
-        _showAlert(context,
-            '$_retenoPluginLogTag: getInitialNotification: null');
-      }
-    });
+        if (value != null) {
+          print(
+              '$_retenoPluginLogTag: getInitialNotification: ${value.toString()}');
+          _showAlert(context,
+              '$_retenoPluginLogTag: getInitialNotification: ${value.toString()}');
+        } else {
+          print('$_retenoPluginLogTag: getInitialNotification: null');
+          _showAlert(
+              context, '$_retenoPluginLogTag: getInitialNotification: null');
+        }
+      });
     } catch (e) {
-      _showAlert(context,
-            '$_retenoPluginLogTag: getInitialNotification: $e');
+      _showAlert(context, '$_retenoPluginLogTag: getInitialNotification: $e');
     }
-    
+
     Reteno.onRetenoNotificationReceived.listen((event) {
       print(
           '$_retenoPluginLogTag: onRetenoNotificationReceived: ${event.toString()}');

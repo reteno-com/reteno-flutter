@@ -18,7 +18,6 @@ dependencies:
   go_router: ^7.1.1
   reteno_plugin:
     path: ../
-  sentry_flutter: ^7.6.3
   shared_preferences: ^2.2.2
   uuid: ^3.0.7
 
