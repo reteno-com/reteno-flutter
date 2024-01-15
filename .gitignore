@@ -23,3 +23,4 @@ example/.fvm/flutter_sdk
 example/lib/secrets.dart
 example/ios/build/*
 .vscode/launch.json
+.fvm/flutter_sdk

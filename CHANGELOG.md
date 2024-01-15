@@ -1,3 +1,8 @@
+## 1.4.1
+### Dependencies
+* Bump Android sdk to 1.7.1
+* Added function for force updating push permission status on Android 13 and above
+
 ## 1.4.0
 ### Dependencies
 * Bump Android sdk to 1.7.0

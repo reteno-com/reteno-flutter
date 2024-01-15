@@ -37,6 +37,11 @@ class MockRetenoPluginPlatform
   Future<bool> logEvent({required RetenoCustomEvent event}) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<bool> updatePushPermissionStatus() {
+    throw UnimplementedError();
+  }
 }
 
 void main() {

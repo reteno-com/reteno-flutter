@@ -57,6 +57,9 @@ class RetenoPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, NewIntentL
             "logEvent" -> {
                 methodCallTask = logEvent(call.arguments as HashMap<*, *>)
             }
+            "updatePushPermissionStatus" ->{
+                methodCallTask = updatePushPermissionStatus()
+            }
             else -> {
                 result.notImplemented()
                 return
@@ -212,6 +215,23 @@ class RetenoPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, NewIntentL
                     return@execute
                 }
 
+
+            } catch (e: Exception) {
+                taskCompletionSource.setException(e)
+            }
+        }
+
+        return taskCompletionSource.task
+    }
+
+    private fun updatePushPermissionStatus(): Task<Boolean>{
+        val taskCompletionSource = TaskCompletionSource<Boolean>()
+
+        cachedThreadPool.execute {
+            try {
+                reteno.updatePushPermissionStatus()
+                taskCompletionSource.setResult(true);
+                return@execute
 
             } catch (e: Exception) {
                 taskCompletionSource.setException(e)

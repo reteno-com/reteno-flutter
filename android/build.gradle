@@ -55,5 +55,5 @@ android {
 dependencies{
     implementation 'com.google.android.gms:play-services-tasks:18.0.1'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
-    implementation "com.reteno:fcm:1.7.0"
+    implementation "com.reteno:fcm:1.7.1"
 }

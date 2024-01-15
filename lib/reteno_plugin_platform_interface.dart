@@ -52,4 +52,8 @@ abstract class RetenoPluginPlatform extends PlatformInterface {
   Future<bool> logEvent({required RetenoCustomEvent event}) {
     throw UnimplementedError('logEvent() has not been implemented.');
   }
+
+  Future<bool> updatePushPermissionStatus() {
+    throw UnimplementedError('updatePushPermissionStatus() has not been implemented.');
+  }
 }

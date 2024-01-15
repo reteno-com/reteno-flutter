@@ -8,10 +8,12 @@ import 'package:app_links/app_links.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:reteno_plugin/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/reteno.dart';
 import 'package:reteno_plugin/reteno_user.dart';
@@ -113,8 +115,15 @@ class _MyHomePageState extends State<MyHomePage> {
           _showAlert(
               context, '$_retenoPluginLogTag: getInitialNotification: null');
         }
+      }).onError((error, stackTrace) {
+        print('$_retenoPluginLogTag: getInitialNotification: $error');
+        print('$_retenoPluginLogTag: getInitialNotification: $stackTrace');
+        _showAlert(
+            context, '$_retenoPluginLogTag: getInitialNotification: $error');
+        return null;
       });
     } catch (e) {
+      print('$_retenoPluginLogTag: getInitialNotification: $e');
       _showAlert(context, '$_retenoPluginLogTag: getInitialNotification: $e');
     }
 
@@ -248,6 +257,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: ElevatedButton(
                       onPressed: () async {
+                        FlutterAppBadger.removeBadge();
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.reload();
                         print(prefs.getString('notification_id'));
@@ -258,6 +268,29 @@ class _MyHomePageState extends State<MyHomePage> {
                       },
                       child: const Text(
                         'Get latest notification id that was consumed in background',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final permissionStatus =
+                            await Permission.notification.request();
+                        if (permissionStatus.isGranted) {
+                          final res =
+                              await _reteno.updatePushPermissionStatus();
+                          print(res);
+                        }
+                      },
+                      child: const Text(
+                        'Update permission status',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 17,

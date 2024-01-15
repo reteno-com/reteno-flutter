@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:reteno_plugin/anonymous_user_attributes.dart';
@@ -73,5 +75,16 @@ class MethodChannelRetenoPlugin extends RetenoPluginPlatform {
       return false;
     }
     return res;
+  }
+  
+  @override
+  Future<bool> updatePushPermissionStatus() async {
+    if (Platform.isIOS) {
+      return true;
+    }
+    final res =
+        await methodChannel.invokeMethod<bool>('updatePushPermissionStatus');
+
+    return res == true;
   }
 }
