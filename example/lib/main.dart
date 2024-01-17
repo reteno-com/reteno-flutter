@@ -281,6 +281,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: ElevatedButton(
                       onPressed: () async {
+                        if (await Permission.notification.isGranted) {
+                          final res =
+                              await _reteno.updatePushPermissionStatus();
+                          print(res);
+                          return;
+                        }
                         final permissionStatus =
                             await Permission.notification.request();
                         if (permissionStatus.isGranted) {
