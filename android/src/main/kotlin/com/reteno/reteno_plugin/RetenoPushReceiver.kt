@@ -17,7 +17,7 @@ class RetenoPushReceiver : BroadcastReceiver() {
         }
         try {
             if (Utils.isApplicationForeground(context)) {
-                RetenoPlugin.methodChannel.invokeMethod("onRetenoNotificationReceived", map)
+                RetenoPlugin.methodChannel?.invokeMethod("onRetenoNotificationReceived", map)
             }
 
         } catch (e: java.lang.Exception) {

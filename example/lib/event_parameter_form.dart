@@ -18,10 +18,11 @@ class TempParameterModel {
 }
 
 class EventParameterForm extends StatefulWidget {
-  EventParameterForm(
-      {super.key,
-      required this.contactModel,
-      required this.onRemove});
+  EventParameterForm({
+    super.key,
+    required this.contactModel,
+    required this.onRemove,
+  });
 
   TempParameterModel contactModel;
   final Function onRemove;
@@ -60,9 +61,10 @@ class _EventParameterFormState extends State<EventParameterForm> {
               Expanded(
                 child: TextFormField(
                   controller: _nameController,
-                  onChanged: (value) =>
-                      widget.contactModel = widget.contactModel.copyWith(name: value),
-                  onSaved: (value) => widget.contactModel = widget.contactModel.copyWith(name: value),
+                  onChanged: (value) => widget.contactModel =
+                      widget.contactModel.copyWith(name: value),
+                  onSaved: (value) => widget.contactModel =
+                      widget.contactModel.copyWith(name: value),
                   validator: (value) =>
                       (value?.isNotEmpty ?? false) ? null : "Enter Name",
                   decoration: inputDecoration('Parameter name'),
@@ -72,10 +74,10 @@ class _EventParameterFormState extends State<EventParameterForm> {
               Expanded(
                 child: TextFormField(
                   controller: _valueContoller,
-                  onChanged: (value) =>
-                      widget.contactModel = widget.contactModel.copyWith(value: value),
-                  onSaved: (value) =>
-                      widget.contactModel = widget.contactModel.copyWith(value: value),
+                  onChanged: (value) => widget.contactModel =
+                      widget.contactModel.copyWith(value: value),
+                  onSaved: (value) => widget.contactModel =
+                      widget.contactModel.copyWith(value: value),
                   decoration: inputDecoration('Parameter value'),
                 ),
               ),
@@ -101,7 +103,7 @@ class _EventParameterFormState extends State<EventParameterForm> {
     //Validate Form Fields
     formKey.currentState?.save();
     bool validate = formKey.currentState?.validate() ?? false;
-    
+
     return validate;
   }
 }

@@ -54,6 +54,7 @@ abstract class RetenoPluginPlatform extends PlatformInterface {
   }
 
   Future<bool> updatePushPermissionStatus() {
-    throw UnimplementedError('updatePushPermissionStatus() has not been implemented.');
+    throw UnimplementedError(
+        'updatePushPermissionStatus() has not been implemented.');
   }
 }
