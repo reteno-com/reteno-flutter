@@ -1,3 +1,6 @@
+## 1.4.2
+* Fix PropertyAccessException in onDetachedFromEngine
+
 ## 1.4.1
 ### Dependencies
 * Bump Android sdk to 1.7.1
@@ -41,7 +44,7 @@
 * Add support for reteno android sdk 1.5.4
 * Add support for reteno ios sdk 1.5.4
 * Add `Reteno.setAnonymousUserAttributes` method to set anonymous user attributes
-* Update Android `minSdkVersion` to 21 
+* Update Android `minSdkVersion` to 21
 
 ## 1.0.0
 

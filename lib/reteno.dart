@@ -93,7 +93,7 @@ class Reteno {
   }
 
   /// Updates status of POST_NOTIFICATIONS permission and pushes it to backend if status was changed.
-  /// 
+  ///
   /// For example you can call this function after acquiring result from runtime permission on Android 13 and above
   Future<bool> updatePushPermissionStatus() {
     return RetenoPluginPlatform.instance.updatePushPermissionStatus();

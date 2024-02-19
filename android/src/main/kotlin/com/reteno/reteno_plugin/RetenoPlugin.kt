@@ -21,7 +21,7 @@ import java.util.concurrent.Executors
 
 class RetenoPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, NewIntentListener {
     companion object {
-        lateinit var methodChannel: MethodChannel
+        var methodChannel: MethodChannel? = null
         private var initialized: Boolean = false
         private val cachedThreadPool: ExecutorService = Executors.newCachedThreadPool()
     }
@@ -37,8 +37,9 @@ class RetenoPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, NewIntentL
             return
         }
         initialized = true
-        methodChannel = MethodChannel(flutterPluginBinding.binaryMessenger, "reteno_plugin")
-        methodChannel.setMethodCallHandler(this)
+        val newMethodChannel = MethodChannel(flutterPluginBinding.binaryMessenger, "reteno_plugin")
+        newMethodChannel.setMethodCallHandler(this)
+        methodChannel = newMethodChannel
         reteno = (flutterPluginBinding.applicationContext as RetenoApplication).getRetenoInstance()
     }
 
@@ -76,7 +77,8 @@ class RetenoPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, NewIntentL
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        methodChannel.setMethodCallHandler(null)
+        methodChannel?.setMethodCallHandler(null)
+        methodChannel = null
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
@@ -119,7 +121,7 @@ class RetenoPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, NewIntentL
             val value = intent.extras!!.get(key)
             retenoNotificationMap[key] = value
         }
-        methodChannel.invokeMethod(
+        methodChannel?.invokeMethod(
             "onRetenoNotificationClicked",
             retenoNotificationMap,
             object : Result {

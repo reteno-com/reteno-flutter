@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:reteno_plugin/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/reteno_custom_event.dart';
 import 'package:reteno_plugin/reteno_user.dart';
+
 import 'reteno_plugin_platform_interface.dart';
 
 /// An implementation of [RetenoPluginPlatform] that uses method channels.
@@ -76,7 +77,7 @@ class MethodChannelRetenoPlugin extends RetenoPluginPlatform {
     }
     return res;
   }
-  
+
   @override
   Future<bool> updatePushPermissionStatus() async {
     if (Platform.isIOS) {
