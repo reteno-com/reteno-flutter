@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:reteno_plugin/reteno.dart';
-import 'package:reteno_plugin/reteno_custom_event.dart';
-import 'package:reteno_plugin/reteno_custom_event_parameter.dart';
 import 'package:reteno_plugin_example/event_parameter_form.dart';
 
 class EventsPage extends StatefulWidget {
@@ -160,7 +158,7 @@ class _EventsPageState extends State<EventsPage> {
                         .toList(),
                     forcePush: _forcePush.value,
                   );
-                  debugPrint(event.toMap().toString());
+                  debugPrint(event.toString());
 
                   await _reteno.logEvent(event: event);
                 },

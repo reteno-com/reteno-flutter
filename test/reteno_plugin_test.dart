@@ -1,53 +1,76 @@
-import 'dart:async';
-
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:reteno_plugin/anonymous_user_attributes.dart';
-import 'package:reteno_plugin/reteno_custom_event.dart';
-import 'package:reteno_plugin/reteno_plugin_platform_interface.dart';
-import 'package:reteno_plugin/reteno_plugin_method_channel.dart';
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-import 'package:reteno_plugin/reteno_user.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:reteno_plugin/reteno.dart';
+import 'package:reteno_plugin/src/native_reteno_plugin.g.dart';
+import 'package:reteno_plugin/src/reteno_plugin_pigeon_channel.dart';
 
-class MockRetenoPluginPlatform
-    with MockPlatformInterfaceMixin
-    implements RetenoPluginPlatform {
-  @override
-  Future<bool> setUserAttributes(String externalUserId, RetenoUser? user) {
-    throw UnimplementedError();
-  }
+class MockRetenoHostApi extends Mock implements RetenoHostApi {}
 
-  @override
-  Future<Map<dynamic, dynamic>?> getInitialNotification() {
-    throw UnimplementedError();
-  }
+class MockNativeRetenoUser extends NativeRetenoUser {}
 
-  @override
-  late StreamController<Map<String, dynamic>> onRetenoNotificationReceived;
-
-  @override
-  late StreamController<Map<String, dynamic>> onRetenoNotificationClicked;
-
-  @override
-  Future<bool> setAnonymousUserAttributes(
-      AnonymousUserAttributes anonymousUserAttributes) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<bool> logEvent({required RetenoCustomEvent event}) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<bool> updatePushPermissionStatus() {
-    throw UnimplementedError();
-  }
-}
+class MockNativeAnonymousUserAttributes extends NativeAnonymousUserAttributes {}
 
 void main() {
-  final RetenoPluginPlatform initialPlatform = RetenoPluginPlatform.instance;
+  group('RetenoPigeonChannel', () {
+    late RetenoPigeonChannel pigeonChannel;
+    late MockRetenoHostApi mockApi;
 
-  test('$MethodChannelRetenoPlugin is the default instance', () {
-    expect(initialPlatform, isInstanceOf<MethodChannelRetenoPlugin>());
+    setUp(() {
+      mockApi = MockRetenoHostApi();
+      pigeonChannel = RetenoPigeonChannel.instanceWithApi(mockApi);
+    });
+
+    setUpAll(() async {
+      WidgetsFlutterBinding.ensureInitialized();
+      registerFallbackValue(MockNativeRetenoUser());
+      registerFallbackValue(MockNativeAnonymousUserAttributes());
+    });
+
+    test('setUserAttributes should call setUserAttributes on api', () async {
+      const externalUserId = 'user123';
+      final user = RetenoUser(
+          userAttributes: UserAttributes(
+        firstName: 'John',
+        lastName: 'Doe',
+      ));
+      when(() => mockApi.setUserAttributes(externalUserId, any()))
+          .thenAnswer((_) async => true);
+
+      final result =
+          await pigeonChannel.setUserAttributes(externalUserId, user);
+
+      expect(result, true);
+      verify(() => mockApi.setUserAttributes(externalUserId, any())).called(1);
+    });
+
+    test(
+        'setAnonymousUserAttributes should call setAnonymousUserAttributes on api',
+        () async {
+      final anonymousUserAttributes =
+          AnonymousUserAttributes(); // Provide appropriate object here
+      when(() => mockApi.setAnonymousUserAttributes(any()))
+          .thenAnswer((_) async => true);
+
+      final result = await pigeonChannel
+          .setAnonymousUserAttributes(anonymousUserAttributes);
+
+      expect(result, true);
+      verify(() => mockApi.setAnonymousUserAttributes(any())).called(1);
+    });
+
+    test('getInitialNotification should return initial notification', () async {
+      final expectedNotification = {
+        'title': 'Notification',
+        'body': 'Hello World'
+      };
+      when(() => mockApi.getInitialNotification())
+          .thenAnswer((_) async => expectedNotification);
+
+      final result = await pigeonChannel.getInitialNotification();
+
+      expect(result, expectedNotification);
+      verify(() => mockApi.getInitialNotification()).called(1);
+    });
   });
 }

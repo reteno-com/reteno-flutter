@@ -7,24 +7,27 @@ import android.util.Log
 
 class RetenoPushReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
+        Log.i("RetenoPushReceiver", "onReceive")
         if (intent == null || intent.extras == null) {
             return
         }
         val map = HashMap<String, Any?>()
-        for (key in intent.extras!!.keySet()) {
-            val value = intent.extras!!.get(key)
+        for (key in intent.extras?.keySet() ?: emptySet()) {
+            val value = intent.extras?.getString(key)
             map[key] = value
         }
         try {
             if (Utils.isApplicationForeground(context)) {
-                RetenoPlugin.methodChannel?.invokeMethod("onRetenoNotificationReceived", map)
+                var pushMap = map!!.toMap()
+                println(pushMap)
+                RetenoPlugin.flutterApi?.onNotificationReceived(pushMap) {
+                    Log.i("RetenoPushReceiver", "onNotificationReceived sent")
+                }
+                Log.i("RetenoPushReceiver", "onRetenoNotificationReceived")
             }
 
         } catch (e: java.lang.Exception) {
             e.message?.let { Log.e("RetenoPushReceiver", it) };
         }
     }
-
-
-
 }

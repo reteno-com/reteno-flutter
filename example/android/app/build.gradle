@@ -59,13 +59,13 @@ android {
     signingConfigs {
         release{
             keyAlias "upload_release"
-            storeFile file("/Users/roman.nakonechnyi/Documents/reteno_keystore_release.jks")
+            storeFile file("../keys/reteno_keystore_release.jks")
             keyPassword "reteno123"
             storePassword "reteno123"
         }
         debug{
             keyAlias "debug"
-            storeFile file("/Users/roman.nakonechnyi/debug.jks")
+            storeFile file("../keys/debug.jks")
             keyPassword "reteno123"
             storePassword "reteno123"
         }

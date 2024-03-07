@@ -2,16 +2,21 @@ import Flutter
 import Reteno
 import UIKit
 
-public class SwiftRetenoPlugin: NSObject, FlutterPlugin {
-    
+public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
     static var _initialNotification : [String: Any]?
-    var _flutterResult : FlutterResult?
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         
-        let channel = FlutterMethodChannel(name: "reteno_plugin", binaryMessenger: registrar.messenger())
+        let messenger : FlutterBinaryMessenger = registrar.messenger()
+
         let instance = SwiftRetenoPlugin()
-        registrar.addMethodCallDelegate(instance, channel: channel)
+        
+        let api : RetenoHostApi & NSObjectProtocol = SwiftRetenoPlugin.init()
+        
+        RetenoHostApiSetup.setUp(binaryMessenger: messenger, api: api)
+        
+        let _flutterApi = RetenoFlutterApi(binaryMessenger: messenger)
+        
         NotificationCenter.default.addObserver(instance, selector: #selector(application_onDidFinishLaunchingNotification), name: UIApplication.didFinishLaunchingNotification, object: nil)
         Reteno.userNotificationService.didReceiveNotificationResponseHandler = { response in
             let userInfo = response.notification.request.content.userInfo
@@ -20,9 +25,20 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin {
             }
             let openId = userInfo["es_interaction_id"]
             if(openId != nil && (openId as! String) != _initialNotification?["es_interaction_id"] as? String){
-                channel.invokeMethod("onRetenoNotificationClicked", arguments: userInfo)
+                var convertedUserInfo = [String: Any?]()
+
+                for (key, value) in userInfo {
+                    if let stringKey = key.base as? String {
+                        convertedUserInfo[stringKey] = value
+                    } else {
+                        fatalError("Key is not a String")
+                    }
+                }
+
+                _flutterApi.onNotificationClicked(payload: convertedUserInfo) { _ in }
             }
         }
+        //TODO: change to didReceiveNotificationUserInfo
         Reteno.userNotificationService.willPresentNotificationHandler = { notification in
             let presentationOptions: UNNotificationPresentationOptions
             if #available(iOS 14.0, *) {
@@ -31,107 +47,83 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin {
                 presentationOptions = [.badge, .sound, .alert]
             }
             let userInfo = notification.request.content.userInfo
-            if userInfo.keys.contains("es_interaction_id"){
-                channel.invokeMethod("onRetenoNotificationReceived", arguments: userInfo)
+            if userInfo.keys.contains("es_interaction_id") {
+                var convertedUserInfo = [String: Any?]()
+
+                for (key, value) in userInfo {
+                    if let stringKey = key.base as? String {
+                        convertedUserInfo[stringKey] = value
+                    } else {
+                        fatalError("Key is not a String")
+                    }
+                }
+                _flutterApi.onNotificationReceived(payload: convertedUserInfo) {_ in}
             }
             
             return presentationOptions
         }
     }
     
-    public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        if(call.method == "setUserAttributes"){
-            let args = call.arguments as! NSDictionary
-            let userId = args["externalUserId"] as? String
-            let userInfo = args["user_info"] as? [String: Any]
-            let userAttributes = userInfo?["userAttributes"] as? NSDictionary
-            let address = userAttributes?["address"] as? NSDictionary
-            Reteno.updateUserAttributes(externalUserId: userId,
-                                        userAttributes: userAttributes == nil ? nil : UserAttributes(
-                                            phone: getStringOrNil(input: userAttributes?["phone"] as? String),
-                                            email: getStringOrNil(input: userAttributes?["email"] as? String),
-                                            firstName: getStringOrNil(input: userAttributes?["firstName"] as? String),
-                                            lastName: getStringOrNil(input: userAttributes?["lastName"] as? String),
-                                            languageCode: getStringOrNil(input: userAttributes?["languageCode"] as? String),
-                                            timeZone: getStringOrNil(input: userAttributes?["timeZone"] as? String),
-                                            address: address == nil ? nil : Address(region: address!["region"] as? String,
-                                                                                    town: address!["town"] as? String,
-                                                                                    address: address!["address"] as? String,
-                                                                                    postcode: address!["postcode"] as? String
-                                                                                   ),
-                                            fields: (userAttributes?["fields"] as? [[String: String]])?.map({ customField in
-                                                UserCustomField(key: customField["key"] ?? "",
-                                                                value: customField["value"] ?? "")
-                                            }) ?? []
-                                        ),
-                                        subscriptionKeys: userInfo?["subscriptionKeys"] as? [String] ?? [],
-                                        groupNamesInclude: userInfo?["groupNamesInclude"] as? [String] ?? [],
-                                        groupNamesExclude: userInfo?["groupNamesExclude"] as? [String] ?? [])
-            result(true)
-            
-        }
-        else if(call.method == "setAnonymousUserAttributes"){
-            let args = call.arguments as! NSDictionary
-            let anonymousUserAttributes = args["anonymousUserAttributes"] as? NSDictionary
-            let address = anonymousUserAttributes?["address"] as? NSDictionary
-            Reteno.updateAnonymousUserAttributes(userAttributes: AnonymousUserAttributes(
-                firstName: getStringOrNil(input: anonymousUserAttributes?["firstName"] as? String),
-                lastName: getStringOrNil(input: anonymousUserAttributes?["lastName"] as? String),
-                languageCode: getStringOrNil(input: anonymousUserAttributes?["languageCode"] as? String),
-                timeZone: getStringOrNil(input: anonymousUserAttributes?["timeZone"] as? String),
-                address: address == nil ? nil : Address(region: address!["region"] as? String,
-                                                        town: address!["town"] as? String,
-                                                        address: address!["address"] as? String,
-                                                        postcode: address!["postcode"] as? String
-                                                       ),
-                fields: (anonymousUserAttributes?["fields"] as? [[String: String]])?.map({ customField in
-                    UserCustomField(key: customField["key"] ?? "",
-                                    value: customField["value"] ?? "")
+    func setUserAttributes(externalUserId: String, user: NativeRetenoUser?) throws {
+        Reteno.updateUserAttributes(
+            externalUserId: externalUserId,
+            userAttributes: user == nil ? nil : UserAttributes(
+                phone: user?.userAttributes?.phone,
+                email: user?.userAttributes?.email,
+                firstName: user?.userAttributes?.firstName,
+                lastName: user?.userAttributes?.lastName,
+                languageCode: user?.userAttributes?.languageCode,
+                timeZone: user?.userAttributes?.timeZone,
+                address: user?.userAttributes?.address?.convertToAddress(),
+                fields: user?.userAttributes?.fields?.compactMap({ nativeField in
+                    UserCustomField(key: nativeField?.key ?? "", value: nativeField?.value ?? "")
                 }) ?? []
-            ))
-            result(true)
-        }
-        else if(call.method == "logEvent"){
-            let args = call.arguments as! NSDictionary
-            let eventDictionary = args["event"] as? NSDictionary
-            if(eventDictionary == nil){
-                result(false)
-            }else{
-                do {
-                    let requestPayload = try RetenoEvent.buildEventPayload(payload: eventDictionary!);
-                    Reteno.logEvent(
-                        eventTypeKey: requestPayload.eventName,
-                        date: requestPayload.date,
-                        parameters: requestPayload.parameters,
-                        forcePush: requestPayload.forcePush
-                    );
-                    result(true);
-                } catch {
-                    result(FlutterError(code:"100", message:"Reteno iOS SDK Error",details: error))
-                }
-                
-                result(true)
-            }
-        }
-        else if(call.method == "getInitialNotification"){
-            _flutterResult = result
-            updateInitialResult()
-        }
+            ),
+            subscriptionKeys: user?.subscriptionKeys?.compactMap { $0 } ?? [],
+            groupNamesInclude: user?.groupNamesInclude?.compactMap{ $0 } ?? [],
+            groupNamesExclude: user?.groupNamesExclude?.compactMap{ $0 } ?? []
+        )
     }
     
-    private func updateInitialResult() -> Void {
-        if(_flutterResult != nil && SwiftRetenoPlugin._initialNotification != nil){
-            _flutterResult?(SwiftRetenoPlugin._initialNotification)
+    func setAnonymousUserAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes) throws {
+        Reteno.updateAnonymousUserAttributes(
+            userAttributes: AnonymousUserAttributes(
+                firstName: anonymousUserAttributes.firstName,
+                lastName: anonymousUserAttributes.lastName,
+                languageCode: anonymousUserAttributes.languageCode,
+                timeZone: anonymousUserAttributes.timeZone,
+                address: anonymousUserAttributes.address?.convertToAddress(),
+                fields: anonymousUserAttributes.fields?.compactMap({ nativeField in
+                    UserCustomField(key: nativeField?.key ?? "", value: nativeField?.value ?? "")
+                }) ?? []
+            )
+        )
+    }
+    
+    func logEvent(event: NativeCustomEvent) throws {
+        let dateFormatter = ISO8601DateFormatter();
+        
+        Reteno.logEvent(
+            eventTypeKey: event.eventTypeKey,
+            date: dateFormatter.date(from: event.dateOccurred) ?? Date(),
+            parameters: event.parameters.map({ p in
+                Event.Parameter(name: p!.name, value: p?.value ?? "")
+            }),
+            forcePush: event.forcePush
+        )
+    }
+    
+    func updatePushPermissionStatus() throws {
+        
+    }
+    
+    func getInitialNotification() throws -> [String : Any]? {
+        if(SwiftRetenoPlugin._initialNotification != nil){
+            let notification = SwiftRetenoPlugin._initialNotification
             SwiftRetenoPlugin._initialNotification = nil
+            return notification
         }
-        else{
-            _flutterResult?(nil)
-            _flutterResult = nil
-        }
-    }
-    
-    private func getStringOrNil(input: String?) -> String? {
-        return input?.isEmpty == true ? nil : input
+        return nil
     }
     
     @objc func application_onDidFinishLaunchingNotification(notification: NSNotification){
@@ -144,5 +136,18 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin {
         if let remoteNotification = userInfo[UIApplication.LaunchOptionsKey.remoteNotification] as? NSDictionary {
             SwiftRetenoPlugin._initialNotification = remoteNotification as? [String: Any]
         }
+    }
+}
+
+extension FlutterError: Swift.Error {}
+
+extension NativeAddress {
+    func convertToAddress() -> Address {
+        return Address(
+            region: self.region,
+            town: self.town,
+            address: self.address,
+            postcode: self.postcode
+        )
     }
 }

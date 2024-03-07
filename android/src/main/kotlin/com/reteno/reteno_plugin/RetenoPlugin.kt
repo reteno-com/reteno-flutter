@@ -4,85 +4,53 @@ import UserUtils
 import android.app.Activity
 import android.content.Intent
 import android.util.Log
-import com.google.android.gms.tasks.Task
-import com.google.android.gms.tasks.TaskCompletionSource
 import com.reteno.core.Reteno
 import com.reteno.core.RetenoApplication
+import com.reteno.reteno_plugin.RetenoEvent.buildEventFromCustomEvent
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.PluginRegistry.NewIntentListener
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
-class RetenoPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, NewIntentListener {
+private const val TAG = "RetenoPlugin"
+private const val ES_INTERACTION_ID_KEY: String = "es_interaction_id"
+
+class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListener {
     companion object {
-        var methodChannel: MethodChannel? = null
-        private var initialized: Boolean = false
-        private val cachedThreadPool: ExecutorService = Executors.newCachedThreadPool()
+        private var pluginBinding: FlutterPlugin.FlutterPluginBinding? = null
+        var flutterApi: RetenoFlutterApi? = null
     }
 
-    private val ES_INTERACTION_ID_KEY: String = "es_interaction_id"
     private lateinit var reteno: Reteno
     private var initialNotification: HashMap<String, Any>? = null
     private var mainActivity: Activity? = null
 
-
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        if (!Utils.isApplicationForeground(flutterPluginBinding.applicationContext) || initialized) {
-            return
+        Log.i(TAG, "onAttachedToEngine")
+        pluginBinding = flutterPluginBinding
+        if (flutterApi == null) {
+            initPlugin(flutterPluginBinding.binaryMessenger)
         }
-        initialized = true
-        val newMethodChannel = MethodChannel(flutterPluginBinding.binaryMessenger, "reteno_plugin")
-        newMethodChannel.setMethodCallHandler(this)
-        methodChannel = newMethodChannel
         reteno = (flutterPluginBinding.applicationContext as RetenoApplication).getRetenoInstance()
     }
 
-    override fun onMethodCall(call: MethodCall, result: Result) {
-        val methodCallTask: Task<*>
-        when (call.method) {
-            "getInitialNotification" -> {
-                methodCallTask = getInitialNotification()
-            }
-            "setUserAttributes" -> {
-                methodCallTask = setUserAttributes(call.arguments as HashMap<*, *>)
-            }
-            "setAnonymousUserAttributes" -> {
-                methodCallTask = setAnonymousUserAttributes(call.arguments as HashMap<*, *>)
-            }
-            "logEvent" -> {
-                methodCallTask = logEvent(call.arguments as HashMap<*, *>)
-            }
-            "updatePushPermissionStatus" ->{
-                methodCallTask = updatePushPermissionStatus()
-            }
-            else -> {
-                result.notImplemented()
-                return
-            }
-        }
-        methodCallTask.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                result.success(task.result)
-            } else {
-                val exception = task.exception
-                result.error("reteno_plugin", exception?.message, exception?.stackTrace)
-            }
-        }
+    private fun initPlugin(binaryMessenger: BinaryMessenger) {
+        RetenoHostApi.setUp(binaryMessenger, this)
+        flutterApi = RetenoFlutterApi(binaryMessenger)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        methodChannel?.setMethodCallHandler(null)
-        methodChannel = null
+        Log.i(TAG, "onDetachedFromEngine")
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        Log.i(TAG, "onAttachedToActivity")
         binding.addOnNewIntentListener(this)
+        pluginBinding?.binaryMessenger?.let {
+            // Reinitialize MethodChannel Forcefully from MainIsolate
+            initPlugin(it)
+        }
         mainActivity = binding.activity
         val extras = mainActivity?.intent?.extras
         if (extras != null && extras.containsKey(ES_INTERACTION_ID_KEY)) {
@@ -95,20 +63,26 @@ class RetenoPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, NewIntentL
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
+        Log.i(TAG, "onDetachedFromActivityForConfigChanges")
         mainActivity = null
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        Log.i(TAG, "onReattachedToActivityForConfigChanges")
         binding.addOnNewIntentListener(this)
         mainActivity = binding.activity
     }
 
     override fun onDetachedFromActivity() {
+        Log.i(TAG, "onDetachedFromActivity")
         mainActivity = null
         initialNotification = null
+        flutterApi = null
     }
 
     override fun onNewIntent(intent: Intent): Boolean {
+        Log.i(TAG, "onNewIntent")
+
         if (intent.extras == null) {
             return false
         }
@@ -116,131 +90,47 @@ class RetenoPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, NewIntentL
         if (intent.extras?.getString(ES_INTERACTION_ID_KEY) == null) {
             return false
         }
+
         val retenoNotificationMap = HashMap<String, Any?>()
         for (key in intent.extras!!.keySet()) {
             val value = intent.extras!!.get(key)
             retenoNotificationMap[key] = value
         }
-        methodChannel?.invokeMethod(
-            "onRetenoNotificationClicked",
-            retenoNotificationMap,
-            object : Result {
-                override fun success(result: Any?) {
-                    Log.i("reteno_plugin", "Success")
-                }
 
-                override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
-                    Log.i("reteno_plugin", "Error")
-                }
+        flutterApi?.onNotificationClicked(retenoNotificationMap.toMap()) {}
 
-                override fun notImplemented() {
-                    Log.i("reteno_plugin", "Not Implemented")
-                }
-            })
         mainActivity?.intent = intent
+
         return true
     }
 
-    private fun setAnonymousUserAttributes(arguments: HashMap<*, *>): Task<Boolean> {
-        val taskCompletionSource = TaskCompletionSource<Boolean>()
-
-        cachedThreadPool.execute {
-            try {
-                val anonymousAttributes = UserUtils.parseAnonymousAttributes(arguments)
-                reteno.setAnonymousUserAttributes(anonymousAttributes)
-                taskCompletionSource.setResult(true)
-            } catch (e: Exception) {
-                taskCompletionSource.setException(e)
-            }
-        }
-
-        return taskCompletionSource.task
+    override fun setUserAttributes(externalUserId: String, user: NativeRetenoUser?) {
+        Log.i(TAG, "setUserAttributes")
+        return reteno.setUserAttributes(externalUserId, UserUtils.fromRetenoUser(user))
     }
 
-    private fun setUserAttributes(arguments: HashMap<*, *>): Task<Boolean> {
-        val taskCompletionSource = TaskCompletionSource<Boolean>()
-
-        cachedThreadPool.execute {
-            try {
-                val userId = arguments["externalUserId"] as String
-                val user = UserUtils.parseUser(arguments)
-                reteno.setUserAttributes(userId, user)
-                taskCompletionSource.setResult(true)
-            } catch (e: Exception) {
-                taskCompletionSource.setException(e)
-            }
-        }
-
-        return taskCompletionSource.task
+    override fun setAnonymousUserAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes) {
+        Log.i(TAG, "setAnonymousUserAttributes")
+        return reteno.setAnonymousUserAttributes(UserUtils.parseAnonymousAttributes(anonymousUserAttributes))
     }
 
-    private fun logEvent(arguments: HashMap<*, *>): Task<Boolean> {
-        val taskCompletionSource = TaskCompletionSource<Boolean>()
-        cachedThreadPool.execute {
-            try {
-                val eventMap = arguments["event"] as? Map<String, Any>
-
-                if (eventMap == null) {
-                    taskCompletionSource.setResult(false)
-                } else {
-                    val event = RetenoEvent.buildEventFromPayload(eventMap)
-                    reteno.logEvent(event)
-                    taskCompletionSource.setResult(true)
-                }
-            } catch (e: Exception) {
-                taskCompletionSource.setException(e)
-            }
-        }
-
-
-        return taskCompletionSource.task
+    override fun logEvent(event: NativeCustomEvent) {
+        Log.i(TAG, "logEvent")
+        return reteno.logEvent(buildEventFromCustomEvent(event))
     }
 
-    private fun getInitialNotification(): Task<HashMap<String, Any>> {
-        val taskCompletionSource = TaskCompletionSource<HashMap<String, Any>>()
-
-        cachedThreadPool.execute {
-            try {
-                if (initialNotification != null) {
-                    taskCompletionSource.setResult(initialNotification!!)
-                    initialNotification = null
-                    return@execute
-                }
-                if (mainActivity == null) {
-                    taskCompletionSource.setResult(null)
-                    return@execute
-                }
-
-                val intent = mainActivity!!.intent
-                if (intent == null || intent.extras == null) {
-                    taskCompletionSource.setResult(null)
-                    return@execute
-                }
-
-
-            } catch (e: Exception) {
-                taskCompletionSource.setException(e)
-            }
-        }
-
-        return taskCompletionSource.task
+    override fun updatePushPermissionStatus() {
+        Log.i(TAG, "updatePushPermissionStatus")
+        return reteno.updatePushPermissionStatus()
     }
 
-    private fun updatePushPermissionStatus(): Task<Boolean>{
-        val taskCompletionSource = TaskCompletionSource<Boolean>()
-
-        cachedThreadPool.execute {
-            try {
-                reteno.updatePushPermissionStatus()
-                taskCompletionSource.setResult(true);
-                return@execute
-
-            } catch (e: Exception) {
-                taskCompletionSource.setException(e)
-            }
+    override fun getInitialNotification(): Map<String, Any>? {
+        Log.i(TAG, "getInitialNotification")
+        if (initialNotification != null) {
+            var map = initialNotification!!.toMap()
+            initialNotification = null
+            return map
         }
-
-        return taskCompletionSource.task
+        return null
     }
 }
-

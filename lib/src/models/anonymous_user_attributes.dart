@@ -1,4 +1,4 @@
-import 'package:reteno_plugin/reteno_user.dart';
+import 'package:reteno_plugin/src/models/reteno_user.dart';
 
 class AnonymousUserAttributes {
   AnonymousUserAttributes({

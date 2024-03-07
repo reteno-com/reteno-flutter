@@ -1,3 +1,6 @@
+## 1.5.0
+* Improve plugin stability when using with other plugins that use background isolate
+
 ## 1.4.2
 * Fix PropertyAccessException in onDetachedFromEngine
 

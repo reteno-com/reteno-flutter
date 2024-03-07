@@ -5,43 +5,16 @@ import com.reteno.core.domain.model.event.Parameter
 import java.time.ZonedDateTime
 
 object RetenoEvent {
-    private fun buildEventParameters(inputParameters: List<Map<String, Any>>): List<Parameter>? {
-        val countView = inputParameters.size
-        if (countView == 0) return null
-
-        val list: MutableList<Parameter> = ArrayList()
-        for (i in 0 until countView) {
-            val field = inputParameters[i]
-
-            var name: String? = null
-            var value: String? = null
-
-            if (field["name"] is String) {
-                name = field["name"] as String
-            }
-            if (field["value"] is String) {
-                value = field["value"] as String
-            }
-
-            if (name != null) {
-                list.add(Parameter(name, value))
-            }
-        }
-
-        return list
-    }
-
     @Throws(Exception::class)
-    fun buildEventFromPayload(payload: Map<String, Any>): Event {
-        val eventName = payload["event_type_key"] as? String
-        val stringDate = payload["date_occurred"] as? String
-        val inputParameters = (payload["parameters"] as? List<*>)?.filterIsInstance<Map<String, Any>>()
-
-        var parameters: List<Parameter>? = null
-
-        if (eventName == null) {
+    fun buildEventFromCustomEvent(customEvent: NativeCustomEvent): Event {
+        if (customEvent.eventTypeKey == null) {
             throw Exception("logEvent: missing 'eventName' parameter!")
         }
+
+        val stringDate = customEvent.dateOccurred
+        val inputParameters = customEvent.parameters
+
+        var parameters: List<Parameter>? = null
 
         val date: ZonedDateTime = if (stringDate != null) {
             ZonedDateTime.parse(stringDate)
@@ -50,9 +23,16 @@ object RetenoEvent {
         }
 
         if (inputParameters != null) {
-            parameters = buildEventParameters(inputParameters)
+            parameters = inputParameters?.mapNotNull { entry ->
+                entry?.let {
+                    Parameter(
+                        it.name,
+                        it.value
+                    )
+                }
+            }
         }
 
-        return Event.Custom(eventName, date, parameters)
+        return Event.Custom(customEvent.eventTypeKey, date, parameters)
     }
 }

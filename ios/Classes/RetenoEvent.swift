@@ -34,7 +34,7 @@ struct RetenoCustomEvent: Codable {
 }
 
 public struct RetenoEventPayload: Codable {
-    init(eventName: String, stringDate: String, parameters: [RetenoCustomEventParameter], forcePush: Bool?) {
+    init(eventName: String, stringDate: String, parameters: [NativeCustomEventParameter], forcePush: Bool?) {
         self.eventName = eventName;
 
         let dateFormatter = ISO8601DateFormatter();
@@ -55,27 +55,27 @@ public struct RetenoEventPayload: Codable {
     let forcePush: Bool;
 }
 
-public struct RetenoEvent {
-    private init() {}
-    
-    private static func getStringOrNil(input: String?) -> String? {
-        return (input ?? "").isEmpty ? nil : input!
-    }
-    
-    public static func buildEventPayload(payload: NSDictionary) throws -> RetenoEventPayload {
-        let data = payload as? [String: Any];
-        do {
-            let payloadStruct = try RetenoCustomEvent(dictionary: data);
-            let requestPayload = RetenoEventPayload(
-                eventName: payloadStruct.eventName,
-                stringDate: payloadStruct.date,
-                parameters: payloadStruct.parameters,
-                forcePush: payloadStruct.forcePush
-            );
-            
-            return requestPayload;
-        } catch {
-            throw error;
-        }
-    }
-}
+//public struct RetenoEvent {
+//    private init() {}
+//    
+//    private static func getStringOrNil(input: String?) -> String? {
+//        return (input ?? "").isEmpty ? nil : input!
+//    }
+//    
+//    public static func buildEventPayload(payload: NSDictionary) throws -> RetenoEventPayload {
+//        let data = payload as? [String: Any];
+//        do {
+//            let payloadStruct = try RetenoCustomEvent(dictionary: data);
+//            let requestPayload = RetenoEventPayload(
+//                eventName: payloadStruct.eventName,
+//                stringDate: payloadStruct.date,
+//                parameters: payloadStruct.parameters,
+//                forcePush: payloadStruct.forcePush
+//            );
+//            
+//            return requestPayload;
+//        } catch {
+//            throw error;
+//        }
+//    }
+//}

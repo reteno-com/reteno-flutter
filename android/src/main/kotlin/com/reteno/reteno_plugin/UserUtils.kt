@@ -1,4 +1,6 @@
 import com.reteno.core.domain.model.user.*
+import com.reteno.reteno_plugin.NativeAnonymousUserAttributes
+import com.reteno.reteno_plugin.NativeRetenoUser
 
 class UserUtils {
     companion object {
@@ -49,38 +51,93 @@ class UserUtils {
             )
         }
 
+        fun fromRetenoUser(retenoUser: NativeRetenoUser?): User? {
+            if (retenoUser == null) {
+                return null
+            }
+            val subscriptionKeys = retenoUser.subscriptionKeys
+            val groupNamesInclude = retenoUser.groupNamesInclude
+            val groupNamesExclude = retenoUser.groupNamesExclude
+            val userAttributes = retenoUser.userAttributes
+
+            if (userAttributes == null
+                && subscriptionKeys == null
+                && groupNamesExclude == null
+                && groupNamesInclude == null) {
+                return null
+            }
+
+            var userAddress: Address? = null
+            if (userAttributes?.address != null) {
+                var address = userAttributes.address
+                userAddress = Address(
+                    address.region, address.town, address.address, address.postcode,
+                )
+            }
+
+            val customFieldsList = userAttributes?.fields
+
+            val userFields = customFieldsList?.mapNotNull { entry ->
+                entry?.let {
+                    UserCustomField(
+                        it.key,
+                        it.value
+                    )
+                }
+            }
+
+            return User(
+                UserAttributes(
+                    userAttributes?.phone,
+                    userAttributes?.email,
+                    userAttributes?.firstName,
+                    userAttributes?.lastName,
+                    userAttributes?.languageCode,
+                    userAttributes?.timeZone,
+                    userAddress,
+                    userFields
+                ),
+                subscriptionKeys?.filterNotNull()?.mapNotNull { it },
+                groupNamesInclude?.filterNotNull()?.mapNotNull { it },
+                groupNamesExclude?.filterNotNull()?.mapNotNull { it },
+            )
+        }
+
         private fun getStringOrNull(input: String?): String? {
             return if (input.isNullOrEmpty()) null else input
         }
 
-        fun parseAnonymousAttributes(map: HashMap<*, *>): UserAttributesAnonymous {
-            val firstName = getStringOrNull(map["firstName"] as String?)
-            val lastName = getStringOrNull(map["lastName"] as String?)
-            val languageCode = getStringOrNull(map["languageCode"] as String?)
-            val timeZone = getStringOrNull(map["timeZone"] as String?)
+        fun parseAnonymousAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes): UserAttributesAnonymous {
 
-            val addressMap = map["address"] as HashMap<*, *>?
+            val address = anonymousUserAttributes.address
             var userAddress: Address? = null
-            if (addressMap != null) {
-                val region = getStringOrNull(addressMap["region"] as String?)
-                val town = getStringOrNull(addressMap["town"] as String?)
-                val address = getStringOrNull(addressMap["address"] as String?)
-                val postcode = getStringOrNull(addressMap["postcode"] as String?)
+            if (address != null) {
                 userAddress = Address(
-                    region, town, address, postcode,
+                    address.region,
+                    address.town,
+                    address.address,
+                    address.postcode,
                 )
             }
 
-            val customFieldsListMap = map["fields"] as List<HashMap<*, *>>?
+            val customFieldsList = anonymousUserAttributes?.fields
 
-            val userFields = customFieldsListMap?.map {
-                UserCustomField(
-                    it["key"] as String, it["value"] as String?
-                )
+            val userFields = customFieldsList?.mapNotNull { entry ->
+                entry?.let {
+                    UserCustomField(
+                        it.key,
+                        it.value
+                    )
+                }
             }
 
             return UserAttributesAnonymous(
-                firstName, lastName, languageCode, timeZone, userAddress, userFields
+                anonymousUserAttributes.firstName,
+                anonymousUserAttributes.lastName,
+                anonymousUserAttributes.languageCode,
+                anonymousUserAttributes.timeZone,
+                userAddress,
+                userFields
             )
         }
     }

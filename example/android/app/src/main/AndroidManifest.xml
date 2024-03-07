@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.reteno.sample">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
    <application
         android:label="Reteno Flutter Example"
         android:name=".reteno_plugin_example.CustomApplication"
@@ -75,14 +78,15 @@
           android:scheme="https"
           android:host="example-app.esclick.me" />
       </intent-filter>
-        </activity>
+    </activity>
+    <service android:name="com.pravera.flutter_foreground_task.service.ForegroundService" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-            <meta-data
-  android:name="com.google.firebase.messaging.default_notification_channel_id"
-  android:value="reteno_id" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="reteno_id" />
     </application>
 </manifest>
