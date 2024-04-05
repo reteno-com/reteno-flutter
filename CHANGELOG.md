@@ -1,3 +1,9 @@
+## 1.5.1
+* Bump Android sdk to 2.0.2
+* Bump iOS sdk to 2.0.2
+* Add `Reteno.onInAppMessageStatusChanged` to get in-app message status changed events
+* Add `Reteno.pauseInAppMessages` to pause or resume in-app messages
+
 ## 1.5.0
 * Improve plugin stability when using with other plugins that use background isolate
 

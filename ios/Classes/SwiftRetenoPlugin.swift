@@ -62,6 +62,45 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
             
             return presentationOptions
         }
+        
+        Reteno.addInAppStatusHandler { inAppMessageStatus in
+           switch inAppMessageStatus {
+               case .inAppShouldBeDisplayed:
+                   _flutterApi.onInAppMessageStatusChanged(
+                        status: NativeInAppMessageStatus.inAppShouldBeDisplayed,
+                        action: nil,
+                        error: nil
+                   ){_ in}
+                   
+               case .inAppIsDisplayed:
+                   _flutterApi.onInAppMessageStatusChanged(
+                        status: NativeInAppMessageStatus.inAppIsDisplayed,
+                        action: nil,
+                        error: nil
+                   ){_ in}
+                   
+               case .inAppShouldBeClosed(let action):
+                   _flutterApi.onInAppMessageStatusChanged(
+                        status: NativeInAppMessageStatus.inAppShouldBeClosed,
+                        action: action.toNativeInAppMessageAction(),
+                        error: nil
+                   ){_ in}
+               
+               case .inAppIsClosed(let action):
+                   _flutterApi.onInAppMessageStatusChanged(
+                        status: NativeInAppMessageStatus.inAppIsClosed,
+                        action: action.toNativeInAppMessageAction(),
+                        error: nil
+                   ){_ in}
+
+               case .inAppReceivedError(let error):
+                   _flutterApi.onInAppMessageStatusChanged(
+                        status: NativeInAppMessageStatus.inAppReceivedError,
+                        action: nil,
+                        error: error
+                   ){_ in}
+           }
+       }
     }
     
     func setUserAttributes(externalUserId: String, user: NativeRetenoUser?) throws {
@@ -126,6 +165,10 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
         return nil
     }
     
+    func pauseInAppMessages(isPaused: Bool) throws {
+        Reteno.pauseInAppMessages(isPaused: isPaused)
+    }
+    
     @objc func application_onDidFinishLaunchingNotification(notification: NSNotification){
         guard let userInfo = notification.userInfo else {
           return
@@ -149,5 +192,15 @@ extension NativeAddress {
             address: self.address,
             postcode: self.postcode
         )
+    }
+}
+
+extension InAppMessageAction {
+    func toNativeInAppMessageAction() -> NativeInAppMessageAction {
+        return NativeInAppMessageAction(
+            isCloseButtonClicked: self.isCloseButtonClicked,
+            isButtonClicked: self.isButtonClicked,
+            isOpenUrlClicked: self.isOpenUrlClicked
+        );
     }
 }

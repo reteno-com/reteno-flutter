@@ -72,5 +72,14 @@ void main() {
       expect(result, expectedNotification);
       verify(() => mockApi.getInitialNotification()).called(1);
     });
+
+    test('pauseInAppMessages should call pauseInAppMessages on api', () async {
+      when(() => mockApi.pauseInAppMessages(true))
+          .thenAnswer((_) async => true);
+
+      await pigeonChannel.pauseInAppMessages(true);
+
+      verify(() => mockApi.pauseInAppMessages(true)).called(1);
+    });
   });
 }

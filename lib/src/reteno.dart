@@ -1,4 +1,5 @@
 import 'package:reteno_plugin/src/models/anonymous_user_attributes.dart';
+import 'package:reteno_plugin/src/models/in_app_message_status.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
 import 'package:reteno_plugin/src/models/reteno_user.dart';
 import 'package:reteno_plugin/src/reteno_plugin_pigeon_channel.dart';
@@ -68,6 +69,35 @@ class Reteno {
   static Stream<Map<String, dynamic>> get onRetenoNotificationClicked =>
       _platform.onRetenoNotificationClicked.stream;
 
+  /// A static getter that provides a [Stream] of in-app message status changes.
+  /// You can detect In-App presenting status where needed.
+  /// `InAppShouldBeDisplayed` - called when the in-app should be displayed
+  /// `InAppIsDisplayed` - called when the in-app is displayed
+  /// `InAppShouldBeClosed` - called when the in-app should be closed
+  /// `InAppIsClosed` - called when the in-app is closed
+  /// `InAppReceivedError` - called when the in-app can't be shown for some reason
+  ///
+  /// Example usage:
+  ///  ```dart
+  /// Reteno.onInAppMessageStatusChanged.listen((status) {
+  ///     switch (status) {
+  ///       case InAppShouldBeDisplayed():
+  ///         print('In-app should be displayed');
+  ///       case InAppIsDisplayed():
+  ///         print('In-app is displayed');
+  ///       case InAppShouldBeClosed(:final action):
+  ///         print('In-app should be closed $action');
+  ///       case InAppIsClosed(:final action):
+  ///         print('In-app is closed $action');
+  ///       case InAppReceivedError(:final errorMessage):
+  ///         print('In-app error: $errorMessage');
+  ///     }
+  ///   });
+  /// ```
+  ///
+  static Stream<InAppMessageStatus> get onInAppMessageStatusChanged =>
+      _platform.onInAppMessageStatusChanged.stream;
+
   /// Retrieves the initial notification when app is opened from terminated state by notification.
   ///
   /// This method returns a [Future] that resolves to a dynamic value. The value
@@ -129,5 +159,11 @@ class Reteno {
   /// For example you can call this function after acquiring result from runtime permission on Android 13 and above
   Future<bool> updatePushPermissionStatus() {
     return _platform.updatePushPermissionStatus();
+  }
+
+  /// Pause or resume in-app messages
+  /// - Parameter `isPaused`: true - pause, false - resume
+  Future<void> pauseInAppMessages(bool isPaused) {
+    return _platform.pauseInAppMessages(isPaused);
   }
 }

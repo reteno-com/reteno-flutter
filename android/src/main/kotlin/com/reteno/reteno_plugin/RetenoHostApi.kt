@@ -46,6 +46,20 @@ class FlutterError (
   val details: Any? = null
 ) : Throwable()
 
+enum class NativeInAppMessageStatus(val raw: Int) {
+  IN_APP_SHOULD_BE_DISPLAYED(0),
+  IN_APP_IS_DISPLAYED(1),
+  IN_APP_SHOULD_BE_CLOSED(2),
+  IN_APP_IS_CLOSED(3),
+  IN_APP_RECEIVED_ERROR(4);
+
+  companion object {
+    fun ofRaw(raw: Int): NativeInAppMessageStatus? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
 /** Generated class from Pigeon that represents data sent in messages. */
 data class NativeRetenoUser (
   val userAttributes: NativeUserAttributes? = null,
@@ -253,6 +267,31 @@ data class NativeCustomEventParameter (
     )
   }
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeInAppMessageAction (
+  val isCloseButtonClicked: Boolean,
+  val isButtonClicked: Boolean,
+  val isOpenUrlClicked: Boolean
+
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): NativeInAppMessageAction {
+      val isCloseButtonClicked = list[0] as Boolean
+      val isButtonClicked = list[1] as Boolean
+      val isOpenUrlClicked = list[2] as Boolean
+      return NativeInAppMessageAction(isCloseButtonClicked, isButtonClicked, isOpenUrlClicked)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      isCloseButtonClicked,
+      isButtonClicked,
+      isOpenUrlClicked,
+    )
+  }
+}
 @Suppress("UNCHECKED_CAST")
 private object RetenoHostApiCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
@@ -279,15 +318,20 @@ private object RetenoHostApiCodec : StandardMessageCodec() {
       }
       132.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRetenoUser.fromList(it)
+          NativeInAppMessageAction.fromList(it)
         }
       }
       133.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeUserAttributes.fromList(it)
+          NativeRetenoUser.fromList(it)
         }
       }
       134.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeUserAttributes.fromList(it)
+        }
+      }
+      135.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           NativeUserCustomField.fromList(it)
         }
@@ -313,16 +357,20 @@ private object RetenoHostApiCodec : StandardMessageCodec() {
         stream.write(131)
         writeValue(stream, value.toList())
       }
-      is NativeRetenoUser -> {
+      is NativeInAppMessageAction -> {
         stream.write(132)
         writeValue(stream, value.toList())
       }
-      is NativeUserAttributes -> {
+      is NativeRetenoUser -> {
         stream.write(133)
         writeValue(stream, value.toList())
       }
-      is NativeUserCustomField -> {
+      is NativeUserAttributes -> {
         stream.write(134)
+        writeValue(stream, value.toList())
+      }
+      is NativeUserCustomField -> {
+        stream.write(135)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -336,6 +384,7 @@ interface RetenoHostApi {
   fun setAnonymousUserAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes)
   fun logEvent(event: NativeCustomEvent)
   fun updatePushPermissionStatus()
+  fun pauseInAppMessages(isPaused: Boolean)
   fun getInitialNotification(): Map<String, Any>?
 
   companion object {
@@ -422,6 +471,25 @@ interface RetenoHostApi {
         }
       }
       run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.pauseInAppMessages", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val isPausedArg = args[0] as Boolean
+            var wrapped: List<Any?>
+            try {
+              api.pauseInAppMessages(isPausedArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.getInitialNotification", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
@@ -466,15 +534,20 @@ private object RetenoFlutterApiCodec : StandardMessageCodec() {
       }
       132.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRetenoUser.fromList(it)
+          NativeInAppMessageAction.fromList(it)
         }
       }
       133.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeUserAttributes.fromList(it)
+          NativeRetenoUser.fromList(it)
         }
       }
       134.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeUserAttributes.fromList(it)
+        }
+      }
+      135.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           NativeUserCustomField.fromList(it)
         }
@@ -500,16 +573,20 @@ private object RetenoFlutterApiCodec : StandardMessageCodec() {
         stream.write(131)
         writeValue(stream, value.toList())
       }
-      is NativeRetenoUser -> {
+      is NativeInAppMessageAction -> {
         stream.write(132)
         writeValue(stream, value.toList())
       }
-      is NativeUserAttributes -> {
+      is NativeRetenoUser -> {
         stream.write(133)
         writeValue(stream, value.toList())
       }
-      is NativeUserCustomField -> {
+      is NativeUserAttributes -> {
         stream.write(134)
+        writeValue(stream, value.toList())
+      }
+      is NativeUserCustomField -> {
+        stream.write(135)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -547,6 +624,22 @@ class RetenoFlutterApi(private val binaryMessenger: BinaryMessenger) {
     val channelName = "dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationClicked"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
     channel.send(listOf(payloadArg)) {
+      if (it is List<*>) {
+        if (it.size > 1) {
+          callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else {
+          callback(Result.success(Unit))
+        }
+      } else {
+        callback(Result.failure(createConnectionError(channelName)))
+      } 
+    }
+  }
+  fun onInAppMessageStatusChanged(statusArg: NativeInAppMessageStatus, actionArg: NativeInAppMessageAction?, errorArg: String?, callback: (Result<Unit>) -> Unit)
+{
+    val channelName = "dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onInAppMessageStatusChanged"
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
+    channel.send(listOf(statusArg.raw, actionArg, errorArg)) {
       if (it is List<*>) {
         if (it.size > 1) {
           callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))

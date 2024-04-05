@@ -18,6 +18,7 @@ abstract class RetenoHostApi {
       NativeAnonymousUserAttributes anonymousUserAttributes);
   void logEvent(NativeCustomEvent event);
   void updatePushPermissionStatus();
+  void pauseInAppMessages(bool isPaused);
   Map<String, Object>? getInitialNotification();
 }
 
@@ -25,6 +26,11 @@ abstract class RetenoHostApi {
 abstract class RetenoFlutterApi {
   void onNotificationReceived(Map<String, Object?> payload);
   void onNotificationClicked(Map<String, Object?> payload);
+  void onInAppMessageStatusChanged(
+    NativeInAppMessageStatus status,
+    NativeInAppMessageAction? action,
+    String? error,
+  );
 }
 
 class NativeRetenoUser {
@@ -120,4 +126,24 @@ class NativeCustomEventParameter {
 
   final String name;
   final String? value;
+}
+
+enum NativeInAppMessageStatus {
+  inAppShouldBeDisplayed,
+  inAppIsDisplayed,
+  inAppShouldBeClosed,
+  inAppIsClosed,
+  inAppReceivedError
+}
+
+class NativeInAppMessageAction {
+  NativeInAppMessageAction({
+    required this.isCloseButtonClicked,
+    required this.isButtonClicked,
+    required this.isOpenUrlClicked,
+  });
+
+  final bool isCloseButtonClicked;
+  final bool isButtonClicked;
+  final bool isOpenUrlClicked;
 }

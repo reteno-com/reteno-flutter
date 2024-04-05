@@ -204,6 +204,22 @@ class _MyHomePageState extends State<MyHomePage> {
       _showAlert(context,
           '$_retenoPluginLogTag: onRetenoClicked: ${event.toString()}');
     });
+
+    Reteno.onInAppMessageStatusChanged.listen((status) {
+      switch (status) {
+        case InAppShouldBeDisplayed():
+          print('In-app should be displayed');
+        case InAppIsDisplayed():
+          print('In-app is displayed');
+        case InAppShouldBeClosed(:final action):
+          print('In-app should be closed $action');
+        case InAppIsClosed(:final action):
+          print('In-app is closed $action');
+        case InAppReceivedError(:final errorMessage):
+          print('In-app error: $errorMessage');
+      }
+    });
+
     _initFirebaseNotifications();
     initDeepLinks();
 

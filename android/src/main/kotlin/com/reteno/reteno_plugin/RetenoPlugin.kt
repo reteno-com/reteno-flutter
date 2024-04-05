@@ -3,9 +3,16 @@ package com.reteno.reteno_plugin
 import UserUtils
 import android.app.Activity
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.reteno.core.Reteno
 import com.reteno.core.RetenoApplication
+import com.reteno.core.view.iam.callback.InAppCloseAction
+import com.reteno.core.view.iam.callback.InAppCloseData
+import com.reteno.core.view.iam.callback.InAppData
+import com.reteno.core.view.iam.callback.InAppErrorData
+import com.reteno.core.view.iam.callback.InAppLifecycleCallback
 import com.reteno.reteno_plugin.RetenoEvent.buildEventFromCustomEvent
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -25,6 +32,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListe
     private lateinit var reteno: Reteno
     private var initialNotification: HashMap<String, Any>? = null
     private var mainActivity: Activity? = null
+    private val uiThreadHandler: Handler = Handler(Looper.getMainLooper())
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         Log.i(TAG, "onAttachedToEngine")
@@ -33,11 +41,87 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListe
             initPlugin(flutterPluginBinding.binaryMessenger)
         }
         reteno = (flutterPluginBinding.applicationContext as RetenoApplication).getRetenoInstance()
+        createInAppLifecycleListener()
     }
 
     private fun initPlugin(binaryMessenger: BinaryMessenger) {
         RetenoHostApi.setUp(binaryMessenger, this)
         flutterApi = RetenoFlutterApi(binaryMessenger)
+    }
+
+    private fun createInAppLifecycleListener() {
+        reteno.setInAppLifecycleCallback(object : InAppLifecycleCallback {
+            override fun afterClose(closeData: InAppCloseData) {
+                uiThreadHandler.post {
+                    flutterApi?.onInAppMessageStatusChanged(
+                        NativeInAppMessageStatus.IN_APP_IS_CLOSED,
+                        inAppCloseActionToNativeInAppMessageAction(closeData.closeAction),
+                        null,
+                    ) {}
+                }
+            }
+
+            override fun beforeClose(closeData: InAppCloseData) {
+                uiThreadHandler.post {
+                    flutterApi?.onInAppMessageStatusChanged(
+                        NativeInAppMessageStatus.IN_APP_SHOULD_BE_CLOSED,
+                        inAppCloseActionToNativeInAppMessageAction(closeData.closeAction),
+                        null,
+                    ) {}
+                }
+            }
+
+            override fun beforeDisplay(inAppData: InAppData) {
+                uiThreadHandler.post {
+                    flutterApi?.onInAppMessageStatusChanged(
+                        NativeInAppMessageStatus.IN_APP_SHOULD_BE_DISPLAYED,
+                        null,
+                        null,
+                    ) {}
+                }
+            }
+
+            override fun onDisplay(inAppData: InAppData) {
+                uiThreadHandler.post {
+                    flutterApi?.onInAppMessageStatusChanged(
+                        NativeInAppMessageStatus.IN_APP_IS_DISPLAYED,
+                        null,
+                        null,
+                    ) {}
+                }
+
+            }
+
+            override fun onError(errorData: InAppErrorData) {
+                uiThreadHandler.post {
+                    flutterApi?.onInAppMessageStatusChanged(
+                        NativeInAppMessageStatus.IN_APP_RECEIVED_ERROR,
+                        null,
+                        errorData.errorMessage,
+                    ) {}
+                }
+            }
+        })
+    }
+
+    private fun inAppCloseActionToNativeInAppMessageAction(closeAction: InAppCloseAction): NativeInAppMessageAction {
+        return when(closeAction) {
+            InAppCloseAction.CLOSE_BUTTON -> NativeInAppMessageAction(
+                isCloseButtonClicked = true,
+                isButtonClicked = false,
+                isOpenUrlClicked = false,
+            )
+            InAppCloseAction.OPEN_URL -> NativeInAppMessageAction(
+                isCloseButtonClicked = true,
+                isButtonClicked = false,
+                isOpenUrlClicked = false,
+            )
+            InAppCloseAction.BUTTON -> NativeInAppMessageAction(
+                isCloseButtonClicked = true,
+                isButtonClicked = false,
+                isOpenUrlClicked = false,
+            )
+        }
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -111,7 +195,11 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListe
 
     override fun setAnonymousUserAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes) {
         Log.i(TAG, "setAnonymousUserAttributes")
-        return reteno.setAnonymousUserAttributes(UserUtils.parseAnonymousAttributes(anonymousUserAttributes))
+        return reteno.setAnonymousUserAttributes(
+            UserUtils.parseAnonymousAttributes(
+                anonymousUserAttributes
+            )
+        )
     }
 
     override fun logEvent(event: NativeCustomEvent) {
@@ -132,5 +220,9 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListe
             return map
         }
         return null
+    }
+
+    override fun pauseInAppMessages(isPaused: Boolean) {
+        reteno.pauseInAppMessages(isPaused)
     }
 }

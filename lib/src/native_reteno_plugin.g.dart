@@ -26,6 +26,14 @@ List<Object?> wrapResponse(
   return <Object?>[error.code, error.message, error.details];
 }
 
+enum NativeInAppMessageStatus {
+  inAppShouldBeDisplayed,
+  inAppIsDisplayed,
+  inAppShouldBeClosed,
+  inAppIsClosed,
+  inAppReceivedError,
+}
+
 class NativeRetenoUser {
   NativeRetenoUser({
     this.userAttributes,
@@ -295,6 +303,37 @@ class NativeCustomEventParameter {
   }
 }
 
+class NativeInAppMessageAction {
+  NativeInAppMessageAction({
+    required this.isCloseButtonClicked,
+    required this.isButtonClicked,
+    required this.isOpenUrlClicked,
+  });
+
+  bool isCloseButtonClicked;
+
+  bool isButtonClicked;
+
+  bool isOpenUrlClicked;
+
+  Object encode() {
+    return <Object?>[
+      isCloseButtonClicked,
+      isButtonClicked,
+      isOpenUrlClicked,
+    ];
+  }
+
+  static NativeInAppMessageAction decode(Object result) {
+    result as List<Object?>;
+    return NativeInAppMessageAction(
+      isCloseButtonClicked: result[0]! as bool,
+      isButtonClicked: result[1]! as bool,
+      isOpenUrlClicked: result[2]! as bool,
+    );
+  }
+}
+
 class _RetenoHostApiCodec extends StandardMessageCodec {
   const _RetenoHostApiCodec();
   @override
@@ -311,14 +350,17 @@ class _RetenoHostApiCodec extends StandardMessageCodec {
     } else if (value is NativeCustomEventParameter) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRetenoUser) {
+    } else if (value is NativeInAppMessageAction) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserAttributes) {
+    } else if (value is NativeRetenoUser) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserCustomField) {
+    } else if (value is NativeUserAttributes) {
       buffer.putUint8(134);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeUserCustomField) {
+      buffer.putUint8(135);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -337,10 +379,12 @@ class _RetenoHostApiCodec extends StandardMessageCodec {
       case 131:
         return NativeCustomEventParameter.decode(readValue(buffer)!);
       case 132:
-        return NativeRetenoUser.decode(readValue(buffer)!);
+        return NativeInAppMessageAction.decode(readValue(buffer)!);
       case 133:
-        return NativeUserAttributes.decode(readValue(buffer)!);
+        return NativeRetenoUser.decode(readValue(buffer)!);
       case 134:
+        return NativeUserAttributes.decode(readValue(buffer)!);
+      case 135:
         return NativeUserCustomField.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -456,6 +500,30 @@ class RetenoHostApi {
     }
   }
 
+  Future<void> pauseInAppMessages(bool isPaused) async {
+    const String __pigeon_channelName =
+        'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.pauseInAppMessages';
+    final BasicMessageChannel<Object?> __pigeon_channel =
+        BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[isPaused]) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
   Future<Map<String?, Object?>?> getInitialNotification() async {
     const String __pigeon_channelName =
         'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.getInitialNotification';
@@ -498,14 +566,17 @@ class _RetenoFlutterApiCodec extends StandardMessageCodec {
     } else if (value is NativeCustomEventParameter) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRetenoUser) {
+    } else if (value is NativeInAppMessageAction) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserAttributes) {
+    } else if (value is NativeRetenoUser) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserCustomField) {
+    } else if (value is NativeUserAttributes) {
       buffer.putUint8(134);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeUserCustomField) {
+      buffer.putUint8(135);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -524,10 +595,12 @@ class _RetenoFlutterApiCodec extends StandardMessageCodec {
       case 131:
         return NativeCustomEventParameter.decode(readValue(buffer)!);
       case 132:
-        return NativeRetenoUser.decode(readValue(buffer)!);
+        return NativeInAppMessageAction.decode(readValue(buffer)!);
       case 133:
-        return NativeUserAttributes.decode(readValue(buffer)!);
+        return NativeRetenoUser.decode(readValue(buffer)!);
       case 134:
+        return NativeUserAttributes.decode(readValue(buffer)!);
+      case 135:
         return NativeUserCustomField.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -542,6 +615,9 @@ abstract class RetenoFlutterApi {
   void onNotificationReceived(Map<String?, Object?> payload);
 
   void onNotificationClicked(Map<String?, Object?> payload);
+
+  void onInAppMessageStatusChanged(NativeInAppMessageStatus status,
+      NativeInAppMessageAction? action, String? error);
 
   static void setup(RetenoFlutterApi? api, {BinaryMessenger? binaryMessenger}) {
     {
@@ -592,6 +668,39 @@ abstract class RetenoFlutterApi {
               'Argument for dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationClicked was null, expected non-null Map<String?, Object?>.');
           try {
             api.onNotificationClicked(arg_payload!);
+            return wrapResponse(empty: true);
+          } on PlatformException catch (e) {
+            return wrapResponse(error: e);
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
+          }
+        });
+      }
+    }
+    {
+      final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onInAppMessageStatusChanged',
+          pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        __pigeon_channel.setMessageHandler(null);
+      } else {
+        __pigeon_channel.setMessageHandler((Object? message) async {
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onInAppMessageStatusChanged was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final NativeInAppMessageStatus? arg_status = args[0] == null
+              ? null
+              : NativeInAppMessageStatus.values[args[0]! as int];
+          assert(arg_status != null,
+              'Argument for dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onInAppMessageStatusChanged was null, expected non-null NativeInAppMessageStatus.');
+          final NativeInAppMessageAction? arg_action =
+              (args[1] as NativeInAppMessageAction?);
+          final String? arg_error = (args[2] as String?);
+          try {
+            api.onInAppMessageStatusChanged(arg_status!, arg_action, arg_error);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
