@@ -8,6 +8,11 @@ import android.os.Looper
 import android.util.Log
 import com.reteno.core.Reteno
 import com.reteno.core.RetenoApplication
+import com.reteno.core.data.remote.model.recommendation.get.Recoms
+import com.reteno.core.domain.model.recommendation.get.RecomFilter
+import com.reteno.core.domain.model.recommendation.get.RecomRequest
+import com.reteno.core.domain.model.recommendation.post.RecomEvents
+import com.reteno.core.features.recommendation.GetRecommendationResponseCallback
 import com.reteno.core.view.iam.callback.InAppCloseAction
 import com.reteno.core.view.iam.callback.InAppCloseData
 import com.reteno.core.view.iam.callback.InAppData
@@ -215,11 +220,62 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListe
     override fun getInitialNotification(): Map<String, Any>? {
         Log.i(TAG, "getInitialNotification")
         if (initialNotification != null) {
-            var map = initialNotification!!.toMap()
+            val map = initialNotification!!.toMap()
             initialNotification = null
             return map
         }
         return null
+    }
+
+    override fun getRecommendations(
+        recomVariantId: String,
+        productIds: List<String>,
+        categoryId: String,
+        filters: List<NativeRecomFilter>?,
+        fields: List<String>?,
+        callback: (Result<List<NativeRecommendation>>) -> Unit
+    ) {
+        val request = RecomRequest(
+            products = productIds,
+            category = categoryId,
+            fields = fields,
+            filters = convertToRecomFilterList(filters)
+        )
+        reteno.recommendation.fetchRecommendation<RecommendationResponse>(
+            recomVariantId,
+            request,
+            RecommendationResponse::class.java,
+            object : GetRecommendationResponseCallback<RecommendationResponse> {
+                override fun onSuccess(response: Recoms<RecommendationResponse>) {
+                    val recommendations = response.recoms.map { it.toNativeRecommendation() }
+                    callback(Result.success(recommendations))
+                }
+
+                override fun onSuccessFallbackToJson(response: String) {
+                    Log.i(TAG, response)
+                    val result = Result.failure<List<NativeRecommendation>>(
+                        Exception("Fallback JSON response received")
+                    )
+                    callback(result)
+                }
+
+                override fun onFailure(statusCode: Int?, response: String?, throwable: Throwable?) {
+                    Log.i(TAG, "onFailure")
+                    Log.i(TAG, statusCode.toString())
+                    Log.i(TAG, throwable?.message.toString())
+
+                    val result = Result.failure<List<NativeRecommendation>>(
+                        throwable ?: Exception("Unknown error")
+                    )
+                    callback(result)
+                }
+            })
+    }
+
+    override fun logRecommendationsEvent(events: NativeRecomEvents) {
+        reteno.recommendation.logRecommendations(
+            RecomEvents(events.recomVariantId, convertToRecomEventList(events))
+        )
     }
 
     override fun pauseInAppMessages(isPaused: Boolean) {

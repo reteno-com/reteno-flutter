@@ -2,7 +2,7 @@
 
 Reteno Flutter SDK
 
-## Documentation 
+## Documentation
 [Official documentation](https://docs.reteno.com/reference/flutter-sdk)
 ## Installation
 
@@ -16,13 +16,13 @@ Reteno Flutter SDK
 ```
 
 target 'NotificationServiceExtension' do
-  pod 'Reteno', '1.5.4'
+  pod 'Reteno', '2.0.6'
 
 end
 
 target 'RetenoSdkExample' do
   ...
-  pod 'Reteno', '1.5.4'
+  pod 'Reteno', '2.0.6'
 end
 
 ```
@@ -41,15 +41,15 @@ flutter pub add reteno_plugin
 1. Run next command from root of your project:
 
 ```sh
-flutter pub add reteno_plugin 
+flutter pub add reteno_plugin
 ```
 2. Add mavenCentral repository in your project level `build.gradle`:
 ```groovy
-buildscript { 
-    repositories { 
-        mavenCentral() 
-    } 
-... 
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+...
 }
 ```
 3. Also you may need to increase `minSdkVersion` in project level `build.gradle` to `21`, since `Reteno` uses this version as minimal;
@@ -339,6 +339,53 @@ The time zone format must comply with [TZ database](https://en.wikipedia.org/wik
 
 **Note**
 In versions before 1.2.2 you can not use [sentry_fltter](https://pub.dev/packages/sentry_flutter) due to sentry iOS versions mismatch. If you want to use sentry_flutter in your application. Please use `flutter_plugin : 1.2.2` and `sentry_flutter: 7.8.0`
+
+
+## In-App Messages
+
+### Pausing and Resuming In-App Messages
+
+You can pause and resume in-app messages using the following methods:
+
+```dart
+// Pause in-app messages
+Reteno.pauseInAppMessages(true);
+
+// Resume in-app messages
+Reteno.pauseInAppMessages(false);
+```
+
+### Listening for In-App Message Status Changes
+```dart
+  Reteno.onInAppMessageStatusChanged.listen((status) {
+      switch (status) {
+        case InAppShouldBeDisplayed():
+          print('In-app should be displayed');
+        case InAppIsDisplayed():
+          print('In-app is displayed');
+        case InAppShouldBeClosed(:final action):
+          print('In-app should be closed $action');
+        case InAppIsClosed(:final action):
+          print('In-app is closed $action');
+        case InAppReceivedError(:final errorMessage):
+          print('In-app error: $errorMessage');
+      }
+    });
+```
+
+## Get recommended products
+
+You can personalize the user experience and increase sales by adding recommendations of your goods and services to an app.
+
+```dart
+  final recommendations = await Reteno.getRecommendations(
+    recomenedationVariantId: 'r1107v1482',
+    productIds: ['240-LV09', '24-WG080'],
+    categoryId: 'Default Category/Training/Video Download',
+    filters: [RetenoRecomendationFilter(name: 'filter_name', values: ['filter_value'])],
+    fields: ['productId', 'name', 'descr', 'imageUrl', 'price'],
+  );
+  ```
 
 ## License
 

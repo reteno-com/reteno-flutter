@@ -20,6 +20,7 @@ import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:reteno_plugin/reteno.dart';
 import 'package:reteno_plugin_example/events_page.dart';
+import 'package:reteno_plugin_example/recommendation_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
@@ -114,9 +115,15 @@ final GoRouter _router = GoRouter(
       },
       routes: <RouteBase>[
         GoRoute(
-          path: 'recom',
+          path: 'log_events',
           builder: (BuildContext context, GoRouterState state) {
             return const EventsPage();
+          },
+        ),
+        GoRoute(
+          path: 'recommendations',
+          builder: (BuildContext context, GoRouterState state) {
+            return const RecommendationPage();
           },
         ),
       ],
@@ -654,40 +661,58 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: Row(
+                    child: Column(
                       children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              if (isAnonymousUser) {
-                                await updateAnonymousUserAttributes();
-                              } else {
-                                await updateUserAttributes();
-                              }
-                            },
-                            child: const Text(
-                              'Update User Attributes',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  if (isAnonymousUser) {
+                                    await updateAnonymousUserAttributes();
+                                  } else {
+                                    await updateUserAttributes();
+                                  }
+                                },
+                                child: const Text(
+                                  'Update User Attributes',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              context.go('/recom');
-                            },
-                            child: const Text(
-                              'Go to custom events page',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  context.go('/log_events');
+                                },
+                                child: const Text(
+                                  'Go to custom events page',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        ElevatedButton(
+                          onPressed: () {
+                            context.go('/recommendations');
+                          },
+                          child: const Text(
+                            'Recommendations',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),

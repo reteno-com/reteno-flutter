@@ -1,6 +1,8 @@
 import 'package:reteno_plugin/src/models/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/src/models/in_app_message_status.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
+import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
+import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
 import 'package:reteno_plugin/src/models/reteno_user.dart';
 import 'package:reteno_plugin/src/reteno_plugin_pigeon_channel.dart';
 
@@ -165,5 +167,68 @@ class Reteno {
   /// - Parameter `isPaused`: true - pause, false - resume
   Future<void> pauseInAppMessages(bool isPaused) {
     return _platform.pauseInAppMessages(isPaused);
+  }
+
+  /// Get product recommendations
+  /// - Parameter `recomenedationVariantId`: recommendation variant ID
+  /// - Parameter `productIds`: product IDs for product-based algorithms
+  /// - Parameter `categoryId`: product category ID for category-based algorithms
+  /// - Parameter `filters`: list of `RetenoRecomendationFilter` filters - additional algorithm filters array
+  ///  - Note: filters not supported on Android SDK yet
+  /// - Parameter `fields`: response model fields keys
+  ///
+  /// Example usage:
+  /// ```dart
+  /// final recommendations = await Reteno.getRecommendations(
+  ///   recomenedationVariantId: 'r1107v1482',
+  ///   productIds: ['240-LV09', '24-WG080'],
+  ///   categoryId: 'Default Category/Training/Video Download',
+  ///   filters: [RetenoRecomendationFilter(name: 'filter_name', values: ['filter_value'])],
+  ///   fields: ['productId', 'name', 'descr', 'imageUrl', 'price'],
+  /// );
+  /// ```
+  ///
+  Future<List<RetenoRecommendation>> getRecommendations({
+    required String recomenedationVariantId,
+    required List<String> productIds,
+    required String categoryId,
+    List<RetenoRecomendationFilter>? filters,
+    List<String?>? fields,
+  }) {
+    return _platform.getRecommendations(
+      recomenedationVariantId: recomenedationVariantId,
+      productIds: productIds,
+      categoryId: categoryId,
+      filters: filters,
+      fields: fields,
+    );
+  }
+
+  /// Log recommendations events
+  /// `RetenoRecomEvents` - recommendation event to be logged
+  ///  - `recomVariantId` - recommendation variant ID
+  /// - `events` - list of `RetenoRecomEvent` recommendation events
+  ///     - `productId` - product ID
+  ///     - `eventType` - event type
+  ///         - `impression` - events describing that a specific product recommendation was shown to a user
+  ///         - `click` - events describing that a user clicked a specific product recommendation
+  ///     - `dateOccurred` - time when event occurred
+  /// Example usage:
+  /// ```dart
+  /// final event = RetenoRecomEvent(
+  ///   eventType: RetenoRecomEventType.impression,
+  ///   dateOccurred: DateTime.now(),
+  ///   productId: 'product_id',
+  /// );
+  ///
+  /// final events = RetenoRecomEvents(
+  ///   recomVariantId: 'recom_variant_id',
+  ///   events: [event],
+  /// );
+  ///
+  /// await Reteno.logRecommendationsEvent(events);
+  /// ```
+  Future<void> logRecommendationsEvent(RetenoRecomEvents events) {
+    return _platform.logRecommendationsEvent(events);
   }
 }

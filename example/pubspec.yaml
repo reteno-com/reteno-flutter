@@ -1,7 +1,7 @@
 name: reteno_plugin_example
 description: Demonstrates how to use the reteno_plugin plugin.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.0.0+261
+version: 1.0.0+292
 environment:
   sdk: '>=3.2.4 <4.0.0'
 

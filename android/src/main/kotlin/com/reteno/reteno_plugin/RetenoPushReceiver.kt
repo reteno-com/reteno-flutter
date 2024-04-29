@@ -19,7 +19,6 @@ class RetenoPushReceiver : BroadcastReceiver() {
         try {
             if (Utils.isApplicationForeground(context)) {
                 var pushMap = map!!.toMap()
-                println(pushMap)
                 RetenoPlugin.flutterApi?.onNotificationReceived(pushMap) {
                     Log.i("RetenoPushReceiver", "onNotificationReceived sent")
                 }

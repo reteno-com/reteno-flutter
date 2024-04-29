@@ -1,3 +1,9 @@
+## 1.5.2
+* Bump Android sdk to 2.0.7
+* Bump iOS sdk to 2.0.6
+* Add `Reteno.getRecommendations` to get recommendation
+* Add `Reteno.logRecommendationsEvent` to log recommendation events
+
 ## 1.5.1
 * Bump Android sdk to 2.0.2
 * Bump iOS sdk to 2.0.2

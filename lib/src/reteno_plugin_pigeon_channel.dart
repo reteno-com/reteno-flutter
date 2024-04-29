@@ -5,6 +5,8 @@ import 'package:reteno_plugin/src/extensions.dart';
 import 'package:reteno_plugin/src/models/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/src/models/in_app_message_status.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
+import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
+import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
 import 'package:reteno_plugin/src/models/reteno_user.dart';
 import 'package:reteno_plugin/src/reteno_plugin_platform_interface.dart';
 
@@ -33,7 +35,7 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
   }
 
   void _setupListeners() {
-    RetenoFlutterApi.setup(
+    RetenoFlutterApi.setUp(
       _RetenoFlutterApi(
         onNotificationCallback: (payload) {
           onRetenoNotificationReceived.add(Map<String, dynamic>.from(payload));
@@ -92,6 +94,32 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
   Future<void> pauseInAppMessages(bool isPaused) {
     return _api.pauseInAppMessages(isPaused);
   }
+
+  @override
+  Future<List<RetenoRecommendation>> getRecommendations({
+    required String recomenedationVariantId,
+    required List<String> productIds,
+    required String categoryId,
+    List<RetenoRecomendationFilter>? filters,
+    List<String?>? fields,
+  }) async {
+    final response = await _api.getRecommendations(
+      recomVariantId: recomenedationVariantId,
+      productIds: productIds,
+      categoryId: categoryId,
+      filters: filters?.map((e) => e.toNativeRecomFilter()).toList(),
+      fields: fields,
+    );
+    return response
+        .where((element) => element != null)
+        .map((e) => e!.toRetenoRecommendation())
+        .toList();
+  }
+
+  @override
+  Future<void> logRecommendationsEvent(RetenoRecomEvents events) {
+    return _api.logRecommendationsEvent(events.toNativeRecomEvents());
+  }
 }
 
 class _RetenoFlutterApi extends RetenoFlutterApi {
@@ -121,38 +149,4 @@ class _RetenoFlutterApi extends RetenoFlutterApi {
   ) =>
       onInAppMessageStatusChangedCallback(
           status.toInAppMessageStatus(action, error));
-}
-
-extension on NativeInAppMessageStatus {
-  InAppMessageStatus toInAppMessageStatus(
-      NativeInAppMessageAction? action, String? error) {
-    switch (this) {
-      case NativeInAppMessageStatus.inAppShouldBeDisplayed:
-        return InAppShouldBeDisplayed();
-      case NativeInAppMessageStatus.inAppIsDisplayed:
-        return InAppIsDisplayed();
-      case NativeInAppMessageStatus.inAppShouldBeClosed:
-        return InAppShouldBeClosed(
-          action: action!.toInAppMessageAction(),
-        );
-      case NativeInAppMessageStatus.inAppIsClosed:
-        return InAppIsClosed(
-          action: action!.toInAppMessageAction(),
-        );
-      case NativeInAppMessageStatus.inAppReceivedError:
-        return InAppReceivedError(
-          errorMessage: error!,
-        );
-    }
-  }
-}
-
-extension on NativeInAppMessageAction {
-  InAppMessageAction toInAppMessageAction() {
-    return InAppMessageAction(
-      isCloseButtonClicked: isCloseButtonClicked,
-      isButtonClicked: isButtonClicked,
-      isOpenUrlClicked: isOpenUrlClicked,
-    );
-  }
 }

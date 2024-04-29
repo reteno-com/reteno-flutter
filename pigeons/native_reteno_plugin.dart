@@ -20,6 +20,15 @@ abstract class RetenoHostApi {
   void updatePushPermissionStatus();
   void pauseInAppMessages(bool isPaused);
   Map<String, Object>? getInitialNotification();
+  @async
+  List<NativeRecommendation> getRecommendations({
+    required String recomVariantId,
+    required List<String> productIds,
+    required String categoryId,
+    List<NativeRecomFilter>? filters,
+    List<String>? fields,
+  });
+  void logRecommendationsEvent(NativeRecomEvents events);
 }
 
 @FlutterApi()
@@ -146,4 +155,52 @@ class NativeInAppMessageAction {
   final bool isCloseButtonClicked;
   final bool isButtonClicked;
   final bool isOpenUrlClicked;
+}
+
+class NativeRecomFilter {
+  const NativeRecomFilter({required this.name, required this.values});
+  final String name;
+  final List<String?> values;
+}
+
+class NativeRecommendation {
+  const NativeRecommendation({
+    required this.productId,
+    this.name,
+    this.price,
+    this.description,
+    this.imageUrl,
+  });
+  final String productId;
+  final String? name;
+  final String? description;
+  final String? imageUrl;
+  final double? price;
+}
+
+enum NativeRecomEventType {
+  impression,
+  click,
+}
+
+class NativeRecomEvent {
+  NativeRecomEvent({
+    required this.eventType,
+    required this.dateOccurred,
+    required this.productId,
+  });
+
+  final NativeRecomEventType eventType;
+  final String dateOccurred;
+  final String productId;
+}
+
+class NativeRecomEvents {
+  NativeRecomEvents({
+    required this.recomVariantId,
+    required this.events,
+  });
+
+  final String recomVariantId;
+  final List<NativeRecomEvent?> events;
 }

@@ -3,20 +3,21 @@ import Reteno
 import UIKit
 
 public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
+
     static var _initialNotification : [String: Any]?
-    
+
     public static func register(with registrar: FlutterPluginRegistrar) {
-        
+
         let messenger : FlutterBinaryMessenger = registrar.messenger()
 
         let instance = SwiftRetenoPlugin()
-        
+
         let api : RetenoHostApi & NSObjectProtocol = SwiftRetenoPlugin.init()
-        
+
         RetenoHostApiSetup.setUp(binaryMessenger: messenger, api: api)
-        
+
         let _flutterApi = RetenoFlutterApi(binaryMessenger: messenger)
-        
+
         NotificationCenter.default.addObserver(instance, selector: #selector(application_onDidFinishLaunchingNotification), name: UIApplication.didFinishLaunchingNotification, object: nil)
         Reteno.userNotificationService.didReceiveNotificationResponseHandler = { response in
             let userInfo = response.notification.request.content.userInfo
@@ -59,10 +60,10 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
                 }
                 _flutterApi.onNotificationReceived(payload: convertedUserInfo) {_ in}
             }
-            
+
             return presentationOptions
         }
-        
+
         Reteno.addInAppStatusHandler { inAppMessageStatus in
            switch inAppMessageStatus {
                case .inAppShouldBeDisplayed:
@@ -71,21 +72,21 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
                         action: nil,
                         error: nil
                    ){_ in}
-                   
+
                case .inAppIsDisplayed:
                    _flutterApi.onInAppMessageStatusChanged(
                         status: NativeInAppMessageStatus.inAppIsDisplayed,
                         action: nil,
                         error: nil
                    ){_ in}
-                   
+
                case .inAppShouldBeClosed(let action):
                    _flutterApi.onInAppMessageStatusChanged(
                         status: NativeInAppMessageStatus.inAppShouldBeClosed,
                         action: action.toNativeInAppMessageAction(),
                         error: nil
                    ){_ in}
-               
+
                case .inAppIsClosed(let action):
                    _flutterApi.onInAppMessageStatusChanged(
                         status: NativeInAppMessageStatus.inAppIsClosed,
@@ -102,7 +103,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
            }
        }
     }
-    
+
     func setUserAttributes(externalUserId: String, user: NativeRetenoUser?) throws {
         Reteno.updateUserAttributes(
             externalUserId: externalUserId,
@@ -123,7 +124,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
             groupNamesExclude: user?.groupNamesExclude?.compactMap{ $0 } ?? []
         )
     }
-    
+
     func setAnonymousUserAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes) throws {
         Reteno.updateAnonymousUserAttributes(
             userAttributes: AnonymousUserAttributes(
@@ -138,10 +139,10 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
             )
         )
     }
-    
+
     func logEvent(event: NativeCustomEvent) throws {
         let dateFormatter = ISO8601DateFormatter();
-        
+
         Reteno.logEvent(
             eventTypeKey: event.eventTypeKey,
             date: dateFormatter.date(from: event.dateOccurred) ?? Date(),
@@ -151,11 +152,11 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
             forcePush: event.forcePush
         )
     }
-    
+
     func updatePushPermissionStatus() throws {
-        
+
     }
-    
+
     func getInitialNotification() throws -> [String : Any]? {
         if(SwiftRetenoPlugin._initialNotification != nil){
             let notification = SwiftRetenoPlugin._initialNotification
@@ -164,11 +165,48 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
         }
         return nil
     }
-    
+
     func pauseInAppMessages(isPaused: Bool) throws {
         Reteno.pauseInAppMessages(isPaused: isPaused)
     }
-    
+
+    func getRecommendations(
+        recomVariantId: String,
+        productIds: [String],
+        categoryId: String,
+        filters: [NativeRecomFilter]?,
+        fields: [String]?,
+        completion: @escaping (Result<[NativeRecommendation], Error>
+    ) -> Void) {
+       Reteno.recommendations().getRecoms(
+           recomVariantId: recomVariantId,
+           productIds: productIds,
+           categoryId: categoryId,
+           filters: [],
+           fields: fields
+       ) { (result: Result<[Recommendation], Error>)  in
+           switch result {
+           case .success(let recoms):
+               let nativeRecoms = recoms.map { $0.toNativeRecomendation() }
+               completion(.success(nativeRecoms))
+               break
+           case .failure(let error):
+               completion(.failure(error))
+               break
+           }
+       }
+    }
+
+    func logRecommendationsEvent(events: NativeRecomEvents) throws {
+        let recomEventContainer = events.toRecomEventContainer()
+        
+        Reteno.recommendations().logEvent(
+            recomVariantId: recomEventContainer.recomVariantId,
+            impressions: recomEventContainer.impressions,
+            clicks: recomEventContainer.clicks
+        );
+    }
+
     @objc func application_onDidFinishLaunchingNotification(notification: NSNotification){
         guard let userInfo = notification.userInfo else {
           return
@@ -202,5 +240,26 @@ extension InAppMessageAction {
             isButtonClicked: self.isButtonClicked,
             isOpenUrlClicked: self.isOpenUrlClicked
         );
+    }
+}
+
+extension Recommendation {
+    func toNativeRecomendation() -> NativeRecommendation {
+        return NativeRecommendation(
+            productId: self.productId,
+            name: self.name,
+            description: self.description,
+            imageUrl: self.imageUrl?.absoluteString,
+            price: self.price != nil ? Double(self.price!) : nil
+        );
+    }
+}
+
+extension NativeRecomEvents {
+    func toRecomEventContainer() -> RecomEventContainer {
+        let dateFormatter = ISO8601DateFormatter();
+        let impressions = self.events.compactMap { $0.flatMap { $0.eventType == .impression ? RecomEvent(date: dateFormatter.date(from: $0.dateOccurred) ?? Date(), productId: $0.productId) : nil } }
+        let clicks = self.events.compactMap { $0.flatMap { $0.eventType == .click ? RecomEvent(date: dateFormatter.date(from: $0.dateOccurred) ?? Date(), productId: $0.productId) : nil } }
+        return RecomEventContainer(recomVariantId: self.recomVariantId, impressions: impressions, clicks: clicks)
     }
 }
