@@ -1,3 +1,8 @@
+## 1.5.3
+* Support AGP 8
+* Bump Android sdk to 2.0.10
+* Bump iOS sdk to 2.0.9
+
 ## 1.5.2
 * Bump Android sdk to 2.0.7
 * Bump iOS sdk to 2.0.6
