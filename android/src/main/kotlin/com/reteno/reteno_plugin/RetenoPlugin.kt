@@ -2,17 +2,22 @@ package com.reteno.reteno_plugin
 
 import UserUtils
 import android.app.Activity
+import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import com.reteno.core.Reteno
 import com.reteno.core.RetenoApplication
+import com.reteno.core.RetenoConfig
 import com.reteno.core.data.remote.model.recommendation.get.Recoms
+import com.reteno.core.domain.model.event.LifecycleTrackingOptions
 import com.reteno.core.domain.model.recommendation.get.RecomFilter
 import com.reteno.core.domain.model.recommendation.get.RecomRequest
 import com.reteno.core.domain.model.recommendation.post.RecomEvents
 import com.reteno.core.features.recommendation.GetRecommendationResponseCallback
+import com.reteno.core.identification.DeviceIdProvider
 import com.reteno.core.view.iam.callback.InAppCloseAction
 import com.reteno.core.view.iam.callback.InAppCloseData
 import com.reteno.core.view.iam.callback.InAppData
@@ -38,6 +43,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListe
     private var initialNotification: HashMap<String, Any>? = null
     private var mainActivity: Activity? = null
     private val uiThreadHandler: Handler = Handler(Looper.getMainLooper())
+    private lateinit var applicationContext: Context
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         Log.i(TAG, "onAttachedToEngine")
@@ -46,6 +52,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListe
             initPlugin(flutterPluginBinding.binaryMessenger)
         }
         reteno = (flutterPluginBinding.applicationContext as RetenoApplication).getRetenoInstance()
+        applicationContext = flutterPluginBinding.applicationContext
         createInAppLifecycleListener()
     }
 
@@ -193,6 +200,27 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListe
         return true
     }
 
+    override fun initWith(
+        accessKey: String,
+        lifecycleTrackingOptions: NativeLifecycleTrackingOptions?,
+        userId: String?,
+        isPausedInAppMessages: Boolean
+    ) {
+        val deviceIdProvider = if (userId != null) {
+            AppSharedPreferencesManager().saveDeviceId(applicationContext, userId)
+            CustomDeviceIdProvider(applicationContext)
+        } else {
+            null
+        }
+        val config = RetenoConfig(
+            isPausedInAppMessages,
+            deviceIdProvider,
+            lifecycleTrackingOptions.toLifecycleTrackingOptions(),
+            accessKey
+        )
+        reteno.initWith(config)
+    }
+
     override fun setUserAttributes(externalUserId: String, user: NativeRetenoUser?) {
         Log.i(TAG, "setUserAttributes")
         return reteno.setUserAttributes(externalUserId, UserUtils.fromRetenoUser(user))
@@ -281,4 +309,21 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListe
     override fun pauseInAppMessages(isPaused: Boolean) {
         reteno.pauseInAppMessages(isPaused)
     }
+}
+
+class CustomDeviceIdProvider(private val context: Context): DeviceIdProvider {
+    override fun getDeviceId(): String? {
+        Log.i(TAG, "getDeviceId")
+        return AppSharedPreferencesManager().getDeviceId(context)
+    }
+}
+
+fun NativeLifecycleTrackingOptions?.toLifecycleTrackingOptions(): LifecycleTrackingOptions {
+    return this?.let {
+        LifecycleTrackingOptions(
+            appLifecycleEnabled = it.appLifecycleEnabled,
+            pushSubscriptionEnabled = it.pushSubscriptionEnabled,
+            sessionEventsEnabled = it.sessionEventsEnabled
+        )
+    } ?: LifecycleTrackingOptions.ALL
 }

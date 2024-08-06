@@ -413,6 +413,32 @@ struct NativeRecomEvents {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeLifecycleTrackingOptions {
+  var appLifecycleEnabled: Bool
+  var pushSubscriptionEnabled: Bool
+  var sessionEventsEnabled: Bool
+
+  static func fromList(_ list: [Any?]) -> NativeLifecycleTrackingOptions? {
+    let appLifecycleEnabled = list[0] as! Bool
+    let pushSubscriptionEnabled = list[1] as! Bool
+    let sessionEventsEnabled = list[2] as! Bool
+
+    return NativeLifecycleTrackingOptions(
+      appLifecycleEnabled: appLifecycleEnabled,
+      pushSubscriptionEnabled: pushSubscriptionEnabled,
+      sessionEventsEnabled: sessionEventsEnabled
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      appLifecycleEnabled,
+      pushSubscriptionEnabled,
+      sessionEventsEnabled,
+    ]
+  }
+}
+
 private class RetenoHostApiCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -427,18 +453,20 @@ private class RetenoHostApiCodecReader: FlutterStandardReader {
     case 132:
       return NativeInAppMessageAction.fromList(self.readValue() as! [Any?])
     case 133:
-      return NativeRecomEvent.fromList(self.readValue() as! [Any?])
+      return NativeLifecycleTrackingOptions.fromList(self.readValue() as! [Any?])
     case 134:
-      return NativeRecomEvents.fromList(self.readValue() as! [Any?])
+      return NativeRecomEvent.fromList(self.readValue() as! [Any?])
     case 135:
-      return NativeRecomFilter.fromList(self.readValue() as! [Any?])
+      return NativeRecomEvents.fromList(self.readValue() as! [Any?])
     case 136:
-      return NativeRecommendation.fromList(self.readValue() as! [Any?])
+      return NativeRecomFilter.fromList(self.readValue() as! [Any?])
     case 137:
-      return NativeRetenoUser.fromList(self.readValue() as! [Any?])
+      return NativeRecommendation.fromList(self.readValue() as! [Any?])
     case 138:
-      return NativeUserAttributes.fromList(self.readValue() as! [Any?])
+      return NativeRetenoUser.fromList(self.readValue() as! [Any?])
     case 139:
+      return NativeUserAttributes.fromList(self.readValue() as! [Any?])
+    case 140:
       return NativeUserCustomField.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -463,26 +491,29 @@ private class RetenoHostApiCodecWriter: FlutterStandardWriter {
     } else if let value = value as? NativeInAppMessageAction {
       super.writeByte(132)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomEvent {
+    } else if let value = value as? NativeLifecycleTrackingOptions {
       super.writeByte(133)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomEvents {
+    } else if let value = value as? NativeRecomEvent {
       super.writeByte(134)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomFilter {
+    } else if let value = value as? NativeRecomEvents {
       super.writeByte(135)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecommendation {
+    } else if let value = value as? NativeRecomFilter {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRetenoUser {
+    } else if let value = value as? NativeRecommendation {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserAttributes {
+    } else if let value = value as? NativeRetenoUser {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserCustomField {
+    } else if let value = value as? NativeUserAttributes {
       super.writeByte(139)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeUserCustomField {
+      super.writeByte(140)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -506,6 +537,7 @@ class RetenoHostApiCodec: FlutterStandardMessageCodec {
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol RetenoHostApi {
+  func initWith(accessKey: String, lifecycleTrackingOptions: NativeLifecycleTrackingOptions?, userId: String?, isPausedInAppMessages: Bool) throws
   func setUserAttributes(externalUserId: String, user: NativeRetenoUser?) throws
   func setAnonymousUserAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes) throws
   func logEvent(event: NativeCustomEvent) throws
@@ -523,6 +555,24 @@ class RetenoHostApiSetup {
   /// Sets up an instance of `RetenoHostApi` to handle messages through the `binaryMessenger`.
   static func setUp(binaryMessenger: FlutterBinaryMessenger, api: RetenoHostApi?, messageChannelSuffix: String = "") {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    let initWithChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.initWith\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      initWithChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let accessKeyArg = args[0] as! String
+        let lifecycleTrackingOptionsArg: NativeLifecycleTrackingOptions? = nilOrValue(args[1])
+        let userIdArg: String? = nilOrValue(args[2])
+        let isPausedInAppMessagesArg = args[3] as! Bool
+        do {
+          try api.initWith(accessKey: accessKeyArg, lifecycleTrackingOptions: lifecycleTrackingOptionsArg, userId: userIdArg, isPausedInAppMessages: isPausedInAppMessagesArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      initWithChannel.setMessageHandler(nil)
+    }
     let setUserAttributesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.setUserAttributes\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       setUserAttributesChannel.setMessageHandler { message, reply in
@@ -662,18 +712,20 @@ private class RetenoFlutterApiCodecReader: FlutterStandardReader {
     case 132:
       return NativeInAppMessageAction.fromList(self.readValue() as! [Any?])
     case 133:
-      return NativeRecomEvent.fromList(self.readValue() as! [Any?])
+      return NativeLifecycleTrackingOptions.fromList(self.readValue() as! [Any?])
     case 134:
-      return NativeRecomEvents.fromList(self.readValue() as! [Any?])
+      return NativeRecomEvent.fromList(self.readValue() as! [Any?])
     case 135:
-      return NativeRecomFilter.fromList(self.readValue() as! [Any?])
+      return NativeRecomEvents.fromList(self.readValue() as! [Any?])
     case 136:
-      return NativeRecommendation.fromList(self.readValue() as! [Any?])
+      return NativeRecomFilter.fromList(self.readValue() as! [Any?])
     case 137:
-      return NativeRetenoUser.fromList(self.readValue() as! [Any?])
+      return NativeRecommendation.fromList(self.readValue() as! [Any?])
     case 138:
-      return NativeUserAttributes.fromList(self.readValue() as! [Any?])
+      return NativeRetenoUser.fromList(self.readValue() as! [Any?])
     case 139:
+      return NativeUserAttributes.fromList(self.readValue() as! [Any?])
+    case 140:
       return NativeUserCustomField.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -698,26 +750,29 @@ private class RetenoFlutterApiCodecWriter: FlutterStandardWriter {
     } else if let value = value as? NativeInAppMessageAction {
       super.writeByte(132)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomEvent {
+    } else if let value = value as? NativeLifecycleTrackingOptions {
       super.writeByte(133)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomEvents {
+    } else if let value = value as? NativeRecomEvent {
       super.writeByte(134)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomFilter {
+    } else if let value = value as? NativeRecomEvents {
       super.writeByte(135)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecommendation {
+    } else if let value = value as? NativeRecomFilter {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRetenoUser {
+    } else if let value = value as? NativeRecommendation {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserAttributes {
+    } else if let value = value as? NativeRetenoUser {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserCustomField {
+    } else if let value = value as? NativeUserAttributes {
       super.writeByte(139)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeUserCustomField {
+      super.writeByte(140)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)

@@ -1,5 +1,6 @@
 import 'package:reteno_plugin/src/models/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/src/models/in_app_message_status.dart';
+import 'package:reteno_plugin/src/models/lifecycle_tracking_options.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event_parameter.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
@@ -87,8 +88,7 @@ extension RetenoCustomEventParameterExt on RetenoCustomEventParameter {
 }
 
 extension NativeInAppMessageStatusExt on NativeInAppMessageStatus {
-  InAppMessageStatus toInAppMessageStatus(
-      NativeInAppMessageAction? action, String? error) {
+  InAppMessageStatus toInAppMessageStatus(NativeInAppMessageAction? action, String? error) {
     switch (this) {
       case NativeInAppMessageStatus.inAppShouldBeDisplayed:
         return InAppShouldBeDisplayed();
@@ -168,5 +168,15 @@ extension RetenoRecomEventTypeExt on RetenoRecomEventType {
       case RetenoRecomEventType.click:
         return NativeRecomEventType.click;
     }
+  }
+}
+
+extension LifecycleTrackingOptionsExt on LifecycleTrackingOptions {
+  NativeLifecycleTrackingOptions toNativeLifecycleTrackingOptions() {
+    return NativeLifecycleTrackingOptions(
+      appLifecycleEnabled: appLifecycleEnabled,
+      pushSubscriptionEnabled: pushSubscriptionEnabled,
+      sessionEventsEnabled: sessionEventsEnabled,
+    );
   }
 }

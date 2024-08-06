@@ -1,3 +1,7 @@
+## 1.6.0
+* Bump Android sdk to 2.0.11
+* Added `initWith` method for Reteno initialization (Android only)
+
 ## 1.5.3
 * Support AGP 8
 * Bump Android sdk to 2.0.10

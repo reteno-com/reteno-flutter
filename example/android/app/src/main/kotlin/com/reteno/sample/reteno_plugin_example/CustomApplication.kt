@@ -8,7 +8,7 @@ import io.flutter.app.FlutterApplication
 class CustomApplication : FlutterApplication(), RetenoApplication {
     override fun onCreate() {
         super.onCreate()
-        retenoInstance = RetenoImpl(this, "630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05")
+        retenoInstance = RetenoImpl(this)
     }
 
     private lateinit var retenoInstance: Reteno

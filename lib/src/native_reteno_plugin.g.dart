@@ -15,8 +15,7 @@ PlatformException _createConnectionError(String channelName) {
   );
 }
 
-List<Object?> wrapResponse(
-    {Object? result, PlatformException? error, bool empty = false}) {
+List<Object?> wrapResponse({Object? result, PlatformException? error, bool empty = false}) {
   if (empty) {
     return <Object?>[];
   }
@@ -275,8 +274,7 @@ class NativeCustomEvent {
     return NativeCustomEvent(
       eventTypeKey: result[0]! as String,
       dateOccurred: result[1]! as String,
-      parameters:
-          (result[2] as List<Object?>?)!.cast<NativeCustomEventParameter?>(),
+      parameters: (result[2] as List<Object?>?)!.cast<NativeCustomEventParameter?>(),
       forcePush: result[3]! as bool,
     );
   }
@@ -463,6 +461,37 @@ class NativeRecomEvents {
   }
 }
 
+class NativeLifecycleTrackingOptions {
+  NativeLifecycleTrackingOptions({
+    required this.appLifecycleEnabled,
+    required this.pushSubscriptionEnabled,
+    required this.sessionEventsEnabled,
+  });
+
+  bool appLifecycleEnabled;
+
+  bool pushSubscriptionEnabled;
+
+  bool sessionEventsEnabled;
+
+  Object encode() {
+    return <Object?>[
+      appLifecycleEnabled,
+      pushSubscriptionEnabled,
+      sessionEventsEnabled,
+    ];
+  }
+
+  static NativeLifecycleTrackingOptions decode(Object result) {
+    result as List<Object?>;
+    return NativeLifecycleTrackingOptions(
+      appLifecycleEnabled: result[0]! as bool,
+      pushSubscriptionEnabled: result[1]! as bool,
+      sessionEventsEnabled: result[2]! as bool,
+    );
+  }
+}
+
 class _RetenoHostApiCodec extends StandardMessageCodec {
   const _RetenoHostApiCodec();
   @override
@@ -482,26 +511,29 @@ class _RetenoHostApiCodec extends StandardMessageCodec {
     } else if (value is NativeInAppMessageAction) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomEvent) {
+    } else if (value is NativeLifecycleTrackingOptions) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomEvents) {
+    } else if (value is NativeRecomEvent) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomFilter) {
+    } else if (value is NativeRecomEvents) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecommendation) {
+    } else if (value is NativeRecomFilter) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRetenoUser) {
+    } else if (value is NativeRecommendation) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserAttributes) {
+    } else if (value is NativeRetenoUser) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserCustomField) {
+    } else if (value is NativeUserAttributes) {
       buffer.putUint8(139);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeUserCustomField) {
+      buffer.putUint8(140);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -511,29 +543,31 @@ class _RetenoHostApiCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:
+      case 128: 
         return NativeAddress.decode(readValue(buffer)!);
-      case 129:
+      case 129: 
         return NativeAnonymousUserAttributes.decode(readValue(buffer)!);
-      case 130:
+      case 130: 
         return NativeCustomEvent.decode(readValue(buffer)!);
-      case 131:
+      case 131: 
         return NativeCustomEventParameter.decode(readValue(buffer)!);
-      case 132:
+      case 132: 
         return NativeInAppMessageAction.decode(readValue(buffer)!);
-      case 133:
+      case 133: 
+        return NativeLifecycleTrackingOptions.decode(readValue(buffer)!);
+      case 134: 
         return NativeRecomEvent.decode(readValue(buffer)!);
-      case 134:
+      case 135: 
         return NativeRecomEvents.decode(readValue(buffer)!);
-      case 135:
+      case 136: 
         return NativeRecomFilter.decode(readValue(buffer)!);
-      case 136:
+      case 137: 
         return NativeRecommendation.decode(readValue(buffer)!);
-      case 137:
+      case 138: 
         return NativeRetenoUser.decode(readValue(buffer)!);
-      case 138:
+      case 139: 
         return NativeUserAttributes.decode(readValue(buffer)!);
-      case 139:
+      case 140: 
         return NativeUserCustomField.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -545,29 +579,24 @@ class RetenoHostApi {
   /// Constructor for [RetenoHostApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  RetenoHostApi(
-      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  RetenoHostApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : __pigeon_binaryMessenger = binaryMessenger,
-        __pigeon_messageChannelSuffix =
-            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        __pigeon_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? __pigeon_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _RetenoHostApiCodec();
 
   final String __pigeon_messageChannelSuffix;
 
-  Future<void> setUserAttributes(
-      String externalUserId, NativeRetenoUser? user) async {
-    final String __pigeon_channelName =
-        'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.setUserAttributes$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel =
-        BasicMessageChannel<Object?>(
+  Future<void> initWith({required String accessKey, NativeLifecycleTrackingOptions? lifecycleTrackingOptions, String? userId, bool isPausedInAppMessages = false,}) async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.initWith$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
     );
-    final List<Object?>? __pigeon_replyList = await __pigeon_channel
-        .send(<Object?>[externalUserId, user]) as List<Object?>?;
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[accessKey, lifecycleTrackingOptions, userId, isPausedInAppMessages]) as List<Object?>?;
     if (__pigeon_replyList == null) {
       throw _createConnectionError(__pigeon_channelName);
     } else if (__pigeon_replyList.length > 1) {
@@ -581,18 +610,37 @@ class RetenoHostApi {
     }
   }
 
-  Future<void> setAnonymousUserAttributes(
-      NativeAnonymousUserAttributes anonymousUserAttributes) async {
-    final String __pigeon_channelName =
-        'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.setAnonymousUserAttributes$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel =
-        BasicMessageChannel<Object?>(
+  Future<void> setUserAttributes(String externalUserId, NativeRetenoUser? user) async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.setUserAttributes$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
     );
-    final List<Object?>? __pigeon_replyList = await __pigeon_channel
-        .send(<Object?>[anonymousUserAttributes]) as List<Object?>?;
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[externalUserId, user]) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> setAnonymousUserAttributes(NativeAnonymousUserAttributes anonymousUserAttributes) async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.setAnonymousUserAttributes$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[anonymousUserAttributes]) as List<Object?>?;
     if (__pigeon_replyList == null) {
       throw _createConnectionError(__pigeon_channelName);
     } else if (__pigeon_replyList.length > 1) {
@@ -607,10 +655,8 @@ class RetenoHostApi {
   }
 
   Future<void> logEvent(NativeCustomEvent event) async {
-    final String __pigeon_channelName =
-        'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEvent$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel =
-        BasicMessageChannel<Object?>(
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEvent$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -631,10 +677,8 @@ class RetenoHostApi {
   }
 
   Future<void> updatePushPermissionStatus() async {
-    final String __pigeon_channelName =
-        'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.updatePushPermissionStatus$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel =
-        BasicMessageChannel<Object?>(
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.updatePushPermissionStatus$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -655,10 +699,8 @@ class RetenoHostApi {
   }
 
   Future<void> pauseInAppMessages(bool isPaused) async {
-    final String __pigeon_channelName =
-        'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.pauseInAppMessages$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel =
-        BasicMessageChannel<Object?>(
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.pauseInAppMessages$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -679,10 +721,8 @@ class RetenoHostApi {
   }
 
   Future<Map<String?, Object?>?> getInitialNotification() async {
-    final String __pigeon_channelName =
-        'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.getInitialNotification$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel =
-        BasicMessageChannel<Object?>(
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.getInitialNotification$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -698,29 +738,19 @@ class RetenoHostApi {
         details: __pigeon_replyList[2],
       );
     } else {
-      return (__pigeon_replyList[0] as Map<Object?, Object?>?)
-          ?.cast<String?, Object?>();
+      return (__pigeon_replyList[0] as Map<Object?, Object?>?)?.cast<String?, Object?>();
     }
   }
 
-  Future<List<NativeRecommendation?>> getRecommendations({
-    required String recomVariantId,
-    required List<String?> productIds,
-    required String categoryId,
-    List<NativeRecomFilter?>? filters,
-    List<String?>? fields,
-  }) async {
-    final String __pigeon_channelName =
-        'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.getRecommendations$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel =
-        BasicMessageChannel<Object?>(
+  Future<List<NativeRecommendation?>> getRecommendations({required String recomVariantId, required List<String?> productIds, required String categoryId, List<NativeRecomFilter?>? filters, List<String?>? fields,}) async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.getRecommendations$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
     );
-    final List<Object?>? __pigeon_replyList = await __pigeon_channel.send(
-            <Object?>[recomVariantId, productIds, categoryId, filters, fields])
-        as List<Object?>?;
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[recomVariantId, productIds, categoryId, filters, fields]) as List<Object?>?;
     if (__pigeon_replyList == null) {
       throw _createConnectionError(__pigeon_channelName);
     } else if (__pigeon_replyList.length > 1) {
@@ -735,16 +765,13 @@ class RetenoHostApi {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (__pigeon_replyList[0] as List<Object?>?)!
-          .cast<NativeRecommendation?>();
+      return (__pigeon_replyList[0] as List<Object?>?)!.cast<NativeRecommendation?>();
     }
   }
 
   Future<void> logRecommendationsEvent(NativeRecomEvents events) async {
-    final String __pigeon_channelName =
-        'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logRecommendationsEvent$__pigeon_messageChannelSuffix';
-    final BasicMessageChannel<Object?> __pigeon_channel =
-        BasicMessageChannel<Object?>(
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logRecommendationsEvent$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
       binaryMessenger: __pigeon_binaryMessenger,
@@ -784,26 +811,29 @@ class _RetenoFlutterApiCodec extends StandardMessageCodec {
     } else if (value is NativeInAppMessageAction) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomEvent) {
+    } else if (value is NativeLifecycleTrackingOptions) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomEvents) {
+    } else if (value is NativeRecomEvent) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomFilter) {
+    } else if (value is NativeRecomEvents) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecommendation) {
+    } else if (value is NativeRecomFilter) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRetenoUser) {
+    } else if (value is NativeRecommendation) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserAttributes) {
+    } else if (value is NativeRetenoUser) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserCustomField) {
+    } else if (value is NativeUserAttributes) {
       buffer.putUint8(139);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeUserCustomField) {
+      buffer.putUint8(140);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -813,29 +843,31 @@ class _RetenoFlutterApiCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:
+      case 128: 
         return NativeAddress.decode(readValue(buffer)!);
-      case 129:
+      case 129: 
         return NativeAnonymousUserAttributes.decode(readValue(buffer)!);
-      case 130:
+      case 130: 
         return NativeCustomEvent.decode(readValue(buffer)!);
-      case 131:
+      case 131: 
         return NativeCustomEventParameter.decode(readValue(buffer)!);
-      case 132:
+      case 132: 
         return NativeInAppMessageAction.decode(readValue(buffer)!);
-      case 133:
+      case 133: 
+        return NativeLifecycleTrackingOptions.decode(readValue(buffer)!);
+      case 134: 
         return NativeRecomEvent.decode(readValue(buffer)!);
-      case 134:
+      case 135: 
         return NativeRecomEvents.decode(readValue(buffer)!);
-      case 135:
+      case 136: 
         return NativeRecomFilter.decode(readValue(buffer)!);
-      case 136:
+      case 137: 
         return NativeRecommendation.decode(readValue(buffer)!);
-      case 137:
+      case 138: 
         return NativeRetenoUser.decode(readValue(buffer)!);
-      case 138:
+      case 139: 
         return NativeUserAttributes.decode(readValue(buffer)!);
-      case 139:
+      case 140: 
         return NativeUserCustomField.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -844,38 +876,28 @@ class _RetenoFlutterApiCodec extends StandardMessageCodec {
 }
 
 abstract class RetenoFlutterApi {
-  static const MessageCodec<Object?> pigeonChannelCodec =
-      _RetenoFlutterApiCodec();
+  static const MessageCodec<Object?> pigeonChannelCodec = _RetenoFlutterApiCodec();
 
   void onNotificationReceived(Map<String?, Object?> payload);
 
   void onNotificationClicked(Map<String?, Object?> payload);
 
-  void onInAppMessageStatusChanged(NativeInAppMessageStatus status,
-      NativeInAppMessageAction? action, String? error);
+  void onInAppMessageStatusChanged(NativeInAppMessageStatus status, NativeInAppMessageAction? action, String? error);
 
-  static void setUp(
-    RetenoFlutterApi? api, {
-    BinaryMessenger? binaryMessenger,
-    String messageChannelSuffix = '',
-  }) {
-    messageChannelSuffix =
-        messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  static void setUp(RetenoFlutterApi? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
+    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
-      final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationReceived$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationReceived$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         __pigeon_channel.setMessageHandler(null);
       } else {
         __pigeon_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationReceived was null.');
+          'Argument for dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationReceived was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final Map<String?, Object?>? arg_payload =
-              (args[0] as Map<Object?, Object?>?)?.cast<String?, Object?>();
+          final Map<String?, Object?>? arg_payload = (args[0] as Map<Object?, Object?>?)?.cast<String?, Object?>();
           assert(arg_payload != null,
               'Argument for dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationReceived was null, expected non-null Map<String?, Object?>.');
           try {
@@ -883,28 +905,24 @@ abstract class RetenoFlutterApi {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationClicked$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationClicked$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         __pigeon_channel.setMessageHandler(null);
       } else {
         __pigeon_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationClicked was null.');
+          'Argument for dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationClicked was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final Map<String?, Object?>? arg_payload =
-              (args[0] as Map<Object?, Object?>?)?.cast<String?, Object?>();
+          final Map<String?, Object?>? arg_payload = (args[0] as Map<Object?, Object?>?)?.cast<String?, Object?>();
           assert(arg_payload != null,
               'Argument for dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationClicked was null, expected non-null Map<String?, Object?>.');
           try {
@@ -912,42 +930,35 @@ abstract class RetenoFlutterApi {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onInAppMessageStatusChanged$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onInAppMessageStatusChanged$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         __pigeon_channel.setMessageHandler(null);
       } else {
         __pigeon_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onInAppMessageStatusChanged was null.');
+          'Argument for dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onInAppMessageStatusChanged was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final NativeInAppMessageStatus? arg_status = args[0] == null
-              ? null
-              : NativeInAppMessageStatus.values[args[0]! as int];
+          final NativeInAppMessageStatus? arg_status = args[0] == null ? null : NativeInAppMessageStatus.values[args[0]! as int];
           assert(arg_status != null,
               'Argument for dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onInAppMessageStatusChanged was null, expected non-null NativeInAppMessageStatus.');
-          final NativeInAppMessageAction? arg_action =
-              (args[1] as NativeInAppMessageAction?);
+          final NativeInAppMessageAction? arg_action = (args[1] as NativeInAppMessageAction?);
           final String? arg_error = (args[2] as String?);
           try {
             api.onInAppMessageStatusChanged(arg_status!, arg_action, arg_error);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
