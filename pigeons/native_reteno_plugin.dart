@@ -7,15 +7,19 @@ import 'package:pigeon/pigeon.dart';
     kotlinOptions: KotlinOptions(
       package: 'com.reteno.reteno_plugin',
     ),
-    kotlinOut:
-        'android/src/main/kotlin/com/reteno/reteno_plugin/RetenoHostApi.kt',
+    kotlinOut: 'android/src/main/kotlin/com/reteno/reteno_plugin/RetenoHostApi.kt',
   ),
 )
 @HostApi()
 abstract class RetenoHostApi {
+  void initWith({
+    required String accessKey,
+    NativeLifecycleTrackingOptions? lifecycleTrackingOptions,
+    String? userId,
+    bool isPausedInAppMessages = false,
+  });
   void setUserAttributes(String externalUserId, NativeRetenoUser? user);
-  void setAnonymousUserAttributes(
-      NativeAnonymousUserAttributes anonymousUserAttributes);
+  void setAnonymousUserAttributes(NativeAnonymousUserAttributes anonymousUserAttributes);
   void logEvent(NativeCustomEvent event);
   void updatePushPermissionStatus();
   void pauseInAppMessages(bool isPaused);
@@ -203,4 +207,16 @@ class NativeRecomEvents {
 
   final String recomVariantId;
   final List<NativeRecomEvent?> events;
+}
+
+class NativeLifecycleTrackingOptions {
+  NativeLifecycleTrackingOptions({
+    required this.appLifecycleEnabled,
+    required this.pushSubscriptionEnabled,
+    required this.sessionEventsEnabled,
+  });
+
+  final bool appLifecycleEnabled;
+  final bool pushSubscriptionEnabled;
+  final bool sessionEventsEnabled;
 }

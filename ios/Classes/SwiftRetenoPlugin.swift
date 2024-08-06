@@ -104,6 +104,10 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
        }
     }
 
+    func initWith(accessKey: String, lifecycleTrackingOptions: NativeLifecycleTrackingOptions?, userId: String?, isPausedInAppMessages: Bool) throws {
+        // Not implemented in Native SDK
+    }
+
     func setUserAttributes(externalUserId: String, user: NativeRetenoUser?) throws {
         Reteno.updateUserAttributes(
             externalUserId: externalUserId,
@@ -199,7 +203,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
 
     func logRecommendationsEvent(events: NativeRecomEvents) throws {
         let recomEventContainer = events.toRecomEventContainer()
-        
+
         Reteno.recommendations().logEvent(
             recomVariantId: recomEventContainer.recomVariantId,
             impressions: recomEventContainer.impressions,

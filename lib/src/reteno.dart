@@ -1,5 +1,6 @@
 import 'package:reteno_plugin/src/models/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/src/models/in_app_message_status.dart';
+import 'package:reteno_plugin/src/models/lifecycle_tracking_options.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
@@ -10,6 +11,28 @@ import 'reteno_plugin_platform_interface.dart';
 
 class Reteno {
   static final RetenoPluginPlatform _platform = RetenoPigeonChannel.instance;
+
+  /// NOTE: iOS not supported yet
+  /// Method for finishing delayed initialization of RetenoSDK,
+  /// - Parameter `accessKey`: Reteno Access Key
+  /// - Parameter `deviceId`: Reteno Device ID
+  /// - Parameter `isPausedInAppMessages`: indicates paused/resumed state for in-app messages
+  /// - Parameter `userIdProvider`: - Provider that will return custom userId. In case if id provided with a delay,
+  ///   Reteno SDK will wait till id is going to be non-null then will initialize itself
+  /// - Parameter `lifecycleTrackingOptions`: behavior of automatic app lifecycle event tracking
+  Future<void> initWith({
+    required String accessKey,
+    String? userId,
+    bool isPausedInAppMessages = false,
+    LifecycleTrackingOptions? lifecycleTrackingOptions,
+  }) {
+    return _platform.initWith(
+      accessKey: accessKey,
+      userId: userId,
+      isPausedInAppMessages: isPausedInAppMessages,
+      lifecycleTrackingOptions: lifecycleTrackingOptions,
+    );
+  }
 
   /// Update User attributes
   /// - Parameter `externalUserId`: Id for identify user in a system
@@ -49,8 +72,7 @@ class Reteno {
   ///   print("Received notification: $notification");
   /// });
   /// ```
-  static Stream<Map<String, dynamic>> get onRetenoNotificationReceived =>
-      _platform.onRetenoNotificationReceived.stream;
+  static Stream<Map<String, dynamic>> get onRetenoNotificationReceived => _platform.onRetenoNotificationReceived.stream;
 
   /// A static getter that provides a [Stream] of notifications clicked by the user
   /// in foreground and background states.
@@ -68,8 +90,7 @@ class Reteno {
   ///   print("Clicked notification: $notification");
   /// });
   /// ```
-  static Stream<Map<String, dynamic>> get onRetenoNotificationClicked =>
-      _platform.onRetenoNotificationClicked.stream;
+  static Stream<Map<String, dynamic>> get onRetenoNotificationClicked => _platform.onRetenoNotificationClicked.stream;
 
   /// A static getter that provides a [Stream] of in-app message status changes.
   /// You can detect In-App presenting status where needed.
@@ -97,8 +118,7 @@ class Reteno {
   ///   });
   /// ```
   ///
-  static Stream<InAppMessageStatus> get onInAppMessageStatusChanged =>
-      _platform.onInAppMessageStatusChanged.stream;
+  static Stream<InAppMessageStatus> get onInAppMessageStatusChanged => _platform.onInAppMessageStatusChanged.stream;
 
   /// Retrieves the initial notification when app is opened from terminated state by notification.
   ///

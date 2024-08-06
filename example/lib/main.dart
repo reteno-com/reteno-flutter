@@ -32,8 +32,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   final prefs = await SharedPreferences.getInstance();
   prefs.setString('notification_id', message.messageId?.toString() ?? 'null');
 
-  print(
-      "$_firebaseLogTag: _firebaseMessagingBackgroundHandler:\n ${message.messageId}");
+  print("$_firebaseLogTag: _firebaseMessagingBackgroundHandler:\n ${message.messageId}");
 }
 
 // The callback function should always be a top-level function.
@@ -53,8 +52,7 @@ class MyTaskHandler extends TaskHandler {
     _sendPort = sendPort;
 
     // You can use the getData function to get the stored data.
-    final customData =
-        await FlutterForegroundTask.getData<String>(key: 'customData');
+    final customData = await FlutterForegroundTask.getData<String>(key: 'customData');
     print('customData: $customData');
   }
 
@@ -102,6 +100,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  if (Platform.isAndroid) {
+    await Reteno().initWith(
+      accessKey: '630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05',
+      lifecycleTrackingOptions: LifecycleTrackingOptions.all(),
+    );
+  }
+
   runApp(const MyApp());
 }
 
@@ -179,20 +184,16 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       _reteno.getInitialNotification().then((value) {
         if (value != null) {
-          print(
-              '$_retenoPluginLogTag: getInitialNotification: ${value.toString()}');
-          _showAlert(context,
-              '$_retenoPluginLogTag: getInitialNotification: ${value.toString()}');
+          print('$_retenoPluginLogTag: getInitialNotification: ${value.toString()}');
+          _showAlert(context, '$_retenoPluginLogTag: getInitialNotification: ${value.toString()}');
         } else {
           print('$_retenoPluginLogTag: getInitialNotification: null');
-          _showAlert(
-              context, '$_retenoPluginLogTag: getInitialNotification: null');
+          _showAlert(context, '$_retenoPluginLogTag: getInitialNotification: null');
         }
       }).onError((error, stackTrace) {
         print('$_retenoPluginLogTag: getInitialNotification: $error');
         print('$_retenoPluginLogTag: getInitialNotification: $stackTrace');
-        _showAlert(
-            context, '$_retenoPluginLogTag: getInitialNotification: $error');
+        _showAlert(context, '$_retenoPluginLogTag: getInitialNotification: $error');
         return null;
       });
     } catch (e) {
@@ -201,15 +202,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     Reteno.onRetenoNotificationReceived.listen((event) {
-      print(
-          '$_retenoPluginLogTag: onRetenoNotificationReceived: ${event.toString()}');
-      _showAlert(context,
-          '$_retenoPluginLogTag: onRetenoNotificationReceived: ${event.toString()}');
+      print('$_retenoPluginLogTag: onRetenoNotificationReceived: ${event.toString()}');
+      _showAlert(context, '$_retenoPluginLogTag: onRetenoNotificationReceived: ${event.toString()}');
     });
     Reteno.onRetenoNotificationClicked.listen((event) {
       print('$_retenoPluginLogTag: onRetenoClicked: ${event.toString()}');
-      _showAlert(context,
-          '$_retenoPluginLogTag: onRetenoClicked: ${event.toString()}');
+      _showAlert(context, '$_retenoPluginLogTag: onRetenoClicked: ${event.toString()}');
     });
 
     Reteno.onInAppMessageStatusChanged.listen((status) {
@@ -245,8 +243,7 @@ class _MyHomePageState extends State<MyHomePage> {
   AndroidNotificationChannel channel = const AndroidNotificationChannel(
     'reteno_id', // id
     'High Importance Notifications', // title
-    description:
-        'This channel is used for important notifications.', // description
+    description: 'This channel is used for important notifications.', // description
     importance: Importance.max,
   );
 
@@ -365,8 +362,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               if (result && context.mounted) {
                                 _showAlert(context, 'Foreground Task started');
                               } else if (context.mounted) {
-                                _showAlert(
-                                    context, 'Failed to start Foreground Task');
+                                _showAlert(context, 'Failed to start Foreground Task');
                               }
                             },
                             child: const Text('Start Foreground Task'),
@@ -380,8 +376,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               if (result && context.mounted) {
                                 _showAlert(context, 'Foreground Task stopped');
                               } else if (context.mounted) {
-                                _showAlert(
-                                    context, 'Failed to stop Foreground Task');
+                                _showAlert(context, 'Failed to stop Foreground Task');
                               }
                             },
                             child: const Text('Stop Foreground Task'),
@@ -399,8 +394,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         await prefs.reload();
                         print(prefs.getString('notification_id'));
                         if (context.mounted) {
-                          _showAlert(context,
-                              '$_retenoPluginLogTag: ${prefs.getString('notification_id')}');
+                          _showAlert(context, '$_retenoPluginLogTag: ${prefs.getString('notification_id')}');
                         }
                       },
                       child: const Text(
@@ -419,16 +413,13 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: ElevatedButton(
                       onPressed: () async {
                         if (await Permission.notification.isGranted) {
-                          final res =
-                              await _reteno.updatePushPermissionStatus();
+                          final res = await _reteno.updatePushPermissionStatus();
                           print(res);
                           return;
                         }
-                        final permissionStatus =
-                            await Permission.notification.request();
+                        final permissionStatus = await Permission.notification.request();
                         if (permissionStatus.isGranted) {
-                          final res =
-                              await _reteno.updatePushPermissionStatus();
+                          final res = await _reteno.updatePushPermissionStatus();
                           print(res);
                         }
                       },
@@ -495,25 +486,20 @@ class _MyHomePageState extends State<MyHomePage> {
                                       Expanded(
                                         child: FormBuilderTextField(
                                           name: 'externalUserId',
-                                          decoration: inputDecoration(
-                                              'External User Id'),
-                                          validator:
-                                              FormBuilderValidators.compose([
+                                          decoration: inputDecoration('External User Id'),
+                                          validator: FormBuilderValidators.compose([
                                             FormBuilderValidators.required(),
                                           ]),
                                         ),
                                       ),
                                       Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 8.0),
+                                        padding: const EdgeInsets.only(left: 8.0),
                                         child: ElevatedButton(
                                           onPressed: () async {
                                             const uuid = Uuid();
                                             final generatedId = uuid.v4();
-                                            _formKey.currentState
-                                                ?.fields['externalUserId']
-                                                ?.didChange(generatedId
-                                                    .substring(0, 25));
+                                            _formKey.currentState?.fields['externalUserId']
+                                                ?.didChange(generatedId.substring(0, 25));
                                           },
                                           child: const Text(
                                             'Generate',
@@ -534,23 +520,17 @@ class _MyHomePageState extends State<MyHomePage> {
                                       Expanded(
                                         child: FormBuilderTextField(
                                           name: 'phone',
-                                          decoration:
-                                              inputDecoration('Phone number'),
+                                          decoration: inputDecoration('Phone number'),
                                         ),
                                       ),
                                       Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 8.0),
+                                        padding: const EdgeInsets.only(left: 8.0),
                                         child: ElevatedButton(
                                           onPressed: () async {
                                             final random = Random();
-                                            final randomPhoneNumber =
-                                                random.nextInt(8999999) +
-                                                    1000000;
-                                            _formKey
-                                                .currentState?.fields['phone']
-                                                ?.didChange(
-                                                    '+38068$randomPhoneNumber');
+                                            final randomPhoneNumber = random.nextInt(8999999) + 1000000;
+                                            _formKey.currentState?.fields['phone']
+                                                ?.didChange('+38068$randomPhoneNumber');
                                           },
                                           child: const Text(
                                             'Random',
@@ -620,20 +600,17 @@ class _MyHomePageState extends State<MyHomePage> {
                                   name: 'postcode',
                                   decoration: inputDecoration('Postcode'),
                                 ),
-                                if (!isAnonymousUser)
-                                  const SizedBox(height: 16),
+                                if (!isAnonymousUser) const SizedBox(height: 16),
                                 if (!isAnonymousUser)
                                   FormBuilderTextField(
                                     name: 'groups_exclude',
-                                    decoration:
-                                        inputDecoration('Groups to exclude'),
+                                    decoration: inputDecoration('Groups to exclude'),
                                   ),
                                 if (!isAnonymousUser) const SizedBox(height: 8),
                                 if (!isAnonymousUser)
                                   FormBuilderTextField(
                                     name: 'groups_include',
-                                    decoration:
-                                        inputDecoration('Groups to include'),
+                                    decoration: inputDecoration('Groups to include'),
                                   ),
                                 const SizedBox(height: 16),
                                 const Text(
@@ -649,8 +626,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 const SizedBox(height: 8),
                                 FormBuilderTextField(
                                   name: 'additional_info',
-                                  decoration: inputDecoration(
-                                      'Value for custom field TEXT'),
+                                  decoration: inputDecoration('Value for custom field TEXT'),
                                 ),
                               ],
                             ),
@@ -734,8 +710,7 @@ class _MyHomePageState extends State<MyHomePage> {
       }
       final customFields = <UserCustomField>[];
       if (value['additional_info']?.toString().isNotEmpty ?? false) {
-        customFields.add(UserCustomField(
-            key: 'ADDITIONAL_FIELDS.TEXT', value: value['additional_info']));
+        customFields.add(UserCustomField(key: 'ADDITIONAL_FIELDS.TEXT', value: value['additional_info']));
       }
       Address? userAddress;
       if (value['postcode']?.toString().isNotEmpty ??
@@ -758,8 +733,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       AnonymousUserAttributes? attributes;
 
-      if ([firstName, lastName, timezone, languageCode]
-              .any((element) => element != null && element.isNotEmpty) ||
+      if ([firstName, lastName, timezone, languageCode].any((element) => element != null && element.isNotEmpty) ||
           userAddress != null) {
         attributes = AnonymousUserAttributes(
           firstName: firstName,
@@ -788,8 +762,7 @@ class _MyHomePageState extends State<MyHomePage> {
       }
       final customFields = <UserCustomField>[];
       if (value['additional_info']?.toString().isNotEmpty ?? false) {
-        customFields.add(UserCustomField(
-            key: 'ADDITIONAL_FIELDS.TEXT', value: value['additional_info']));
+        customFields.add(UserCustomField(key: 'ADDITIONAL_FIELDS.TEXT', value: value['additional_info']));
       }
       Address? userAddress;
       if (value['postcode']?.toString().isNotEmpty ??
@@ -831,16 +804,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
       final userInfo = RetenoUser(
         userAttributes: attributes,
-        groupNamesExclude: value['groups_exclude']
-            ?.toString()
-            .split(',')
-            .map((e) => e.trim())
-            .toList(),
-        groupNamesInclude: value['groups_include']
-            ?.toString()
-            .split(',')
-            .map((e) => e.trim())
-            .toList(),
+        groupNamesExclude: value['groups_exclude']?.toString().split(',').map((e) => e.trim()).toList(),
+        groupNamesInclude: value['groups_include']?.toString().split(',').map((e) => e.trim()).toList(),
       );
 
       await _reteno.setUserAttributes(
@@ -893,8 +858,7 @@ class _MyHomePageState extends State<MyHomePage> {
         id: 500,
         channelId: 'foreground_service',
         channelName: 'Foreground Service Notification',
-        channelDescription:
-            'This notification appears when the foreground service is running.',
+        channelDescription: 'This notification appears when the foreground service is running.',
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
         iconData: const NotificationIconData(

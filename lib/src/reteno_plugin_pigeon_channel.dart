@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:reteno_plugin/src/extensions.dart';
 import 'package:reteno_plugin/src/models/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/src/models/in_app_message_status.dart';
+import 'package:reteno_plugin/src/models/lifecycle_tracking_options.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
@@ -19,8 +20,7 @@ typedef OnInAppMessageStatusChanged = void Function(
 
 class RetenoPigeonChannel extends RetenoPluginPlatform {
   static RetenoPigeonChannel? _instance;
-  static RetenoPigeonChannel get instance =>
-      _instance ??= RetenoPigeonChannel._();
+  static RetenoPigeonChannel get instance => _instance ??= RetenoPigeonChannel._();
 
   factory RetenoPigeonChannel.instanceWithApi(RetenoHostApi api) {
     return RetenoPigeonChannel._(api: api);
@@ -51,17 +51,29 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
   }
 
   @override
-  Future<bool> setUserAttributes(
-      String externalUserId, RetenoUser? user) async {
+  Future<void> initWith({
+    required String accessKey,
+    String? userId,
+    bool isPausedInAppMessages = false,
+    LifecycleTrackingOptions? lifecycleTrackingOptions,
+  }) {
+    return _api.initWith(
+      accessKey: accessKey,
+      userId: userId,
+      isPausedInAppMessages: isPausedInAppMessages,
+      lifecycleTrackingOptions: lifecycleTrackingOptions?.toNativeLifecycleTrackingOptions(),
+    );
+  }
+
+  @override
+  Future<bool> setUserAttributes(String externalUserId, RetenoUser? user) async {
     _api.setUserAttributes(externalUserId, user?.toNativeRetenoUser());
     return true;
   }
 
   @override
-  Future<bool> setAnonymousUserAttributes(
-      AnonymousUserAttributes anonymousUserAttributes) async {
-    _api.setAnonymousUserAttributes(
-        anonymousUserAttributes.toNativeAnonymousUserAttributes());
+  Future<bool> setAnonymousUserAttributes(AnonymousUserAttributes anonymousUserAttributes) async {
+    _api.setAnonymousUserAttributes(anonymousUserAttributes.toNativeAnonymousUserAttributes());
     return true;
   }
 
@@ -110,10 +122,7 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
       filters: filters?.map((e) => e.toNativeRecomFilter()).toList(),
       fields: fields,
     );
-    return response
-        .where((element) => element != null)
-        .map((e) => e!.toRetenoRecommendation())
-        .toList();
+    return response.where((element) => element != null).map((e) => e!.toRetenoRecommendation()).toList();
   }
 
   @override
@@ -134,12 +143,10 @@ class _RetenoFlutterApi extends RetenoFlutterApi {
   OnInAppMessageStatusChanged onInAppMessageStatusChangedCallback;
 
   @override
-  void onNotificationClicked(Map<String?, Object?> payload) =>
-      onRetenoNotificationClicked(payload);
+  void onNotificationClicked(Map<String?, Object?> payload) => onRetenoNotificationClicked(payload);
 
   @override
-  void onNotificationReceived(Map<String?, Object?> payload) =>
-      onNotificationCallback(payload);
+  void onNotificationReceived(Map<String?, Object?> payload) => onNotificationCallback(payload);
 
   @override
   void onInAppMessageStatusChanged(
@@ -147,6 +154,5 @@ class _RetenoFlutterApi extends RetenoFlutterApi {
     NativeInAppMessageAction? action,
     String? error,
   ) =>
-      onInAppMessageStatusChangedCallback(
-          status.toInAppMessageStatus(action, error));
+      onInAppMessageStatusChangedCallback(status.toInAppMessageStatus(action, error));
 }

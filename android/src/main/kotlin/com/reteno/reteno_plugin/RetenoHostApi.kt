@@ -404,6 +404,31 @@ data class NativeRecomEvents (
   }
 }
 
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeLifecycleTrackingOptions (
+  val appLifecycleEnabled: Boolean,
+  val pushSubscriptionEnabled: Boolean,
+  val sessionEventsEnabled: Boolean
+
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): NativeLifecycleTrackingOptions {
+      val appLifecycleEnabled = list[0] as Boolean
+      val pushSubscriptionEnabled = list[1] as Boolean
+      val sessionEventsEnabled = list[2] as Boolean
+      return NativeLifecycleTrackingOptions(appLifecycleEnabled, pushSubscriptionEnabled, sessionEventsEnabled)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      appLifecycleEnabled,
+      pushSubscriptionEnabled,
+      sessionEventsEnabled,
+    )
+  }
+}
+
 @Suppress("UNCHECKED_CAST")
 private object RetenoHostApiCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
@@ -435,35 +460,40 @@ private object RetenoHostApiCodec : StandardMessageCodec() {
       }
       133.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomEvent.fromList(it)
+          NativeLifecycleTrackingOptions.fromList(it)
         }
       }
       134.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomEvents.fromList(it)
+          NativeRecomEvent.fromList(it)
         }
       }
       135.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomFilter.fromList(it)
+          NativeRecomEvents.fromList(it)
         }
       }
       136.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecommendation.fromList(it)
+          NativeRecomFilter.fromList(it)
         }
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRetenoUser.fromList(it)
+          NativeRecommendation.fromList(it)
         }
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeUserAttributes.fromList(it)
+          NativeRetenoUser.fromList(it)
         }
       }
       139.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeUserAttributes.fromList(it)
+        }
+      }
+      140.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           NativeUserCustomField.fromList(it)
         }
@@ -493,32 +523,36 @@ private object RetenoHostApiCodec : StandardMessageCodec() {
         stream.write(132)
         writeValue(stream, value.toList())
       }
-      is NativeRecomEvent -> {
+      is NativeLifecycleTrackingOptions -> {
         stream.write(133)
         writeValue(stream, value.toList())
       }
-      is NativeRecomEvents -> {
+      is NativeRecomEvent -> {
         stream.write(134)
         writeValue(stream, value.toList())
       }
-      is NativeRecomFilter -> {
+      is NativeRecomEvents -> {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is NativeRecommendation -> {
+      is NativeRecomFilter -> {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is NativeRetenoUser -> {
+      is NativeRecommendation -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is NativeUserAttributes -> {
+      is NativeRetenoUser -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is NativeUserCustomField -> {
+      is NativeUserAttributes -> {
         stream.write(139)
+        writeValue(stream, value.toList())
+      }
+      is NativeUserCustomField -> {
+        stream.write(140)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -528,6 +562,7 @@ private object RetenoHostApiCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface RetenoHostApi {
+  fun initWith(accessKey: String, lifecycleTrackingOptions: NativeLifecycleTrackingOptions?, userId: String?, isPausedInAppMessages: Boolean)
   fun setUserAttributes(externalUserId: String, user: NativeRetenoUser?)
   fun setAnonymousUserAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes)
   fun logEvent(event: NativeCustomEvent)
@@ -546,6 +581,28 @@ interface RetenoHostApi {
     @Suppress("UNCHECKED_CAST")
     fun setUp(binaryMessenger: BinaryMessenger, api: RetenoHostApi?, messageChannelSuffix: String = "") {
       val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.initWith$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val accessKeyArg = args[0] as String
+            val lifecycleTrackingOptionsArg = args[1] as NativeLifecycleTrackingOptions?
+            val userIdArg = args[2] as String?
+            val isPausedInAppMessagesArg = args[3] as Boolean
+            var wrapped: List<Any?>
+            try {
+              api.initWith(accessKeyArg, lifecycleTrackingOptionsArg, userIdArg, isPausedInAppMessagesArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.setUserAttributes$separatedMessageChannelSuffix", codec)
         if (api != null) {
@@ -733,35 +790,40 @@ private object RetenoFlutterApiCodec : StandardMessageCodec() {
       }
       133.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomEvent.fromList(it)
+          NativeLifecycleTrackingOptions.fromList(it)
         }
       }
       134.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomEvents.fromList(it)
+          NativeRecomEvent.fromList(it)
         }
       }
       135.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomFilter.fromList(it)
+          NativeRecomEvents.fromList(it)
         }
       }
       136.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecommendation.fromList(it)
+          NativeRecomFilter.fromList(it)
         }
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRetenoUser.fromList(it)
+          NativeRecommendation.fromList(it)
         }
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeUserAttributes.fromList(it)
+          NativeRetenoUser.fromList(it)
         }
       }
       139.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeUserAttributes.fromList(it)
+        }
+      }
+      140.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           NativeUserCustomField.fromList(it)
         }
@@ -791,32 +853,36 @@ private object RetenoFlutterApiCodec : StandardMessageCodec() {
         stream.write(132)
         writeValue(stream, value.toList())
       }
-      is NativeRecomEvent -> {
+      is NativeLifecycleTrackingOptions -> {
         stream.write(133)
         writeValue(stream, value.toList())
       }
-      is NativeRecomEvents -> {
+      is NativeRecomEvent -> {
         stream.write(134)
         writeValue(stream, value.toList())
       }
-      is NativeRecomFilter -> {
+      is NativeRecomEvents -> {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is NativeRecommendation -> {
+      is NativeRecomFilter -> {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is NativeRetenoUser -> {
+      is NativeRecommendation -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is NativeUserAttributes -> {
+      is NativeRetenoUser -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is NativeUserCustomField -> {
+      is NativeUserAttributes -> {
         stream.write(139)
+        writeValue(stream, value.toList())
+      }
+      is NativeUserCustomField -> {
+        stream.write(140)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)

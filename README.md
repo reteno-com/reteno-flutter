@@ -83,7 +83,32 @@ class CustomApplication : FlutterApplication(), RetenoApplication {
         return retenoInstance
     }
 }
+```
 
+3. Optionally (Android Only), you can make late initialization with config
+
+```kotlin
+class CustomApplication : FlutterApplication(), RetenoApplication {
+    override fun onCreate() {
+        super.onCreate()
+        retenoInstance = RetenoImpl(this, "<your_access_key>")
+    }
+
+    private lateinit var retenoInstance: Reteno
+    override fun getRetenoInstance(): Reteno {
+        return retenoInstance
+    }
+}
+```
+in Flutter project
+
+```dart
+await Reteno().initWith(
+      accessKey: '<your_access_key>',
+      userId: '<your_user_id>',
+      isPausedInAppMessages: true,
+      lifecycleTrackingOptions: LifecycleTrackingOptions.all(),
+    );
 ```
 
 4. Follow `Step 5` described in Android SDK setup guide: [link](https://docs.reteno.com/reference/android-sdk-setup#step-5-make-sure-to-set-up-your-firebase-application-for-firebase-cloud-messaging);
