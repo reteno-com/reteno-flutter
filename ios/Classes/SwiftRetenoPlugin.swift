@@ -3,9 +3,10 @@ import Reteno
 import UIKit
 
 public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
-
+    
     static var _initialNotification : [String: Any]?
-
+    private static var _flutterApi: RetenoFlutterApi?
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
 
         let messenger : FlutterBinaryMessenger = registrar.messenger()
@@ -16,7 +17,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
 
         RetenoHostApiSetup.setUp(binaryMessenger: messenger, api: api)
 
-        let _flutterApi = RetenoFlutterApi(binaryMessenger: messenger)
+        _flutterApi = RetenoFlutterApi(binaryMessenger: messenger)
 
         NotificationCenter.default.addObserver(instance, selector: #selector(application_onDidFinishLaunchingNotification), name: UIApplication.didFinishLaunchingNotification, object: nil)
         Reteno.userNotificationService.didReceiveNotificationResponseHandler = { response in
@@ -36,7 +37,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
                     }
                 }
 
-                _flutterApi.onNotificationClicked(payload: convertedUserInfo) { _ in }
+                _flutterApi?.onNotificationClicked(payload: convertedUserInfo) { _ in }
             }
         }
         //TODO: change to didReceiveNotificationUserInfo
@@ -58,7 +59,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
                         fatalError("Key is not a String")
                     }
                 }
-                _flutterApi.onNotificationReceived(payload: convertedUserInfo) {_ in}
+                _flutterApi?.onNotificationReceived(payload: convertedUserInfo) {_ in}
             }
 
             return presentationOptions
@@ -67,35 +68,35 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
         Reteno.addInAppStatusHandler { inAppMessageStatus in
            switch inAppMessageStatus {
                case .inAppShouldBeDisplayed:
-                   _flutterApi.onInAppMessageStatusChanged(
+               _flutterApi?.onInAppMessageStatusChanged(
                         status: NativeInAppMessageStatus.inAppShouldBeDisplayed,
                         action: nil,
                         error: nil
                    ){_ in}
 
                case .inAppIsDisplayed:
-                   _flutterApi.onInAppMessageStatusChanged(
+               _flutterApi?.onInAppMessageStatusChanged(
                         status: NativeInAppMessageStatus.inAppIsDisplayed,
                         action: nil,
                         error: nil
                    ){_ in}
 
                case .inAppShouldBeClosed(let action):
-                   _flutterApi.onInAppMessageStatusChanged(
+               _flutterApi?.onInAppMessageStatusChanged(
                         status: NativeInAppMessageStatus.inAppShouldBeClosed,
                         action: action.toNativeInAppMessageAction(),
                         error: nil
                    ){_ in}
 
                case .inAppIsClosed(let action):
-                   _flutterApi.onInAppMessageStatusChanged(
+               _flutterApi?.onInAppMessageStatusChanged(
                         status: NativeInAppMessageStatus.inAppIsClosed,
                         action: action.toNativeInAppMessageAction(),
                         error: nil
                    ){_ in}
 
                case .inAppReceivedError(let error):
-                   _flutterApi.onInAppMessageStatusChanged(
+               _flutterApi?.onInAppMessageStatusChanged(
                         status: NativeInAppMessageStatus.inAppReceivedError,
                         action: nil,
                         error: error
@@ -222,6 +223,57 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
             SwiftRetenoPlugin._initialNotification = remoteNotification as? [String: Any]
         }
     }
+    
+    func getAppInboxMessages(page: Int64?, pageSize: Int64?, completion: @escaping (Result<NativeAppInboxMessages, Error>) -> Void) {
+        let pageInt = page.flatMap { Int($0) }
+        let pageSizeInt = pageSize.flatMap { Int($0) }
+        Reteno.inbox().downloadMessages(page: pageInt, pageSize: pageSizeInt) { result in
+            switch result {
+            case .success(let (messages, totalPages)):
+                let nativeMessages = messages.map { $0.toNativeAppInboxMessage() }
+                completion(.success(
+                    NativeAppInboxMessages(
+                        messages: nativeMessages,
+                        totalPages: totalPages.map { Int64($0) } ?? 0
+                    )
+                ))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func getAppInboxMessagesCount(completion: @escaping (Result<Int64, Error>) -> Void) {
+        // Missing in native SDK
+        completion(.success(0))
+    }
+    
+    func markAsOpened(messageId: String) throws {
+        Reteno.inbox().markAsOpened(messageIds: [messageId])
+    }
+    
+    func markAllMessagesAsOpened(completion: @escaping (Result<Void, Error>) -> Void) {
+        Reteno.inbox().markAllAsOpened() { (result: Result<Void, Error>)  in
+            switch result {
+            case .success():
+                break
+            case .failure(_):
+                break
+            }
+        }
+    }
+    
+    func subscribeOnMessagesCountChanged() throws {
+        Reteno.inbox().onUnreadMessagesCountChanged = { count in
+            print(count)
+            SwiftRetenoPlugin._flutterApi?.onMessagesCountChanged(count: Int64(count)) {_ in }
+        }
+    }
+    
+    func unsubscribeAllMessagesCountChanged() throws {
+        Reteno.inbox().onUnreadMessagesCountChanged = nil
+    }
+    
 }
 
 extension FlutterError: Swift.Error {}
@@ -258,6 +310,21 @@ extension Recommendation {
         );
     }
 }
+
+extension AppInboxMessage {
+    func toNativeAppInboxMessage() -> NativeAppInboxMessage {
+        return NativeAppInboxMessage(
+            id: self.id,
+            title: self.title,
+            createdDate: "",
+            isNewMessage: self.isNew,
+            content: self.content,
+            imageUrl: self.imageURL?.absoluteString,
+            linkUrl: self.linkURL?.absoluteString,
+            category: self.category
+        );
+    }
+ }
 
 extension NativeRecomEvents {
     func toRecomEventContainer() -> RecomEventContainer {

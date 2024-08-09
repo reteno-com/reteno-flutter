@@ -1,4 +1,5 @@
 import 'package:reteno_plugin/src/models/anonymous_user_attributes.dart';
+import 'package:reteno_plugin/src/models/app_inbox_messages.dart';
 import 'package:reteno_plugin/src/models/in_app_message_status.dart';
 import 'package:reteno_plugin/src/models/lifecycle_tracking_options.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
@@ -177,6 +178,30 @@ extension LifecycleTrackingOptionsExt on LifecycleTrackingOptions {
       appLifecycleEnabled: appLifecycleEnabled,
       pushSubscriptionEnabled: pushSubscriptionEnabled,
       sessionEventsEnabled: sessionEventsEnabled,
+    );
+  }
+}
+
+extension NativeAppInboxMessagesExt on NativeAppInboxMessages {
+  AppInboxMessages toAppInboxMessages() {
+    return AppInboxMessages(
+      messages: messages.map((m) => m!.toAppInboxMessage()).toList(),
+      totalPages: totalPages,
+    );
+  }
+}
+
+extension NativeAppInboxMessageExt on NativeAppInboxMessage {
+  AppInboxMessage toAppInboxMessage() {
+    return AppInboxMessage(
+      id: id,
+      title: title,
+      isNewMessage: isNewMessage,
+      createdDate: createdDate,
+      content: content,
+      imageUrl: imageUrl,
+      linkUrl: linkUrl,
+      category: category,
     );
   }
 }

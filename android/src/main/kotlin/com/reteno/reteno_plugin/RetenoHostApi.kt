@@ -429,6 +429,68 @@ data class NativeLifecycleTrackingOptions (
   }
 }
 
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeAppInboxMessages (
+  val messages: List<NativeAppInboxMessage?>,
+  val totalPages: Long
+
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): NativeAppInboxMessages {
+      val messages = list[0] as List<NativeAppInboxMessage?>
+      val totalPages = list[1].let { if (it is Int) it.toLong() else it as Long }
+      return NativeAppInboxMessages(messages, totalPages)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      messages,
+      totalPages,
+    )
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeAppInboxMessage (
+  val id: String,
+  val title: String,
+  val createdDate: String,
+  val isNewMessage: Boolean,
+  val content: String? = null,
+  val imageUrl: String? = null,
+  val linkUrl: String? = null,
+  val category: String? = null
+
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): NativeAppInboxMessage {
+      val id = list[0] as String
+      val title = list[1] as String
+      val createdDate = list[2] as String
+      val isNewMessage = list[3] as Boolean
+      val content = list[4] as String?
+      val imageUrl = list[5] as String?
+      val linkUrl = list[6] as String?
+      val category = list[7] as String?
+      return NativeAppInboxMessage(id, title, createdDate, isNewMessage, content, imageUrl, linkUrl, category)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      id,
+      title,
+      createdDate,
+      isNewMessage,
+      content,
+      imageUrl,
+      linkUrl,
+      category,
+    )
+  }
+}
+
 @Suppress("UNCHECKED_CAST")
 private object RetenoHostApiCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
@@ -445,55 +507,65 @@ private object RetenoHostApiCodec : StandardMessageCodec() {
       }
       130.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeCustomEvent.fromList(it)
+          NativeAppInboxMessage.fromList(it)
         }
       }
       131.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeCustomEventParameter.fromList(it)
+          NativeAppInboxMessages.fromList(it)
         }
       }
       132.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeInAppMessageAction.fromList(it)
+          NativeCustomEvent.fromList(it)
         }
       }
       133.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeLifecycleTrackingOptions.fromList(it)
+          NativeCustomEventParameter.fromList(it)
         }
       }
       134.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomEvent.fromList(it)
+          NativeInAppMessageAction.fromList(it)
         }
       }
       135.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomEvents.fromList(it)
+          NativeLifecycleTrackingOptions.fromList(it)
         }
       }
       136.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomFilter.fromList(it)
+          NativeRecomEvent.fromList(it)
         }
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecommendation.fromList(it)
+          NativeRecomEvents.fromList(it)
         }
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRetenoUser.fromList(it)
+          NativeRecomFilter.fromList(it)
         }
       }
       139.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeUserAttributes.fromList(it)
+          NativeRecommendation.fromList(it)
         }
       }
       140.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeRetenoUser.fromList(it)
+        }
+      }
+      141.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeUserAttributes.fromList(it)
+        }
+      }
+      142.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           NativeUserCustomField.fromList(it)
         }
@@ -511,48 +583,56 @@ private object RetenoHostApiCodec : StandardMessageCodec() {
         stream.write(129)
         writeValue(stream, value.toList())
       }
-      is NativeCustomEvent -> {
+      is NativeAppInboxMessage -> {
         stream.write(130)
         writeValue(stream, value.toList())
       }
-      is NativeCustomEventParameter -> {
+      is NativeAppInboxMessages -> {
         stream.write(131)
         writeValue(stream, value.toList())
       }
-      is NativeInAppMessageAction -> {
+      is NativeCustomEvent -> {
         stream.write(132)
         writeValue(stream, value.toList())
       }
-      is NativeLifecycleTrackingOptions -> {
+      is NativeCustomEventParameter -> {
         stream.write(133)
         writeValue(stream, value.toList())
       }
-      is NativeRecomEvent -> {
+      is NativeInAppMessageAction -> {
         stream.write(134)
         writeValue(stream, value.toList())
       }
-      is NativeRecomEvents -> {
+      is NativeLifecycleTrackingOptions -> {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is NativeRecomFilter -> {
+      is NativeRecomEvent -> {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is NativeRecommendation -> {
+      is NativeRecomEvents -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is NativeRetenoUser -> {
+      is NativeRecomFilter -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is NativeUserAttributes -> {
+      is NativeRecommendation -> {
         stream.write(139)
         writeValue(stream, value.toList())
       }
-      is NativeUserCustomField -> {
+      is NativeRetenoUser -> {
         stream.write(140)
+        writeValue(stream, value.toList())
+      }
+      is NativeUserAttributes -> {
+        stream.write(141)
+        writeValue(stream, value.toList())
+      }
+      is NativeUserCustomField -> {
+        stream.write(142)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -571,6 +651,12 @@ interface RetenoHostApi {
   fun getInitialNotification(): Map<String, Any>?
   fun getRecommendations(recomVariantId: String, productIds: List<String>, categoryId: String, filters: List<NativeRecomFilter>?, fields: List<String>?, callback: (Result<List<NativeRecommendation>>) -> Unit)
   fun logRecommendationsEvent(events: NativeRecomEvents)
+  fun getAppInboxMessages(page: Long?, pageSize: Long?, callback: (Result<NativeAppInboxMessages>) -> Unit)
+  fun getAppInboxMessagesCount(callback: (Result<Long>) -> Unit)
+  fun markAsOpened(messageId: String)
+  fun markAllMessagesAsOpened(callback: (Result<Unit>) -> Unit)
+  fun subscribeOnMessagesCountChanged()
+  fun unsubscribeAllMessagesCountChanged()
 
   companion object {
     /** The codec used by RetenoHostApi. */
@@ -756,6 +842,115 @@ interface RetenoHostApi {
           channel.setMessageHandler(null)
         }
       }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.getAppInboxMessages$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pageArg = args[0].let { if (it is Int) it.toLong() else it as Long? }
+            val pageSizeArg = args[1].let { if (it is Int) it.toLong() else it as Long? }
+            api.getAppInboxMessages(pageArg, pageSizeArg) { result: Result<NativeAppInboxMessages> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.getAppInboxMessagesCount$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getAppInboxMessagesCount() { result: Result<Long> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.markAsOpened$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val messageIdArg = args[0] as String
+            var wrapped: List<Any?>
+            try {
+              api.markAsOpened(messageIdArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.markAllMessagesAsOpened$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.markAllMessagesAsOpened() { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                reply.reply(wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.subscribeOnMessagesCountChanged$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              api.subscribeOnMessagesCountChanged()
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.unsubscribeAllMessagesCountChanged$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              api.unsubscribeAllMessagesCountChanged()
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
     }
   }
 }
@@ -775,55 +970,65 @@ private object RetenoFlutterApiCodec : StandardMessageCodec() {
       }
       130.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeCustomEvent.fromList(it)
+          NativeAppInboxMessage.fromList(it)
         }
       }
       131.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeCustomEventParameter.fromList(it)
+          NativeAppInboxMessages.fromList(it)
         }
       }
       132.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeInAppMessageAction.fromList(it)
+          NativeCustomEvent.fromList(it)
         }
       }
       133.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeLifecycleTrackingOptions.fromList(it)
+          NativeCustomEventParameter.fromList(it)
         }
       }
       134.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomEvent.fromList(it)
+          NativeInAppMessageAction.fromList(it)
         }
       }
       135.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomEvents.fromList(it)
+          NativeLifecycleTrackingOptions.fromList(it)
         }
       }
       136.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomFilter.fromList(it)
+          NativeRecomEvent.fromList(it)
         }
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecommendation.fromList(it)
+          NativeRecomEvents.fromList(it)
         }
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRetenoUser.fromList(it)
+          NativeRecomFilter.fromList(it)
         }
       }
       139.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeUserAttributes.fromList(it)
+          NativeRecommendation.fromList(it)
         }
       }
       140.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeRetenoUser.fromList(it)
+        }
+      }
+      141.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeUserAttributes.fromList(it)
+        }
+      }
+      142.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           NativeUserCustomField.fromList(it)
         }
@@ -841,48 +1046,56 @@ private object RetenoFlutterApiCodec : StandardMessageCodec() {
         stream.write(129)
         writeValue(stream, value.toList())
       }
-      is NativeCustomEvent -> {
+      is NativeAppInboxMessage -> {
         stream.write(130)
         writeValue(stream, value.toList())
       }
-      is NativeCustomEventParameter -> {
+      is NativeAppInboxMessages -> {
         stream.write(131)
         writeValue(stream, value.toList())
       }
-      is NativeInAppMessageAction -> {
+      is NativeCustomEvent -> {
         stream.write(132)
         writeValue(stream, value.toList())
       }
-      is NativeLifecycleTrackingOptions -> {
+      is NativeCustomEventParameter -> {
         stream.write(133)
         writeValue(stream, value.toList())
       }
-      is NativeRecomEvent -> {
+      is NativeInAppMessageAction -> {
         stream.write(134)
         writeValue(stream, value.toList())
       }
-      is NativeRecomEvents -> {
+      is NativeLifecycleTrackingOptions -> {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is NativeRecomFilter -> {
+      is NativeRecomEvent -> {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is NativeRecommendation -> {
+      is NativeRecomEvents -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is NativeRetenoUser -> {
+      is NativeRecomFilter -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is NativeUserAttributes -> {
+      is NativeRecommendation -> {
         stream.write(139)
         writeValue(stream, value.toList())
       }
-      is NativeUserCustomField -> {
+      is NativeRetenoUser -> {
         stream.write(140)
+        writeValue(stream, value.toList())
+      }
+      is NativeUserAttributes -> {
+        stream.write(141)
+        writeValue(stream, value.toList())
+      }
+      is NativeUserCustomField -> {
+        stream.write(142)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -939,6 +1152,23 @@ class RetenoFlutterApi(private val binaryMessenger: BinaryMessenger, private val
     val channelName = "dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onInAppMessageStatusChanged$separatedMessageChannelSuffix"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
     channel.send(listOf(statusArg.raw, actionArg, errorArg)) {
+      if (it is List<*>) {
+        if (it.size > 1) {
+          callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else {
+          callback(Result.success(Unit))
+        }
+      } else {
+        callback(Result.failure(createConnectionError(channelName)))
+      } 
+    }
+  }
+  fun onMessagesCountChanged(countArg: Long, callback: (Result<Unit>) -> Unit)
+{
+    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+    val channelName = "dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onMessagesCountChanged$separatedMessageChannelSuffix"
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
+    channel.send(listOf(countArg)) {
       if (it is List<*>) {
         if (it.size > 1) {
           callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))

@@ -439,6 +439,74 @@ struct NativeLifecycleTrackingOptions {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeAppInboxMessages {
+  var messages: [NativeAppInboxMessage?]
+  var totalPages: Int64
+
+  static func fromList(_ list: [Any?]) -> NativeAppInboxMessages? {
+    let messages = list[0] as! [NativeAppInboxMessage?]
+    let totalPages = list[1] is Int64 ? list[1] as! Int64 : Int64(list[1] as! Int32)
+
+    return NativeAppInboxMessages(
+      messages: messages,
+      totalPages: totalPages
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      messages,
+      totalPages,
+    ]
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeAppInboxMessage {
+  var id: String
+  var title: String
+  var createdDate: String
+  var isNewMessage: Bool
+  var content: String? = nil
+  var imageUrl: String? = nil
+  var linkUrl: String? = nil
+  var category: String? = nil
+
+  static func fromList(_ list: [Any?]) -> NativeAppInboxMessage? {
+    let id = list[0] as! String
+    let title = list[1] as! String
+    let createdDate = list[2] as! String
+    let isNewMessage = list[3] as! Bool
+    let content: String? = nilOrValue(list[4])
+    let imageUrl: String? = nilOrValue(list[5])
+    let linkUrl: String? = nilOrValue(list[6])
+    let category: String? = nilOrValue(list[7])
+
+    return NativeAppInboxMessage(
+      id: id,
+      title: title,
+      createdDate: createdDate,
+      isNewMessage: isNewMessage,
+      content: content,
+      imageUrl: imageUrl,
+      linkUrl: linkUrl,
+      category: category
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      id,
+      title,
+      createdDate,
+      isNewMessage,
+      content,
+      imageUrl,
+      linkUrl,
+      category,
+    ]
+  }
+}
+
 private class RetenoHostApiCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -447,26 +515,30 @@ private class RetenoHostApiCodecReader: FlutterStandardReader {
     case 129:
       return NativeAnonymousUserAttributes.fromList(self.readValue() as! [Any?])
     case 130:
-      return NativeCustomEvent.fromList(self.readValue() as! [Any?])
+      return NativeAppInboxMessage.fromList(self.readValue() as! [Any?])
     case 131:
-      return NativeCustomEventParameter.fromList(self.readValue() as! [Any?])
+      return NativeAppInboxMessages.fromList(self.readValue() as! [Any?])
     case 132:
-      return NativeInAppMessageAction.fromList(self.readValue() as! [Any?])
+      return NativeCustomEvent.fromList(self.readValue() as! [Any?])
     case 133:
-      return NativeLifecycleTrackingOptions.fromList(self.readValue() as! [Any?])
+      return NativeCustomEventParameter.fromList(self.readValue() as! [Any?])
     case 134:
-      return NativeRecomEvent.fromList(self.readValue() as! [Any?])
+      return NativeInAppMessageAction.fromList(self.readValue() as! [Any?])
     case 135:
-      return NativeRecomEvents.fromList(self.readValue() as! [Any?])
+      return NativeLifecycleTrackingOptions.fromList(self.readValue() as! [Any?])
     case 136:
-      return NativeRecomFilter.fromList(self.readValue() as! [Any?])
+      return NativeRecomEvent.fromList(self.readValue() as! [Any?])
     case 137:
-      return NativeRecommendation.fromList(self.readValue() as! [Any?])
+      return NativeRecomEvents.fromList(self.readValue() as! [Any?])
     case 138:
-      return NativeRetenoUser.fromList(self.readValue() as! [Any?])
+      return NativeRecomFilter.fromList(self.readValue() as! [Any?])
     case 139:
-      return NativeUserAttributes.fromList(self.readValue() as! [Any?])
+      return NativeRecommendation.fromList(self.readValue() as! [Any?])
     case 140:
+      return NativeRetenoUser.fromList(self.readValue() as! [Any?])
+    case 141:
+      return NativeUserAttributes.fromList(self.readValue() as! [Any?])
+    case 142:
       return NativeUserCustomField.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -482,38 +554,44 @@ private class RetenoHostApiCodecWriter: FlutterStandardWriter {
     } else if let value = value as? NativeAnonymousUserAttributes {
       super.writeByte(129)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeCustomEvent {
+    } else if let value = value as? NativeAppInboxMessage {
       super.writeByte(130)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeCustomEventParameter {
+    } else if let value = value as? NativeAppInboxMessages {
       super.writeByte(131)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeInAppMessageAction {
+    } else if let value = value as? NativeCustomEvent {
       super.writeByte(132)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeLifecycleTrackingOptions {
+    } else if let value = value as? NativeCustomEventParameter {
       super.writeByte(133)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomEvent {
+    } else if let value = value as? NativeInAppMessageAction {
       super.writeByte(134)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomEvents {
+    } else if let value = value as? NativeLifecycleTrackingOptions {
       super.writeByte(135)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomFilter {
+    } else if let value = value as? NativeRecomEvent {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecommendation {
+    } else if let value = value as? NativeRecomEvents {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRetenoUser {
+    } else if let value = value as? NativeRecomFilter {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserAttributes {
+    } else if let value = value as? NativeRecommendation {
       super.writeByte(139)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserCustomField {
+    } else if let value = value as? NativeRetenoUser {
       super.writeByte(140)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeUserAttributes {
+      super.writeByte(141)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeUserCustomField {
+      super.writeByte(142)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -546,6 +624,12 @@ protocol RetenoHostApi {
   func getInitialNotification() throws -> [String: Any]?
   func getRecommendations(recomVariantId: String, productIds: [String], categoryId: String, filters: [NativeRecomFilter]?, fields: [String]?, completion: @escaping (Result<[NativeRecommendation], Error>) -> Void)
   func logRecommendationsEvent(events: NativeRecomEvents) throws
+  func getAppInboxMessages(page: Int64?, pageSize: Int64?, completion: @escaping (Result<NativeAppInboxMessages, Error>) -> Void)
+  func getAppInboxMessagesCount(completion: @escaping (Result<Int64, Error>) -> Void)
+  func markAsOpened(messageId: String) throws
+  func markAllMessagesAsOpened(completion: @escaping (Result<Void, Error>) -> Void)
+  func subscribeOnMessagesCountChanged() throws
+  func unsubscribeAllMessagesCountChanged() throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -696,6 +780,95 @@ class RetenoHostApiSetup {
     } else {
       logRecommendationsEventChannel.setMessageHandler(nil)
     }
+    let getAppInboxMessagesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.getAppInboxMessages\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getAppInboxMessagesChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pageArg: Int64? = isNullish(args[0]) ? nil : (args[0] is Int64? ? args[0] as! Int64? : Int64(args[0] as! Int32))
+        let pageSizeArg: Int64? = isNullish(args[1]) ? nil : (args[1] is Int64? ? args[1] as! Int64? : Int64(args[1] as! Int32))
+        api.getAppInboxMessages(page: pageArg, pageSize: pageSizeArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getAppInboxMessagesChannel.setMessageHandler(nil)
+    }
+    let getAppInboxMessagesCountChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.getAppInboxMessagesCount\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getAppInboxMessagesCountChannel.setMessageHandler { _, reply in
+        api.getAppInboxMessagesCount { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getAppInboxMessagesCountChannel.setMessageHandler(nil)
+    }
+    let markAsOpenedChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.markAsOpened\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      markAsOpenedChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let messageIdArg = args[0] as! String
+        do {
+          try api.markAsOpened(messageId: messageIdArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      markAsOpenedChannel.setMessageHandler(nil)
+    }
+    let markAllMessagesAsOpenedChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.markAllMessagesAsOpened\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      markAllMessagesAsOpenedChannel.setMessageHandler { _, reply in
+        api.markAllMessagesAsOpened { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      markAllMessagesAsOpenedChannel.setMessageHandler(nil)
+    }
+    let subscribeOnMessagesCountChangedChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.subscribeOnMessagesCountChanged\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      subscribeOnMessagesCountChangedChannel.setMessageHandler { _, reply in
+        do {
+          try api.subscribeOnMessagesCountChanged()
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      subscribeOnMessagesCountChangedChannel.setMessageHandler(nil)
+    }
+    let unsubscribeAllMessagesCountChangedChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.unsubscribeAllMessagesCountChanged\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      unsubscribeAllMessagesCountChangedChannel.setMessageHandler { _, reply in
+        do {
+          try api.unsubscribeAllMessagesCountChanged()
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      unsubscribeAllMessagesCountChangedChannel.setMessageHandler(nil)
+    }
   }
 }
 private class RetenoFlutterApiCodecReader: FlutterStandardReader {
@@ -706,26 +879,30 @@ private class RetenoFlutterApiCodecReader: FlutterStandardReader {
     case 129:
       return NativeAnonymousUserAttributes.fromList(self.readValue() as! [Any?])
     case 130:
-      return NativeCustomEvent.fromList(self.readValue() as! [Any?])
+      return NativeAppInboxMessage.fromList(self.readValue() as! [Any?])
     case 131:
-      return NativeCustomEventParameter.fromList(self.readValue() as! [Any?])
+      return NativeAppInboxMessages.fromList(self.readValue() as! [Any?])
     case 132:
-      return NativeInAppMessageAction.fromList(self.readValue() as! [Any?])
+      return NativeCustomEvent.fromList(self.readValue() as! [Any?])
     case 133:
-      return NativeLifecycleTrackingOptions.fromList(self.readValue() as! [Any?])
+      return NativeCustomEventParameter.fromList(self.readValue() as! [Any?])
     case 134:
-      return NativeRecomEvent.fromList(self.readValue() as! [Any?])
+      return NativeInAppMessageAction.fromList(self.readValue() as! [Any?])
     case 135:
-      return NativeRecomEvents.fromList(self.readValue() as! [Any?])
+      return NativeLifecycleTrackingOptions.fromList(self.readValue() as! [Any?])
     case 136:
-      return NativeRecomFilter.fromList(self.readValue() as! [Any?])
+      return NativeRecomEvent.fromList(self.readValue() as! [Any?])
     case 137:
-      return NativeRecommendation.fromList(self.readValue() as! [Any?])
+      return NativeRecomEvents.fromList(self.readValue() as! [Any?])
     case 138:
-      return NativeRetenoUser.fromList(self.readValue() as! [Any?])
+      return NativeRecomFilter.fromList(self.readValue() as! [Any?])
     case 139:
-      return NativeUserAttributes.fromList(self.readValue() as! [Any?])
+      return NativeRecommendation.fromList(self.readValue() as! [Any?])
     case 140:
+      return NativeRetenoUser.fromList(self.readValue() as! [Any?])
+    case 141:
+      return NativeUserAttributes.fromList(self.readValue() as! [Any?])
+    case 142:
       return NativeUserCustomField.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -741,38 +918,44 @@ private class RetenoFlutterApiCodecWriter: FlutterStandardWriter {
     } else if let value = value as? NativeAnonymousUserAttributes {
       super.writeByte(129)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeCustomEvent {
+    } else if let value = value as? NativeAppInboxMessage {
       super.writeByte(130)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeCustomEventParameter {
+    } else if let value = value as? NativeAppInboxMessages {
       super.writeByte(131)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeInAppMessageAction {
+    } else if let value = value as? NativeCustomEvent {
       super.writeByte(132)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeLifecycleTrackingOptions {
+    } else if let value = value as? NativeCustomEventParameter {
       super.writeByte(133)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomEvent {
+    } else if let value = value as? NativeInAppMessageAction {
       super.writeByte(134)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomEvents {
+    } else if let value = value as? NativeLifecycleTrackingOptions {
       super.writeByte(135)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomFilter {
+    } else if let value = value as? NativeRecomEvent {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecommendation {
+    } else if let value = value as? NativeRecomEvents {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRetenoUser {
+    } else if let value = value as? NativeRecomFilter {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserAttributes {
+    } else if let value = value as? NativeRecommendation {
       super.writeByte(139)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserCustomField {
+    } else if let value = value as? NativeRetenoUser {
       super.writeByte(140)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeUserAttributes {
+      super.writeByte(141)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeUserCustomField {
+      super.writeByte(142)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -799,6 +982,7 @@ protocol RetenoFlutterApiProtocol {
   func onNotificationReceived(payload payloadArg: [String: Any?], completion: @escaping (Result<Void, FlutterError>) -> Void)
   func onNotificationClicked(payload payloadArg: [String: Any?], completion: @escaping (Result<Void, FlutterError>) -> Void)
   func onInAppMessageStatusChanged(status statusArg: NativeInAppMessageStatus, action actionArg: NativeInAppMessageAction?, error errorArg: String?, completion: @escaping (Result<Void, FlutterError>) -> Void)
+  func onMessagesCountChanged(count countArg: Int64, completion: @escaping (Result<Void, FlutterError>) -> Void)
 }
 class RetenoFlutterApi: RetenoFlutterApiProtocol {
   private let binaryMessenger: FlutterBinaryMessenger
@@ -850,6 +1034,24 @@ class RetenoFlutterApi: RetenoFlutterApiProtocol {
     let channelName: String = "dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onInAppMessageStatusChanged\(messageChannelSuffix)"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([statusArg.rawValue, actionArg, errorArg] as [Any?]) { response in
+      guard let listResponse = response as? [Any?] else {
+        completion(.failure(createConnectionError(withChannelName: channelName)))
+        return
+      }
+      if listResponse.count > 1 {
+        let code: String = listResponse[0] as! String
+        let message: String? = nilOrValue(listResponse[1])
+        let details: String? = nilOrValue(listResponse[2])
+        completion(.failure(FlutterError(code: code, message: message, details: details)))
+      } else {
+        completion(.success(Void()))
+      }
+    }
+  }
+  func onMessagesCountChanged(count countArg: Int64, completion: @escaping (Result<Void, FlutterError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onMessagesCountChanged\(messageChannelSuffix)"
+    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
+    channel.sendMessage([countArg] as [Any?]) { response in
       guard let listResponse = response as? [Any?] else {
         completion(.failure(createConnectionError(withChannelName: channelName)))
         return

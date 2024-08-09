@@ -33,6 +33,15 @@ abstract class RetenoHostApi {
     List<String>? fields,
   });
   void logRecommendationsEvent(NativeRecomEvents events);
+  @async
+  NativeAppInboxMessages getAppInboxMessages({int? page, int? pageSize});
+  @async
+  int getAppInboxMessagesCount();
+  void markAsOpened(String messageId);
+  @async
+  void markAllMessagesAsOpened();
+  void subscribeOnMessagesCountChanged();
+  void unsubscribeAllMessagesCountChanged();
 }
 
 @FlutterApi()
@@ -44,6 +53,7 @@ abstract class RetenoFlutterApi {
     NativeInAppMessageAction? action,
     String? error,
   );
+  void onMessagesCountChanged(int count);
 }
 
 class NativeRetenoUser {
@@ -219,4 +229,35 @@ class NativeLifecycleTrackingOptions {
   final bool appLifecycleEnabled;
   final bool pushSubscriptionEnabled;
   final bool sessionEventsEnabled;
+}
+
+class NativeAppInboxMessages {
+  NativeAppInboxMessages({
+    required this.messages,
+    required this.totalPages,
+  });
+  final List<NativeAppInboxMessage?> messages;
+  final int totalPages;
+}
+
+class NativeAppInboxMessage {
+  NativeAppInboxMessage({
+    required this.id,
+    required this.title,
+    required this.createdDate,
+    required this.isNewMessage,
+    this.content,
+    this.imageUrl,
+    this.linkUrl,
+    this.category,
+  });
+
+  final String id;
+  final String title;
+  final String createdDate;
+  final bool isNewMessage;
+  final String? content;
+  final String? imageUrl;
+  final String? linkUrl;
+  final String? category;
 }

@@ -11,13 +11,13 @@ import 'reteno_plugin_platform_interface.dart';
 
 class Reteno {
   static final RetenoPluginPlatform _platform = RetenoPigeonChannel.instance;
+  static AppInbox get appInbox => RetenoPigeonChannel.instance.appInbox;
 
   /// NOTE: iOS not supported yet
   /// Method for finishing delayed initialization of RetenoSDK,
   /// - Parameter `accessKey`: Reteno Access Key
-  /// - Parameter `deviceId`: Reteno Device ID
   /// - Parameter `isPausedInAppMessages`: indicates paused/resumed state for in-app messages
-  /// - Parameter `userIdProvider`: - Provider that will return custom userId. In case if id provided with a delay,
+  /// - Parameter `userId`: - Provider that will return custom userId. In case if id provided with a delay,
   ///   Reteno SDK will wait till id is going to be non-null then will initialize itself
   /// - Parameter `lifecycleTrackingOptions`: behavior of automatic app lifecycle event tracking
   Future<void> initWith({

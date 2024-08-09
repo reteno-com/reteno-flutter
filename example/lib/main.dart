@@ -19,8 +19,10 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:reteno_plugin/reteno.dart';
+import 'package:reteno_plugin_example/app_inbox_messages_page.dart';
 import 'package:reteno_plugin_example/events_page.dart';
 import 'package:reteno_plugin_example/recommendation_page.dart';
+import 'package:reteno_plugin_example/widgets/app_inbox_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
@@ -129,6 +131,13 @@ final GoRouter _router = GoRouter(
           path: 'recommendations',
           builder: (BuildContext context, GoRouterState state) {
             return const RecommendationPage();
+          },
+        ),
+        GoRoute(
+          path: 'appInbox',
+          name: 'app-inbox-page',
+          builder: (BuildContext context, GoRouterState state) {
+            return const AppInboxMessagesPage();
           },
         ),
       ],
@@ -339,6 +348,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 },
               ),
+              const SizedBox(width: 8),
+              const AppInboxButton(),
+              const SizedBox(width: 8),
             ],
           ),
         ],

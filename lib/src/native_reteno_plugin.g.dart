@@ -492,6 +492,88 @@ class NativeLifecycleTrackingOptions {
   }
 }
 
+class NativeAppInboxMessages {
+  NativeAppInboxMessages({
+    required this.messages,
+    required this.totalPages,
+  });
+
+  List<NativeAppInboxMessage?> messages;
+
+  int totalPages;
+
+  Object encode() {
+    return <Object?>[
+      messages,
+      totalPages,
+    ];
+  }
+
+  static NativeAppInboxMessages decode(Object result) {
+    result as List<Object?>;
+    return NativeAppInboxMessages(
+      messages: (result[0] as List<Object?>?)!.cast<NativeAppInboxMessage?>(),
+      totalPages: result[1]! as int,
+    );
+  }
+}
+
+class NativeAppInboxMessage {
+  NativeAppInboxMessage({
+    required this.id,
+    required this.title,
+    required this.createdDate,
+    required this.isNewMessage,
+    this.content,
+    this.imageUrl,
+    this.linkUrl,
+    this.category,
+  });
+
+  String id;
+
+  String title;
+
+  String createdDate;
+
+  bool isNewMessage;
+
+  String? content;
+
+  String? imageUrl;
+
+  String? linkUrl;
+
+  String? category;
+
+  Object encode() {
+    return <Object?>[
+      id,
+      title,
+      createdDate,
+      isNewMessage,
+      content,
+      imageUrl,
+      linkUrl,
+      category,
+    ];
+  }
+
+  static NativeAppInboxMessage decode(Object result) {
+    result as List<Object?>;
+    return NativeAppInboxMessage(
+      id: result[0]! as String,
+      title: result[1]! as String,
+      createdDate: result[2]! as String,
+      isNewMessage: result[3]! as bool,
+      content: result[4] as String?,
+      imageUrl: result[5] as String?,
+      linkUrl: result[6] as String?,
+      category: result[7] as String?,
+    );
+  }
+}
+
 class _RetenoHostApiCodec extends StandardMessageCodec {
   const _RetenoHostApiCodec();
   @override
@@ -502,38 +584,44 @@ class _RetenoHostApiCodec extends StandardMessageCodec {
     } else if (value is NativeAnonymousUserAttributes) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else if (value is NativeCustomEvent) {
+    } else if (value is NativeAppInboxMessage) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else if (value is NativeCustomEventParameter) {
+    } else if (value is NativeAppInboxMessages) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    } else if (value is NativeInAppMessageAction) {
+    } else if (value is NativeCustomEvent) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else if (value is NativeLifecycleTrackingOptions) {
+    } else if (value is NativeCustomEventParameter) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomEvent) {
+    } else if (value is NativeInAppMessageAction) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomEvents) {
+    } else if (value is NativeLifecycleTrackingOptions) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomFilter) {
+    } else if (value is NativeRecomEvent) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecommendation) {
+    } else if (value is NativeRecomEvents) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRetenoUser) {
+    } else if (value is NativeRecomFilter) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserAttributes) {
+    } else if (value is NativeRecommendation) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserCustomField) {
+    } else if (value is NativeRetenoUser) {
       buffer.putUint8(140);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeUserAttributes) {
+      buffer.putUint8(141);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeUserCustomField) {
+      buffer.putUint8(142);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -548,26 +636,30 @@ class _RetenoHostApiCodec extends StandardMessageCodec {
       case 129: 
         return NativeAnonymousUserAttributes.decode(readValue(buffer)!);
       case 130: 
-        return NativeCustomEvent.decode(readValue(buffer)!);
+        return NativeAppInboxMessage.decode(readValue(buffer)!);
       case 131: 
-        return NativeCustomEventParameter.decode(readValue(buffer)!);
+        return NativeAppInboxMessages.decode(readValue(buffer)!);
       case 132: 
-        return NativeInAppMessageAction.decode(readValue(buffer)!);
+        return NativeCustomEvent.decode(readValue(buffer)!);
       case 133: 
-        return NativeLifecycleTrackingOptions.decode(readValue(buffer)!);
+        return NativeCustomEventParameter.decode(readValue(buffer)!);
       case 134: 
-        return NativeRecomEvent.decode(readValue(buffer)!);
+        return NativeInAppMessageAction.decode(readValue(buffer)!);
       case 135: 
-        return NativeRecomEvents.decode(readValue(buffer)!);
+        return NativeLifecycleTrackingOptions.decode(readValue(buffer)!);
       case 136: 
-        return NativeRecomFilter.decode(readValue(buffer)!);
+        return NativeRecomEvent.decode(readValue(buffer)!);
       case 137: 
-        return NativeRecommendation.decode(readValue(buffer)!);
+        return NativeRecomEvents.decode(readValue(buffer)!);
       case 138: 
-        return NativeRetenoUser.decode(readValue(buffer)!);
+        return NativeRecomFilter.decode(readValue(buffer)!);
       case 139: 
-        return NativeUserAttributes.decode(readValue(buffer)!);
+        return NativeRecommendation.decode(readValue(buffer)!);
       case 140: 
+        return NativeRetenoUser.decode(readValue(buffer)!);
+      case 141: 
+        return NativeUserAttributes.decode(readValue(buffer)!);
+      case 142: 
         return NativeUserCustomField.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -790,6 +882,148 @@ class RetenoHostApi {
       return;
     }
   }
+
+  Future<NativeAppInboxMessages> getAppInboxMessages({int? page, int? pageSize}) async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.getAppInboxMessages$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[page, pageSize]) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else if (__pigeon_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (__pigeon_replyList[0] as NativeAppInboxMessages?)!;
+    }
+  }
+
+  Future<int> getAppInboxMessagesCount() async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.getAppInboxMessagesCount$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(null) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else if (__pigeon_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (__pigeon_replyList[0] as int?)!;
+    }
+  }
+
+  Future<void> markAsOpened(String messageId) async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.markAsOpened$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[messageId]) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> markAllMessagesAsOpened() async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.markAllMessagesAsOpened$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(null) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> subscribeOnMessagesCountChanged() async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.subscribeOnMessagesCountChanged$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(null) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> unsubscribeAllMessagesCountChanged() async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.unsubscribeAllMessagesCountChanged$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(null) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
 }
 
 class _RetenoFlutterApiCodec extends StandardMessageCodec {
@@ -802,38 +1036,44 @@ class _RetenoFlutterApiCodec extends StandardMessageCodec {
     } else if (value is NativeAnonymousUserAttributes) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else if (value is NativeCustomEvent) {
+    } else if (value is NativeAppInboxMessage) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else if (value is NativeCustomEventParameter) {
+    } else if (value is NativeAppInboxMessages) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    } else if (value is NativeInAppMessageAction) {
+    } else if (value is NativeCustomEvent) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else if (value is NativeLifecycleTrackingOptions) {
+    } else if (value is NativeCustomEventParameter) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomEvent) {
+    } else if (value is NativeInAppMessageAction) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomEvents) {
+    } else if (value is NativeLifecycleTrackingOptions) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomFilter) {
+    } else if (value is NativeRecomEvent) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecommendation) {
+    } else if (value is NativeRecomEvents) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRetenoUser) {
+    } else if (value is NativeRecomFilter) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserAttributes) {
+    } else if (value is NativeRecommendation) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserCustomField) {
+    } else if (value is NativeRetenoUser) {
       buffer.putUint8(140);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeUserAttributes) {
+      buffer.putUint8(141);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeUserCustomField) {
+      buffer.putUint8(142);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -848,26 +1088,30 @@ class _RetenoFlutterApiCodec extends StandardMessageCodec {
       case 129: 
         return NativeAnonymousUserAttributes.decode(readValue(buffer)!);
       case 130: 
-        return NativeCustomEvent.decode(readValue(buffer)!);
+        return NativeAppInboxMessage.decode(readValue(buffer)!);
       case 131: 
-        return NativeCustomEventParameter.decode(readValue(buffer)!);
+        return NativeAppInboxMessages.decode(readValue(buffer)!);
       case 132: 
-        return NativeInAppMessageAction.decode(readValue(buffer)!);
+        return NativeCustomEvent.decode(readValue(buffer)!);
       case 133: 
-        return NativeLifecycleTrackingOptions.decode(readValue(buffer)!);
+        return NativeCustomEventParameter.decode(readValue(buffer)!);
       case 134: 
-        return NativeRecomEvent.decode(readValue(buffer)!);
+        return NativeInAppMessageAction.decode(readValue(buffer)!);
       case 135: 
-        return NativeRecomEvents.decode(readValue(buffer)!);
+        return NativeLifecycleTrackingOptions.decode(readValue(buffer)!);
       case 136: 
-        return NativeRecomFilter.decode(readValue(buffer)!);
+        return NativeRecomEvent.decode(readValue(buffer)!);
       case 137: 
-        return NativeRecommendation.decode(readValue(buffer)!);
+        return NativeRecomEvents.decode(readValue(buffer)!);
       case 138: 
-        return NativeRetenoUser.decode(readValue(buffer)!);
+        return NativeRecomFilter.decode(readValue(buffer)!);
       case 139: 
-        return NativeUserAttributes.decode(readValue(buffer)!);
+        return NativeRecommendation.decode(readValue(buffer)!);
       case 140: 
+        return NativeRetenoUser.decode(readValue(buffer)!);
+      case 141: 
+        return NativeUserAttributes.decode(readValue(buffer)!);
+      case 142: 
         return NativeUserCustomField.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -883,6 +1127,8 @@ abstract class RetenoFlutterApi {
   void onNotificationClicked(Map<String?, Object?> payload);
 
   void onInAppMessageStatusChanged(NativeInAppMessageStatus status, NativeInAppMessageAction? action, String? error);
+
+  void onMessagesCountChanged(int count);
 
   static void setUp(RetenoFlutterApi? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
     messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
@@ -954,6 +1200,31 @@ abstract class RetenoFlutterApi {
           final String? arg_error = (args[2] as String?);
           try {
             api.onInAppMessageStatusChanged(arg_status!, arg_action, arg_error);
+            return wrapResponse(empty: true);
+          } on PlatformException catch (e) {
+            return wrapResponse(error: e);
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          }
+        });
+      }
+    }
+    {
+      final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onMessagesCountChanged$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        __pigeon_channel.setMessageHandler(null);
+      } else {
+        __pigeon_channel.setMessageHandler((Object? message) async {
+          assert(message != null,
+          'Argument for dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onMessagesCountChanged was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final int? arg_count = (args[0] as int?);
+          assert(arg_count != null,
+              'Argument for dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onMessagesCountChanged was null, expected non-null int.');
+          try {
+            api.onMessagesCountChanged(arg_count!);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);

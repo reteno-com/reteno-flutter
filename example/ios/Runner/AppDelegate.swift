@@ -4,7 +4,7 @@ import Reteno
 import FirebaseCore
 import FirebaseMessaging
 
-@UIApplicationMain
+@main
 @objc class AppDelegate: FlutterAppDelegate {
     override func application(
         _ application: UIApplication,

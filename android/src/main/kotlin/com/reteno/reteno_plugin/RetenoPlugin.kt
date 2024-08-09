@@ -12,6 +12,9 @@ import com.reteno.core.Reteno
 import com.reteno.core.RetenoApplication
 import com.reteno.core.RetenoConfig
 import com.reteno.core.data.remote.model.recommendation.get.Recoms
+import com.reteno.core.domain.callback.appinbox.RetenoResultCallback
+import com.reteno.core.domain.model.appinbox.AppInboxMessage
+import com.reteno.core.domain.model.appinbox.AppInboxMessages
 import com.reteno.core.domain.model.event.LifecycleTrackingOptions
 import com.reteno.core.domain.model.recommendation.get.RecomFilter
 import com.reteno.core.domain.model.recommendation.get.RecomRequest
@@ -115,7 +118,6 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListe
             }
         })
     }
-
     private fun inAppCloseActionToNativeInAppMessageAction(closeAction: InAppCloseAction): NativeInAppMessageAction {
         return when(closeAction) {
             InAppCloseAction.CLOSE_BUTTON -> NativeInAppMessageAction(
@@ -306,6 +308,71 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListe
         )
     }
 
+    override fun getAppInboxMessages(
+        page: Long?,
+        pageSize: Long?,
+        callback: (Result<NativeAppInboxMessages>) -> Unit
+    ) {
+        reteno.appInbox.getAppInboxMessages(
+            page = page?.toInt(),
+            pageSize = pageSize?.toInt(),
+            callback = object : RetenoResultCallback<AppInboxMessages> {
+                override fun onSuccess(result: AppInboxMessages) {
+                    val nativeMessages = result.toNativeAppInboxMessages()
+                    callback(Result.success(nativeMessages))
+                }
+
+                override fun onFailure(statusCode: Int?, response: String?, throwable: Throwable?) {
+                    val error = throwable ?: Exception("Failed to get AppInbox messages. Status: $statusCode, Response: $response")
+                    callback(Result.failure(error))
+                }
+            }
+        )
+    }
+
+    override fun getAppInboxMessagesCount(callback: (Result<Long>) -> Unit) {
+        reteno.appInbox.getAppInboxMessagesCount(object : RetenoResultCallback<Int> {
+            override fun onSuccess(result: Int) {
+                callback(Result.success(result.toLong()))
+            }
+
+            override fun onFailure(statusCode: Int?, response: String?, throwable: Throwable?) {
+                val error = throwable ?: Exception("Failed to get AppInbox messages count. Status: $statusCode, Response: $response")
+                callback(Result.failure(error))
+            }
+        })
+    }
+
+    override fun markAsOpened(messageId: String) {
+        reteno.appInbox.markAsOpened(messageId)
+    }
+
+    override fun markAllMessagesAsOpened(callback: (Result<Unit>) -> Unit) {
+        reteno.appInbox.markAllMessagesAsOpened(object : RetenoResultCallback<Unit> {
+            override fun onSuccess(result: Unit) {
+                callback(Result.success(Unit))
+            }
+
+            override fun onFailure(statusCode: Int?, response: String?, throwable: Throwable?) {
+                val error = throwable ?: Exception("Failed to get AppInbox messages count. Status: $statusCode, Response: $response")
+                callback(Result.failure(error))
+            }
+        });
+    }
+
+    override fun subscribeOnMessagesCountChanged() {
+        reteno.appInbox.subscribeOnMessagesCountChanged(object : RetenoResultCallback<Int> {
+            override fun onSuccess(result: Int) {
+                flutterApi?.onMessagesCountChanged(result.toLong()){}
+            }
+            override fun onFailure(statusCode: Int?, response: String?, throwable: Throwable?) {}
+        })
+    }
+
+    override fun unsubscribeAllMessagesCountChanged() {
+        reteno.appInbox.unsubscribeAllMessagesCountChanged();
+    }
+
     override fun pauseInAppMessages(isPaused: Boolean) {
         reteno.pauseInAppMessages(isPaused)
     }
@@ -326,4 +393,24 @@ fun NativeLifecycleTrackingOptions?.toLifecycleTrackingOptions(): LifecycleTrack
             sessionEventsEnabled = it.sessionEventsEnabled
         )
     } ?: LifecycleTrackingOptions.ALL
+}
+
+fun AppInboxMessages.toNativeAppInboxMessages(): NativeAppInboxMessages {
+    return NativeAppInboxMessages(
+        messages = this.messages.map { it.toNativeAppInboxMessage() },
+        totalPages = this.totalPages.toLong()
+    )
+}
+
+fun AppInboxMessage.toNativeAppInboxMessage(): NativeAppInboxMessage {
+    return NativeAppInboxMessage(
+        id = this.id,
+        title = this.title,
+        content = this.content,
+        createdDate = this.createdDate,
+        imageUrl = this.imageUrl,
+        isNewMessage = this.isNewMessage,
+        linkUrl = this.linkUrl,
+        category = this.category,
+    )
 }

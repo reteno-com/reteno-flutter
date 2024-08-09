@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:reteno_plugin/src/extensions.dart';
 import 'package:reteno_plugin/src/models/anonymous_user_attributes.dart';
+import 'package:reteno_plugin/src/models/app_inbox_messages.dart';
 import 'package:reteno_plugin/src/models/in_app_message_status.dart';
 import 'package:reteno_plugin/src/models/lifecycle_tracking_options.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
@@ -17,6 +18,7 @@ typedef OnNotificationCallback = void Function(Map<String?, Object?> payload);
 typedef OnInAppMessageStatusChanged = void Function(
   InAppMessageStatus status,
 );
+typedef OnMessagesCountChangedCallback = void Function(int count);
 
 class RetenoPigeonChannel extends RetenoPluginPlatform {
   static RetenoPigeonChannel? _instance;
@@ -27,10 +29,12 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
   }
 
   late final RetenoHostApi _api;
+  late final AppInbox appInbox;
 
   RetenoPigeonChannel._({
     RetenoHostApi? api,
   }) : _api = api ?? RetenoHostApi() {
+    appInbox = AppInbox(_api);
     _setupListeners();
   }
 
@@ -45,6 +49,11 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
         },
         onInAppMessageStatusChangedCallback: (status) {
           onInAppMessageStatusChanged.add(status);
+        },
+        onMessagesCountChangedCallback: (count) {
+          if (appInbox._messagesCountController != null) {
+            appInbox._messagesCountController!.add(count);
+          }
         },
       ),
     );
@@ -136,11 +145,13 @@ class _RetenoFlutterApi extends RetenoFlutterApi {
     required this.onNotificationCallback,
     required this.onRetenoNotificationClicked,
     required this.onInAppMessageStatusChangedCallback,
+    required this.onMessagesCountChangedCallback,
   });
 
   OnNotificationCallback onNotificationCallback;
   OnNotificationCallback onRetenoNotificationClicked;
   OnInAppMessageStatusChanged onInAppMessageStatusChangedCallback;
+  OnMessagesCountChangedCallback onMessagesCountChangedCallback;
 
   @override
   void onNotificationClicked(Map<String?, Object?> payload) => onRetenoNotificationClicked(payload);
@@ -155,4 +166,41 @@ class _RetenoFlutterApi extends RetenoFlutterApi {
     String? error,
   ) =>
       onInAppMessageStatusChangedCallback(status.toInAppMessageStatus(action, error));
+
+  @override
+  void onMessagesCountChanged(int count) {
+    onMessagesCountChangedCallback(count);
+  }
+}
+
+class AppInbox {
+  final RetenoHostApi _api;
+
+  AppInbox(this._api);
+  StreamController<int>? _messagesCountController;
+
+  Stream<int> get onMessagesCountChanged {
+    if (_messagesCountController == null) {
+      _messagesCountController = StreamController.broadcast();
+      _api.subscribeOnMessagesCountChanged();
+    }
+    return _messagesCountController!.stream;
+  }
+
+  Future<AppInboxMessages> getAppInboxMessages({int? page, int? pageSize}) async {
+    final nativeMessages = await _api.getAppInboxMessages(page: page, pageSize: pageSize);
+    return nativeMessages.toAppInboxMessages();
+  }
+
+  Future<int> getAppInboxMessagesCount() {
+    return _api.getAppInboxMessagesCount();
+  }
+
+  Future<void> markAsOpened(String messageId) {
+    return _api.markAsOpened(messageId);
+  }
+
+  Future<void> markAllMessagesAsOpened() {
+    return _api.markAllMessagesAsOpened();
+  }
 }
