@@ -3,10 +3,9 @@ import Reteno
 import UIKit
 
 public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
-    
     static var _initialNotification : [String: Any]?
     private static var _flutterApi: RetenoFlutterApi?
-    
+
     public static func register(with registrar: FlutterPluginRegistrar) {
 
         let messenger : FlutterBinaryMessenger = registrar.messenger()
@@ -105,8 +104,13 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
        }
     }
 
-    func initWith(accessKey: String, lifecycleTrackingOptions: NativeLifecycleTrackingOptions?, userId: String?, isPausedInAppMessages: Bool) throws {
-        // Not implemented in Native SDK
+    func initWith(
+        accessKey: String,
+        lifecycleTrackingOptions: NativeLifecycleTrackingOptions?,
+        isPausedInAppMessages: Bool,
+        useCustomDeviceIdProvider: Bool
+    ) throws {
+        // No op
     }
 
     func setUserAttributes(externalUserId: String, user: NativeRetenoUser?) throws {
@@ -223,7 +227,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
             SwiftRetenoPlugin._initialNotification = remoteNotification as? [String: Any]
         }
     }
-    
+
     func getAppInboxMessages(page: Int64?, pageSize: Int64?, completion: @escaping (Result<NativeAppInboxMessages, Error>) -> Void) {
         let pageInt = page.flatMap { Int($0) }
         let pageSizeInt = pageSize.flatMap { Int($0) }
@@ -242,16 +246,22 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
             }
         }
     }
-    
+
     func getAppInboxMessagesCount(completion: @escaping (Result<Int64, Error>) -> Void) {
-        // Missing in native SDK
-        completion(.success(0))
+        Reteno.inbox().getUnreadMessagesCount { result in
+            switch result {
+            case .success(let item):
+                completion(.success(Int64(item)))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
-    
+
     func markAsOpened(messageId: String) throws {
         Reteno.inbox().markAsOpened(messageIds: [messageId])
     }
-    
+
     func markAllMessagesAsOpened(completion: @escaping (Result<Void, Error>) -> Void) {
         Reteno.inbox().markAllAsOpened() { (result: Result<Void, Error>)  in
             switch result {
@@ -262,18 +272,18 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
             }
         }
     }
-    
+
     func subscribeOnMessagesCountChanged() throws {
         Reteno.inbox().onUnreadMessagesCountChanged = { count in
             print(count)
             SwiftRetenoPlugin._flutterApi?.onMessagesCountChanged(count: Int64(count)) {_ in }
         }
     }
-    
+
     func unsubscribeAllMessagesCountChanged() throws {
         Reteno.inbox().onUnreadMessagesCountChanged = nil
     }
-    
+
 }
 
 extension FlutterError: Swift.Error {}

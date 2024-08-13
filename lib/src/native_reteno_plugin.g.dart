@@ -680,7 +680,7 @@ class RetenoHostApi {
 
   final String __pigeon_messageChannelSuffix;
 
-  Future<void> initWith({required String accessKey, NativeLifecycleTrackingOptions? lifecycleTrackingOptions, String? userId, bool isPausedInAppMessages = false,}) async {
+  Future<void> initWith({required String accessKey, NativeLifecycleTrackingOptions? lifecycleTrackingOptions, bool isPausedInAppMessages = false, bool useCustomDeviceIdProvider = false,}) async {
     final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.initWith$__pigeon_messageChannelSuffix';
     final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
@@ -688,7 +688,7 @@ class RetenoHostApi {
       binaryMessenger: __pigeon_binaryMessenger,
     );
     final List<Object?>? __pigeon_replyList =
-        await __pigeon_channel.send(<Object?>[accessKey, lifecycleTrackingOptions, userId, isPausedInAppMessages]) as List<Object?>?;
+        await __pigeon_channel.send(<Object?>[accessKey, lifecycleTrackingOptions, isPausedInAppMessages, useCustomDeviceIdProvider]) as List<Object?>?;
     if (__pigeon_replyList == null) {
       throw _createConnectionError(__pigeon_channelName);
     } else if (__pigeon_replyList.length > 1) {
@@ -1130,6 +1130,8 @@ abstract class RetenoFlutterApi {
 
   void onMessagesCountChanged(int count);
 
+  Future<String?> getDeviceId();
+
   static void setUp(RetenoFlutterApi? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
     messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
@@ -1226,6 +1228,25 @@ abstract class RetenoFlutterApi {
           try {
             api.onMessagesCountChanged(arg_count!);
             return wrapResponse(empty: true);
+          } on PlatformException catch (e) {
+            return wrapResponse(error: e);
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          }
+        });
+      }
+    }
+    {
+      final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.getDeviceId$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        __pigeon_channel.setMessageHandler(null);
+      } else {
+        __pigeon_channel.setMessageHandler((Object? message) async {
+          try {
+            final String? output = await api.getDeviceId();
+            return wrapResponse(result: output);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
           }          catch (e) {

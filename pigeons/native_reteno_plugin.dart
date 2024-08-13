@@ -15,8 +15,8 @@ abstract class RetenoHostApi {
   void initWith({
     required String accessKey,
     NativeLifecycleTrackingOptions? lifecycleTrackingOptions,
-    String? userId,
     bool isPausedInAppMessages = false,
+    bool useCustomDeviceIdProvider = false,
   });
   void setUserAttributes(String externalUserId, NativeRetenoUser? user);
   void setAnonymousUserAttributes(NativeAnonymousUserAttributes anonymousUserAttributes);
@@ -54,6 +54,8 @@ abstract class RetenoFlutterApi {
     String? error,
   );
   void onMessagesCountChanged(int count);
+  @async
+  String? getDeviceId();
 }
 
 class NativeRetenoUser {

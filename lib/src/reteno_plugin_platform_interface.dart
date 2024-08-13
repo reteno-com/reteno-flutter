@@ -11,9 +11,9 @@ import 'package:reteno_plugin/src/models/reteno_user.dart';
 abstract class RetenoPluginPlatform {
   Future<void> initWith({
     required String accessKey,
-    String? userId,
     bool isPausedInAppMessages = false,
     LifecycleTrackingOptions? lifecycleTrackingOptions,
+    Future<String> Function()? customDeviceId,
   }) {
     throw UnimplementedError('initWith() has not been implemented.');
   }
