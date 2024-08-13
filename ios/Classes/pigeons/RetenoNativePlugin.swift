@@ -615,7 +615,7 @@ class RetenoHostApiCodec: FlutterStandardMessageCodec {
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol RetenoHostApi {
-  func initWith(accessKey: String, lifecycleTrackingOptions: NativeLifecycleTrackingOptions?, userId: String?, isPausedInAppMessages: Bool) throws
+  func initWith(accessKey: String, lifecycleTrackingOptions: NativeLifecycleTrackingOptions?, isPausedInAppMessages: Bool, useCustomDeviceIdProvider: Bool) throws
   func setUserAttributes(externalUserId: String, user: NativeRetenoUser?) throws
   func setAnonymousUserAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes) throws
   func logEvent(event: NativeCustomEvent) throws
@@ -645,10 +645,10 @@ class RetenoHostApiSetup {
         let args = message as! [Any?]
         let accessKeyArg = args[0] as! String
         let lifecycleTrackingOptionsArg: NativeLifecycleTrackingOptions? = nilOrValue(args[1])
-        let userIdArg: String? = nilOrValue(args[2])
-        let isPausedInAppMessagesArg = args[3] as! Bool
+        let isPausedInAppMessagesArg = args[2] as! Bool
+        let useCustomDeviceIdProviderArg = args[3] as! Bool
         do {
-          try api.initWith(accessKey: accessKeyArg, lifecycleTrackingOptions: lifecycleTrackingOptionsArg, userId: userIdArg, isPausedInAppMessages: isPausedInAppMessagesArg)
+          try api.initWith(accessKey: accessKeyArg, lifecycleTrackingOptions: lifecycleTrackingOptionsArg, isPausedInAppMessages: isPausedInAppMessagesArg, useCustomDeviceIdProvider: useCustomDeviceIdProviderArg)
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
@@ -983,6 +983,7 @@ protocol RetenoFlutterApiProtocol {
   func onNotificationClicked(payload payloadArg: [String: Any?], completion: @escaping (Result<Void, FlutterError>) -> Void)
   func onInAppMessageStatusChanged(status statusArg: NativeInAppMessageStatus, action actionArg: NativeInAppMessageAction?, error errorArg: String?, completion: @escaping (Result<Void, FlutterError>) -> Void)
   func onMessagesCountChanged(count countArg: Int64, completion: @escaping (Result<Void, FlutterError>) -> Void)
+  func getDeviceId(completion: @escaping (Result<String?, FlutterError>) -> Void)
 }
 class RetenoFlutterApi: RetenoFlutterApiProtocol {
   private let binaryMessenger: FlutterBinaryMessenger
@@ -1063,6 +1064,25 @@ class RetenoFlutterApi: RetenoFlutterApiProtocol {
         completion(.failure(FlutterError(code: code, message: message, details: details)))
       } else {
         completion(.success(Void()))
+      }
+    }
+  }
+  func getDeviceId(completion: @escaping (Result<String?, FlutterError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.getDeviceId\(messageChannelSuffix)"
+    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
+    channel.sendMessage(nil) { response in
+      guard let listResponse = response as? [Any?] else {
+        completion(.failure(createConnectionError(withChannelName: channelName)))
+        return
+      }
+      if listResponse.count > 1 {
+        let code: String = listResponse[0] as! String
+        let message: String? = nilOrValue(listResponse[1])
+        let details: String? = nilOrValue(listResponse[2])
+        completion(.failure(FlutterError(code: code, message: message, details: details)))
+      } else {
+        let result: String? = nilOrValue(listResponse[0])
+        completion(.success(result))
       }
     }
   }

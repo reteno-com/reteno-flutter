@@ -642,7 +642,7 @@ private object RetenoHostApiCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface RetenoHostApi {
-  fun initWith(accessKey: String, lifecycleTrackingOptions: NativeLifecycleTrackingOptions?, userId: String?, isPausedInAppMessages: Boolean)
+  fun initWith(accessKey: String, lifecycleTrackingOptions: NativeLifecycleTrackingOptions?, isPausedInAppMessages: Boolean, useCustomDeviceIdProvider: Boolean)
   fun setUserAttributes(externalUserId: String, user: NativeRetenoUser?)
   fun setAnonymousUserAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes)
   fun logEvent(event: NativeCustomEvent)
@@ -674,11 +674,11 @@ interface RetenoHostApi {
             val args = message as List<Any?>
             val accessKeyArg = args[0] as String
             val lifecycleTrackingOptionsArg = args[1] as NativeLifecycleTrackingOptions?
-            val userIdArg = args[2] as String?
-            val isPausedInAppMessagesArg = args[3] as Boolean
+            val isPausedInAppMessagesArg = args[2] as Boolean
+            val useCustomDeviceIdProviderArg = args[3] as Boolean
             var wrapped: List<Any?>
             try {
-              api.initWith(accessKeyArg, lifecycleTrackingOptionsArg, userIdArg, isPausedInAppMessagesArg)
+              api.initWith(accessKeyArg, lifecycleTrackingOptionsArg, isPausedInAppMessagesArg, useCustomDeviceIdProviderArg)
               wrapped = listOf<Any?>(null)
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
@@ -1174,6 +1174,24 @@ class RetenoFlutterApi(private val binaryMessenger: BinaryMessenger, private val
           callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
         } else {
           callback(Result.success(Unit))
+        }
+      } else {
+        callback(Result.failure(createConnectionError(channelName)))
+      } 
+    }
+  }
+  fun getDeviceId(callback: (Result<String?>) -> Unit)
+{
+    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+    val channelName = "dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.getDeviceId$separatedMessageChannelSuffix"
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
+    channel.send(null) {
+      if (it is List<*>) {
+        if (it.size > 1) {
+          callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else {
+          val output = it[0] as String?
+          callback(Result.success(output))
         }
       } else {
         callback(Result.failure(createConnectionError(channelName)))

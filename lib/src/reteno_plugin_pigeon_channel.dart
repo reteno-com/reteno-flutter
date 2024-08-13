@@ -31,6 +31,8 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
   late final RetenoHostApi _api;
   late final AppInbox appInbox;
 
+  static Future<String> Function()? _getCustomDeviceId;
+
   RetenoPigeonChannel._({
     RetenoHostApi? api,
   }) : _api = api ?? RetenoHostApi() {
@@ -62,15 +64,16 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
   @override
   Future<void> initWith({
     required String accessKey,
-    String? userId,
     bool isPausedInAppMessages = false,
     LifecycleTrackingOptions? lifecycleTrackingOptions,
+    Future<String> Function()? customDeviceId,
   }) {
+    _getCustomDeviceId = customDeviceId;
     return _api.initWith(
       accessKey: accessKey,
-      userId: userId,
       isPausedInAppMessages: isPausedInAppMessages,
       lifecycleTrackingOptions: lifecycleTrackingOptions?.toNativeLifecycleTrackingOptions(),
+      useCustomDeviceIdProvider: customDeviceId != null,
     );
   }
 
@@ -138,6 +141,10 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
   Future<void> logRecommendationsEvent(RetenoRecomEvents events) {
     return _api.logRecommendationsEvent(events.toNativeRecomEvents());
   }
+
+  static Future<String>? _getCustomDeviceIdInternal() {
+    return _getCustomDeviceId?.call();
+  }
 }
 
 class _RetenoFlutterApi extends RetenoFlutterApi {
@@ -171,6 +178,11 @@ class _RetenoFlutterApi extends RetenoFlutterApi {
   void onMessagesCountChanged(int count) {
     onMessagesCountChangedCallback(count);
   }
+
+  @override
+  Future<String?> getDeviceId() async {
+    return await RetenoPigeonChannel._getCustomDeviceIdInternal();
+  }
 }
 
 class AppInbox {
@@ -179,6 +191,7 @@ class AppInbox {
   AppInbox(this._api);
   StreamController<int>? _messagesCountController;
 
+  // Obtain AppInbox messages count and observing the to value change.
   Stream<int> get onMessagesCountChanged {
     if (_messagesCountController == null) {
       _messagesCountController = StreamController.broadcast();
@@ -187,19 +200,26 @@ class AppInbox {
     return _messagesCountController!.stream;
   }
 
+  /// Get AppInbox messages.
+  /// - `page` - page - order number of requested page. If null will be returned all messages.
+  /// - `pageSize` - pageSize - number of messages in one page. If null will be returned all messages.
   Future<AppInboxMessages> getAppInboxMessages({int? page, int? pageSize}) async {
     final nativeMessages = await _api.getAppInboxMessages(page: page, pageSize: pageSize);
     return nativeMessages.toAppInboxMessages();
   }
 
+  /// Obtain AppInbox messages count once.
   Future<int> getAppInboxMessagesCount() {
     return _api.getAppInboxMessagesCount();
   }
 
+  /// Change inbox message status on OPENED
+  /// - `messageId` - message id
   Future<void> markAsOpened(String messageId) {
     return _api.markAsOpened(messageId);
   }
 
+  /// Change all inbox messages status on OPENED
   Future<void> markAllMessagesAsOpened() {
     return _api.markAllMessagesAsOpened();
   }

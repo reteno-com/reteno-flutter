@@ -1,3 +1,18 @@
+## 1.7.0
+* Bump Android sdk to 2.0.12
+* Bump iOS sdk to 2.0.11
+* Update `initWith` method signature for Reteno initialization (Android only)
+	- add device id provider parameter
+	```dart
+	await Reteno.initWith(
+		accessKey: 'access_key',
+		customDeviceId: () async {
+			return await Amplitude.getInstance().getDeviceId();
+		},
+	);
+	```
+* Add `Reteno.appInbox` to get AppInbox messages
+
 ## 1.6.0
 * Bump Android sdk to 2.0.11
 * Added `initWith` method for Reteno initialization (Android only)

@@ -16,13 +16,13 @@ Reteno Flutter SDK
 ```
 
 target 'NotificationServiceExtension' do
-  pod 'Reteno', '2.0.10'
+  pod 'Reteno', '2.0.11'
 
 end
 
 target 'RetenoSdkExample' do
   ...
-  pod 'Reteno', '2.0.10'
+  pod 'Reteno', '2.0.11'
 end
 
 ```
@@ -411,6 +411,31 @@ You can personalize the user experience and increase sales by adding recommendat
     fields: ['productId', 'name', 'descr', 'imageUrl', 'price'],
   );
   ```
+
+  ## Reteno App Inbox
+  ### Downloading new messages
+  ```dart
+  final messages = await Reteno.appInbox.getAppInboxMessages();
+  ```
+  ### Marking message as opened
+  ```dart
+  Reteno.appInbox.markAsOpened(message.id);
+  ```
+  ### Marking all messages as opened
+  ```dart
+  Reteno.appInbox.markAllMessagesAsOpened();
+  ```
+  ### Obtaining messages count
+  ```dart
+  final count = await Reteno.appInbox.getAppInboxMessagesCount();
+  ```
+  ### Subscribing to messages count changes
+  ```dart
+  Reteno.appInbox.onMessagesCountChanged.listen((count) {
+    print(count);
+  });
+  ```
+
 
 ## License
 

@@ -11,26 +11,45 @@ import 'reteno_plugin_platform_interface.dart';
 
 class Reteno {
   static final RetenoPluginPlatform _platform = RetenoPigeonChannel.instance;
+
+  /// Reteno `AppInbox` instance.
   static AppInbox get appInbox => RetenoPigeonChannel.instance.appInbox;
 
-  /// NOTE: iOS not supported yet
+  /// NOTE: Android SDK only
   /// Method for finishing delayed initialization of RetenoSDK,
   /// - Parameter `accessKey`: Reteno Access Key
   /// - Parameter `isPausedInAppMessages`: indicates paused/resumed state for in-app messages
-  /// - Parameter `userId`: - Provider that will return custom userId. In case if id provided with a delay,
   ///   Reteno SDK will wait till id is going to be non-null then will initialize itself
   /// - Parameter `lifecycleTrackingOptions`: behavior of automatic app lifecycle event tracking
+  /// - Parameter `customDeviceId`: custom device id provider
+  ///   Reteno SDK will wait till id is going to be non-null
+  /// example:
+  /// ```dart
+  /// await Reteno.initWith(
+  ///   accessKey: 'access_key',
+  ///   isPausedInAppMessages: true,
+  ///   lifecycleTrackingOptions: LifecycleTrackingOptions(
+  ///     appLifecycleEnabled: true,
+  ///     pushSubscriptionEnabled: true,
+  ///     sessionEventsEnabled: true,
+  ///   ),
+  ///   customDeviceId: () async {
+  ///     return await Amplitude.getInstance().getDeviceId();
+  ///   },
+  /// );
+  /// ```
+
   Future<void> initWith({
     required String accessKey,
-    String? userId,
     bool isPausedInAppMessages = false,
     LifecycleTrackingOptions? lifecycleTrackingOptions,
+    Future<String> Function()? customDeviceId,
   }) {
     return _platform.initWith(
       accessKey: accessKey,
-      userId: userId,
       isPausedInAppMessages: isPausedInAppMessages,
       lifecycleTrackingOptions: lifecycleTrackingOptions,
+      customDeviceId: customDeviceId,
     );
   }
 
