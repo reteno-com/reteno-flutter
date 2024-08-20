@@ -1,3 +1,6 @@
+## 1.7.1
+* Add `Reteno.onUserNotificationAction` for listening on mobile push notifications actions
+
 ## 1.7.0
 * Bump Android sdk to 2.0.12
 * Bump iOS sdk to 2.0.11

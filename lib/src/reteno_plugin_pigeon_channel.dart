@@ -10,6 +10,7 @@ import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
 import 'package:reteno_plugin/src/models/reteno_user.dart';
+import 'package:reteno_plugin/src/models/reteno_user_notification_action.dart';
 import 'package:reteno_plugin/src/reteno_plugin_platform_interface.dart';
 
 import 'native_reteno_plugin.g.dart';
@@ -19,6 +20,7 @@ typedef OnInAppMessageStatusChanged = void Function(
   InAppMessageStatus status,
 );
 typedef OnMessagesCountChangedCallback = void Function(int count);
+typedef OnNotificationActionHandler = void Function(RetenoUserNotificationAction action);
 
 class RetenoPigeonChannel extends RetenoPluginPlatform {
   static RetenoPigeonChannel? _instance;
@@ -56,6 +58,9 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
           if (appInbox._messagesCountController != null) {
             appInbox._messagesCountController!.add(count);
           }
+        },
+        onNotificationActionCallback: (action) {
+          onUserNotificationAction.add(action);
         },
       ),
     );
@@ -153,18 +158,25 @@ class _RetenoFlutterApi extends RetenoFlutterApi {
     required this.onRetenoNotificationClicked,
     required this.onInAppMessageStatusChangedCallback,
     required this.onMessagesCountChangedCallback,
+    required this.onNotificationActionCallback,
   });
 
   OnNotificationCallback onNotificationCallback;
   OnNotificationCallback onRetenoNotificationClicked;
   OnInAppMessageStatusChanged onInAppMessageStatusChangedCallback;
   OnMessagesCountChangedCallback onMessagesCountChangedCallback;
+  OnNotificationActionHandler onNotificationActionCallback;
 
   @override
   void onNotificationClicked(Map<String?, Object?> payload) => onRetenoNotificationClicked(payload);
 
   @override
   void onNotificationReceived(Map<String?, Object?> payload) => onNotificationCallback(payload);
+
+  @override
+  void onNotificationActionHandler(NativeUserNotificationAction action) {
+    onNotificationActionCallback(action.toUserNotificationAction());
+  }
 
   @override
   void onInAppMessageStatusChanged(

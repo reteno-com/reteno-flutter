@@ -491,6 +491,31 @@ data class NativeAppInboxMessage (
   }
 }
 
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeUserNotificationAction (
+  val actionId: String? = null,
+  val customData: Map<String?, Any?>? = null,
+  val link: String? = null
+
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): NativeUserNotificationAction {
+      val actionId = list[0] as String?
+      val customData = list[1] as Map<String?, Any?>?
+      val link = list[2] as String?
+      return NativeUserNotificationAction(actionId, customData, link)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      actionId,
+      customData,
+      link,
+    )
+  }
+}
+
 @Suppress("UNCHECKED_CAST")
 private object RetenoHostApiCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
@@ -570,6 +595,11 @@ private object RetenoHostApiCodec : StandardMessageCodec() {
           NativeUserCustomField.fromList(it)
         }
       }
+      143.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeUserNotificationAction.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -633,6 +663,10 @@ private object RetenoHostApiCodec : StandardMessageCodec() {
       }
       is NativeUserCustomField -> {
         stream.write(142)
+        writeValue(stream, value.toList())
+      }
+      is NativeUserNotificationAction -> {
+        stream.write(143)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -1033,6 +1067,11 @@ private object RetenoFlutterApiCodec : StandardMessageCodec() {
           NativeUserCustomField.fromList(it)
         }
       }
+      143.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeUserNotificationAction.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -1098,6 +1137,10 @@ private object RetenoFlutterApiCodec : StandardMessageCodec() {
         stream.write(142)
         writeValue(stream, value.toList())
       }
+      is NativeUserNotificationAction -> {
+        stream.write(143)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -1135,6 +1178,23 @@ class RetenoFlutterApi(private val binaryMessenger: BinaryMessenger, private val
     val channelName = "dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationClicked$separatedMessageChannelSuffix"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
     channel.send(listOf(payloadArg)) {
+      if (it is List<*>) {
+        if (it.size > 1) {
+          callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else {
+          callback(Result.success(Unit))
+        }
+      } else {
+        callback(Result.failure(createConnectionError(channelName)))
+      } 
+    }
+  }
+  fun onNotificationActionHandler(actionArg: NativeUserNotificationAction, callback: (Result<Unit>) -> Unit)
+{
+    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+    val channelName = "dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationActionHandler$separatedMessageChannelSuffix"
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
+    channel.send(listOf(actionArg)) {
       if (it is List<*>) {
         if (it.size > 1) {
           callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))

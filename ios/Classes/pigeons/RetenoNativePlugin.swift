@@ -507,6 +507,32 @@ struct NativeAppInboxMessage {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeUserNotificationAction {
+  var actionId: String? = nil
+  var customData: [String?: Any?]? = nil
+  var link: String? = nil
+
+  static func fromList(_ list: [Any?]) -> NativeUserNotificationAction? {
+    let actionId: String? = nilOrValue(list[0])
+    let customData: [String?: Any?]? = nilOrValue(list[1])
+    let link: String? = nilOrValue(list[2])
+
+    return NativeUserNotificationAction(
+      actionId: actionId,
+      customData: customData,
+      link: link
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      actionId,
+      customData,
+      link,
+    ]
+  }
+}
+
 private class RetenoHostApiCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -540,6 +566,8 @@ private class RetenoHostApiCodecReader: FlutterStandardReader {
       return NativeUserAttributes.fromList(self.readValue() as! [Any?])
     case 142:
       return NativeUserCustomField.fromList(self.readValue() as! [Any?])
+    case 143:
+      return NativeUserNotificationAction.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -592,6 +620,9 @@ private class RetenoHostApiCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? NativeUserCustomField {
       super.writeByte(142)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeUserNotificationAction {
+      super.writeByte(143)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -904,6 +935,8 @@ private class RetenoFlutterApiCodecReader: FlutterStandardReader {
       return NativeUserAttributes.fromList(self.readValue() as! [Any?])
     case 142:
       return NativeUserCustomField.fromList(self.readValue() as! [Any?])
+    case 143:
+      return NativeUserNotificationAction.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -957,6 +990,9 @@ private class RetenoFlutterApiCodecWriter: FlutterStandardWriter {
     } else if let value = value as? NativeUserCustomField {
       super.writeByte(142)
       super.writeValue(value.toList())
+    } else if let value = value as? NativeUserNotificationAction {
+      super.writeByte(143)
+      super.writeValue(value.toList())
     } else {
       super.writeValue(value)
     }
@@ -981,6 +1017,7 @@ class RetenoFlutterApiCodec: FlutterStandardMessageCodec {
 protocol RetenoFlutterApiProtocol {
   func onNotificationReceived(payload payloadArg: [String: Any?], completion: @escaping (Result<Void, FlutterError>) -> Void)
   func onNotificationClicked(payload payloadArg: [String: Any?], completion: @escaping (Result<Void, FlutterError>) -> Void)
+  func onNotificationActionHandler(action actionArg: NativeUserNotificationAction, completion: @escaping (Result<Void, FlutterError>) -> Void)
   func onInAppMessageStatusChanged(status statusArg: NativeInAppMessageStatus, action actionArg: NativeInAppMessageAction?, error errorArg: String?, completion: @escaping (Result<Void, FlutterError>) -> Void)
   func onMessagesCountChanged(count countArg: Int64, completion: @escaping (Result<Void, FlutterError>) -> Void)
   func getDeviceId(completion: @escaping (Result<String?, FlutterError>) -> Void)
@@ -1017,6 +1054,24 @@ class RetenoFlutterApi: RetenoFlutterApiProtocol {
     let channelName: String = "dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationClicked\(messageChannelSuffix)"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([payloadArg] as [Any?]) { response in
+      guard let listResponse = response as? [Any?] else {
+        completion(.failure(createConnectionError(withChannelName: channelName)))
+        return
+      }
+      if listResponse.count > 1 {
+        let code: String = listResponse[0] as! String
+        let message: String? = nilOrValue(listResponse[1])
+        let details: String? = nilOrValue(listResponse[2])
+        completion(.failure(FlutterError(code: code, message: message, details: details)))
+      } else {
+        completion(.success(Void()))
+      }
+    }
+  }
+  func onNotificationActionHandler(action actionArg: NativeUserNotificationAction, completion: @escaping (Result<Void, FlutterError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.onNotificationActionHandler\(messageChannelSuffix)"
+    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
+    channel.sendMessage([actionArg] as [Any?]) { response in
       guard let listResponse = response as? [Any?] else {
         completion(.failure(createConnectionError(withChannelName: channelName)))
         return

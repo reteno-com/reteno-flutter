@@ -12,5 +12,12 @@
         <meta-data
             android:name="com.reteno.Receiver.PushReceived"
             android:value="com.reteno.reteno_plugin.RetenoPushReceiver" />
+        <receiver
+            android:name="com.reteno.reteno_plugin.RetenoNotificationClickedReceiver"
+            android:enabled="true"
+            android:exported="true"/>
+        <meta-data
+            android:name="com.reteno.Receiver.NotificationClicked"
+            android:value="com.reteno.reteno_plugin.RetenoNotificationClickedReceiver" />
     </application>
 </manifest>

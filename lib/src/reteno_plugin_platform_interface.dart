@@ -7,6 +7,7 @@ import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
 import 'package:reteno_plugin/src/models/reteno_user.dart';
+import 'package:reteno_plugin/src/models/reteno_user_notification_action.dart';
 
 abstract class RetenoPluginPlatform {
   Future<void> initWith({
@@ -33,6 +34,9 @@ abstract class RetenoPluginPlatform {
       StreamController<Map<String, dynamic>>.broadcast();
 
   StreamController<InAppMessageStatus> onInAppMessageStatusChanged = StreamController<InAppMessageStatus>.broadcast();
+
+  StreamController<RetenoUserNotificationAction> onUserNotificationAction =
+      StreamController<RetenoUserNotificationAction>.broadcast();
 
   Future<Map<dynamic, dynamic>?> getInitialNotification() {
     throw UnimplementedError('getInitialNotification() has not been implemented.');

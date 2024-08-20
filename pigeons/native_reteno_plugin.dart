@@ -48,6 +48,8 @@ abstract class RetenoHostApi {
 abstract class RetenoFlutterApi {
   void onNotificationReceived(Map<String, Object?> payload);
   void onNotificationClicked(Map<String, Object?> payload);
+  void onNotificationActionHandler(NativeUserNotificationAction action);
+
   void onInAppMessageStatusChanged(
     NativeInAppMessageStatus status,
     NativeInAppMessageAction? action,
@@ -262,4 +264,16 @@ class NativeAppInboxMessage {
   final String? imageUrl;
   final String? linkUrl;
   final String? category;
+}
+
+class NativeUserNotificationAction {
+  NativeUserNotificationAction({
+    this.actionId,
+    this.customData,
+    this.link,
+  });
+
+  final String? actionId;
+  final Map<String?, Object?>? customData;
+  final String? link;
 }

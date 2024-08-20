@@ -10,3 +10,4 @@ export 'src/models/reteno_custom_event_parameter.dart';
 export 'src/models/reteno_recommendation.dart';
 export 'src/models/reteno_recommendation_event.dart';
 export 'src/models/reteno_user.dart';
+export 'src/models/reteno_user_notification_action.dart';

@@ -39,6 +39,23 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
                 _flutterApi?.onNotificationClicked(payload: convertedUserInfo) { _ in }
             }
         }
+        
+        //
+        
+        Reteno.userNotificationService.notificationActionHandler = { userInfo, action in
+            var convertedUserInfo = [String: Any?]()
+            
+            for (key, value) in userInfo {
+                if let stringKey = key.base as? String {
+                    convertedUserInfo[stringKey] = value
+                } else {
+                    fatalError("Key is not a String")
+                }
+            }
+            
+            _flutterApi?.onNotificationActionHandler(action: action.toNativeUserNotificationAction()) {_ in }
+        }
+        
         //TODO: change to didReceiveNotificationUserInfo
         Reteno.userNotificationService.willPresentNotificationHandler = { notification in
             let presentationOptions: UNNotificationPresentationOptions
@@ -342,5 +359,15 @@ extension NativeRecomEvents {
         let impressions = self.events.compactMap { $0.flatMap { $0.eventType == .impression ? RecomEvent(date: dateFormatter.date(from: $0.dateOccurred) ?? Date(), productId: $0.productId) : nil } }
         let clicks = self.events.compactMap { $0.flatMap { $0.eventType == .click ? RecomEvent(date: dateFormatter.date(from: $0.dateOccurred) ?? Date(), productId: $0.productId) : nil } }
         return RecomEventContainer(recomVariantId: self.recomVariantId, impressions: impressions, clicks: clicks)
+    }
+}
+
+extension RetenoUserNotificationAction {
+    func toNativeUserNotificationAction() -> NativeUserNotificationAction {
+        return NativeUserNotificationAction(
+            actionId: self.actionId,
+            customData: self.customData,
+            link: self.link?.absoluteString
+        )
     }
 }

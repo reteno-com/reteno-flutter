@@ -159,6 +159,19 @@ Reteno.onRetenoNotificationClicked.listen((Map<String, dynamic> payload) {
 
 ```
 
+### Push notification actions
+
+When you want to handle push notification actions you can use `onUserNotificationAction` stream, so you can listen to it and receive notification action data:
+
+```dart
+import 'package:reteno_plugin/reteno.dart';
+
+    Reteno.onUserNotificationAction.listen((event) {
+      print('$_retenoPluginLogTag: onUserNotificationAction: ${event.toString()}');
+    });
+
+```
+
 ## Tracking user behaviour
 
 ### Track Custom Events

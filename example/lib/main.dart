@@ -219,6 +219,11 @@ class _MyHomePageState extends State<MyHomePage> {
       _showAlert(context, '$_retenoPluginLogTag: onRetenoClicked: ${event.toString()}');
     });
 
+    Reteno.onUserNotificationAction.listen((event) {
+      print('$_retenoPluginLogTag: onUserNotificationAction: ${event.toString()}');
+      _showAlert(context, '$_retenoPluginLogTag: onUserNotificationAction: ${event.toString()}');
+    });
+
     Reteno.onInAppMessageStatusChanged.listen((status) {
       switch (status) {
         case InAppShouldBeDisplayed():

@@ -7,6 +7,7 @@ import 'package:reteno_plugin/src/models/reteno_custom_event_parameter.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
 import 'package:reteno_plugin/src/models/reteno_user.dart';
+import 'package:reteno_plugin/src/models/reteno_user_notification_action.dart';
 import 'package:reteno_plugin/src/native_reteno_plugin.g.dart';
 
 extension RetenoUserExt on RetenoUser {
@@ -202,6 +203,16 @@ extension NativeAppInboxMessageExt on NativeAppInboxMessage {
       imageUrl: imageUrl,
       linkUrl: linkUrl,
       category: category,
+    );
+  }
+}
+
+extension NativeUserNotificationActionExt on NativeUserNotificationAction {
+  RetenoUserNotificationAction toUserNotificationAction() {
+    return RetenoUserNotificationAction(
+      actionId: actionId,
+      customData: customData,
+      link: link,
     );
   }
 }

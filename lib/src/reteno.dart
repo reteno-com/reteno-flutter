@@ -1,10 +1,4 @@
-import 'package:reteno_plugin/src/models/anonymous_user_attributes.dart';
-import 'package:reteno_plugin/src/models/in_app_message_status.dart';
-import 'package:reteno_plugin/src/models/lifecycle_tracking_options.dart';
-import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
-import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
-import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
-import 'package:reteno_plugin/src/models/reteno_user.dart';
+import 'package:reteno_plugin/reteno.dart';
 import 'package:reteno_plugin/src/reteno_plugin_pigeon_channel.dart';
 
 import 'reteno_plugin_platform_interface.dart';
@@ -87,12 +81,28 @@ class Reteno {
   ///
   /// Example usage:
   /// ```dart
-  /// RetenoPlugin.onRetenoNotificationReceived.listen((notification) {
+  /// Reteno.onRetenoNotificationReceived.listen((notification) {
   ///   // Handle the received notification here
   ///   print("Received notification: $notification");
   /// });
   /// ```
   static Stream<Map<String, dynamic>> get onRetenoNotificationReceived => _platform.onRetenoNotificationReceived.stream;
+
+  /// A static getter that provides a [Stream] of user notification actions.
+  /// This [Stream] emits [RetenoUserNotificationAction] object
+  /// RetenoUserNotificationAction
+  /// - Parameter `actionId`: A unique identifier for the button action.
+  /// - Parameter `customData`: key-value pairs of additional parameters associated with the button
+  /// - Parameter `link`: An URL or a deeplink that opens when the notification is selected
+  ///
+  /// Example usage:
+  /// ```dart
+  /// Reteno.onUserNotificationAction.listen((action) {
+  ///   // Handle the user notification action here
+  ///   print("User notification action: $action");
+  /// });
+  /// ```
+  static Stream<RetenoUserNotificationAction> get onUserNotificationAction => _platform.onUserNotificationAction.stream;
 
   /// A static getter that provides a [Stream] of notifications clicked by the user
   /// in foreground and background states.
@@ -105,7 +115,7 @@ class Reteno {
   ///
   /// Example usage:
   /// ```dart
-  /// RetenoPlugin.onRetenoNotificationClicked.listen((notification) {
+  /// Reteno.onRetenoNotificationClicked.listen((notification) {
   ///   // Handle the clicked notification here
   ///   print("Clicked notification: $notification");
   /// });
