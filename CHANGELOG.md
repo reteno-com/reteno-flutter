@@ -1,3 +1,8 @@
+## 1.7.2
+* Bump Android sdk to 2.0.20
+* Bump iOS sdk to 2.0.21
+* Fix `Reteno.onRetenoNotificationClicked` not working on Android when push notification with link is clicked
+
 ## 1.7.1
 * Add `Reteno.onUserNotificationAction` for listening on mobile push notifications actions
 

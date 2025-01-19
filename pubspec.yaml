@@ -1,6 +1,6 @@
 name: reteno_plugin
 description: The Reteno Flutter Plugin for Mobile Customer Engagement and Analytics solutions
-version: 1.7.1
+version: 1.7.2
 homepage: https://github.com/reteno-com/reteno-flutter
 issue_tracker: https://github.com/reteno-com/reteno-flutter/issues?q=is%3Aissue+is%3Aopen
 documentation: https://docs.reteno.com/reference/flutter-sdk

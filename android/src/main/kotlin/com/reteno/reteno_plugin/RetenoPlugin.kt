@@ -39,10 +39,47 @@ import kotlin.coroutines.suspendCoroutine
 private const val TAG = "RetenoPlugin"
 private const val ES_INTERACTION_ID_KEY: String = "es_interaction_id"
 
-class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListener {
+class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     companion object {
         private var pluginBinding: FlutterPlugin.FlutterPluginBinding? = null
-        var flutterApi: RetenoFlutterApi? = null
+
+        // Create a singleton instance of flutterApi
+        @Volatile
+        private var flutterApiInstance: RetenoFlutterApi? = null
+
+        // Synchronized getter for flutterApi
+        val flutterApi: RetenoFlutterApi?
+            get() {
+                return flutterApiInstance
+            }
+
+        @Synchronized
+        private fun initializeFlutterApi(messenger: BinaryMessenger) {
+            if (flutterApiInstance == null) {
+                flutterApiInstance = RetenoFlutterApi(messenger)
+            }
+        }
+
+        // Store both types of pending notifications
+        private var pendingNotificationAction: NativeUserNotificationAction? = null
+        private var pendingNotificationClick: Map<String, Any?>? = null
+
+        fun handleNotificationAction(action: NativeUserNotificationAction) {
+            if (flutterApiInstance != null) {
+                flutterApiInstance?.onNotificationActionHandler(action) {}
+            } else {
+                pendingNotificationAction = action
+            }
+        }
+
+        fun handleNotificationClick(payload: Map<String, Any?>) {
+            if (flutterApiInstance != null) {
+                flutterApiInstance?.onNotificationClicked(payload) {}
+            } else {
+                Log.i(TAG, "Plugin not attached yet. Queuing notification click.")
+                pendingNotificationClick = payload
+            }
+        }
     }
 
     private lateinit var reteno: Reteno
@@ -54,17 +91,23 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListe
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         Log.i(TAG, "onAttachedToEngine")
         pluginBinding = flutterPluginBinding
-        if (flutterApi == null) {
-            initPlugin(flutterPluginBinding.binaryMessenger)
-        }
+        initializeFlutterApi(flutterPluginBinding.binaryMessenger)
+
         reteno = (flutterPluginBinding.applicationContext as RetenoApplication).getRetenoInstance()
         applicationContext = flutterPluginBinding.applicationContext
         createInAppLifecycleListener()
     }
 
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        Log.i(TAG, "onDetachedFromEngine")
+        // Don't clean up flutterApi here anymore
+        pluginBinding = null
+    }
+
     private fun initPlugin(binaryMessenger: BinaryMessenger) {
         RetenoHostApi.setUp(binaryMessenger, this)
-        flutterApi = RetenoFlutterApi(binaryMessenger)
+        // Initialize flutterApi if it hasn't been initialized yet
+        initializeFlutterApi(binaryMessenger)
     }
 
     private fun createInAppLifecycleListener() {
@@ -141,18 +184,30 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListe
         }
     }
 
-    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        Log.i(TAG, "onDetachedFromEngine")
-    }
-
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         Log.i(TAG, "onAttachedToActivity")
-        binding.addOnNewIntentListener(this)
+//        binding.addOnNewIntentListener(this)
+        mainActivity = binding.activity
+
+        // Reinitialize channels if necessary
         pluginBinding?.binaryMessenger?.let {
-            // Reinitialize MethodChannel Forcefully from MainIsolate
             initPlugin(it)
         }
-        mainActivity = binding.activity
+
+        // Handle any pending notifications
+        pendingNotificationAction?.let { action ->
+            Log.i(TAG, "Delivering pending notification action")
+            flutterApiInstance?.onNotificationActionHandler(action) {}
+            pendingNotificationAction = null
+        }
+
+        pendingNotificationClick?.let { payload ->
+            Log.i(TAG, "Delivering pending notification click")
+            flutterApiInstance?.onNotificationClicked(payload) {}
+            pendingNotificationClick = null
+        }
+
+        // Handle initial notification
         val extras = mainActivity?.intent?.extras
         if (extras != null && extras.containsKey(ES_INTERACTION_ID_KEY)) {
             initialNotification = HashMap()
@@ -163,6 +218,13 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListe
         }
     }
 
+    override fun onDetachedFromActivity() {
+        Log.i(TAG, "onDetachedFromActivity")
+        mainActivity = null
+        initialNotification = null
+        // Don't clean up flutterApi here anymore
+    }
+
     override fun onDetachedFromActivityForConfigChanges() {
         Log.i(TAG, "onDetachedFromActivityForConfigChanges")
         mainActivity = null
@@ -170,40 +232,33 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware, NewIntentListe
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         Log.i(TAG, "onReattachedToActivityForConfigChanges")
-        binding.addOnNewIntentListener(this)
+//        binding.addOnNewIntentListener(this)
         mainActivity = binding.activity
     }
 
-    override fun onDetachedFromActivity() {
-        Log.i(TAG, "onDetachedFromActivity")
-        mainActivity = null
-        initialNotification = null
-        flutterApi = null
-    }
-
-    override fun onNewIntent(intent: Intent): Boolean {
-        Log.i(TAG, "onNewIntent")
-
-        if (intent.extras == null) {
-            return false
-        }
-
-        if (intent.extras?.getString(ES_INTERACTION_ID_KEY) == null) {
-            return false
-        }
-
-        val retenoNotificationMap = HashMap<String, Any?>()
-        for (key in intent.extras!!.keySet()) {
-            val value = intent.extras!!.get(key)
-            retenoNotificationMap[key] = value
-        }
-
-        flutterApi?.onNotificationClicked(retenoNotificationMap.toMap()) {}
-
-        mainActivity?.intent = intent
-
-        return true
-    }
+//    override fun onNewIntent(intent: Intent): Boolean {
+//        Log.i(TAG, "onNewIntent")
+//
+//        if (intent.extras == null) {
+//            return false
+//        }
+//
+//        if (intent.extras?.getString(ES_INTERACTION_ID_KEY) == null) {
+//            return false
+//        }
+//
+//        val retenoNotificationMap = HashMap<String, Any?>()
+//        for (key in intent.extras!!.keySet()) {
+//            val value = intent.extras!!.get(key)
+//            retenoNotificationMap[key] = value
+//        }
+//
+//        flutterApi?.onNotificationClicked(retenoNotificationMap.toMap()) {}
+//
+//        mainActivity?.intent = intent
+//
+//        return true
+//    }
 
     override fun initWith(
         accessKey: String,
