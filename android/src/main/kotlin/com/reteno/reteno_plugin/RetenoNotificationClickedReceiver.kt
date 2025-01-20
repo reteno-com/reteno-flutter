@@ -9,6 +9,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 class RetenoNotificationClickedReceiver : BroadcastReceiver() {
+
     override fun onReceive(context: Context, intent: Intent?) {
         if (intent?.extras == null) {
             return
@@ -33,17 +34,25 @@ class RetenoNotificationClickedReceiver : BroadcastReceiver() {
         val esButtons = map["es_buttons"] as? String
         val esBtnActionLabel = map["es_btn_action_label"] as? String
 
+        // If there's a button scenario:
         if (esButtons != null && esBtnActionLabel != null) {
             val action = findButtonAction(esButtons, esBtnActionLabel)
             if (action != null) {
-                RetenoPlugin.flutterApi?.onNotificationActionHandler(action) {}
+                RetenoPlugin.handleNotificationAction(action)
             } else {
                 Log.d("ClickedReceiver", "No matching button found")
             }
+        } else {
+            // Handle basic notification click using the new handler
+            RetenoPlugin.handleNotificationClick(map)
+            Log.d("ClickedReceiver", "Basic notification click queued")
         }
     }
 
-    private fun findButtonAction(buttonsJson: String, actionLabel: String): NativeUserNotificationAction? {
+    private fun findButtonAction(
+        buttonsJson: String,
+        actionLabel: String
+    ): NativeUserNotificationAction? {
         try {
             val buttonsArray = JSONArray(buttonsJson)
             for (i in 0 until buttonsArray.length()) {
@@ -65,7 +74,7 @@ class RetenoNotificationClickedReceiver : BroadcastReceiver() {
     private fun parseCustomData(customData: JSONObject?): Map<String?, Any?>? {
         if (customData == null) return null
         return customData.keys().asSequence().associateWith { key ->
-            when (val value = customData.get(key)) {
+            when (val value = key?.let { customData.get(it) }) {
                 is JSONObject -> parseCustomData(value)
                 is JSONArray -> value.toString()
                 else -> value
