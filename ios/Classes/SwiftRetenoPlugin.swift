@@ -340,15 +340,17 @@ extension Recommendation {
 
 extension AppInboxMessage {
     func toNativeAppInboxMessage() -> NativeAppInboxMessage {
+        let dateFormatter = ISO8601DateFormatter();
         return NativeAppInboxMessage(
             id: self.id,
             title: self.title,
-            createdDate: "",
+            createdDate: self.createdDate.map { dateFormatter.string(from: $0) } ?? "",
             isNewMessage: self.isNew,
             content: self.content,
             imageUrl: self.imageURL?.absoluteString,
             linkUrl: self.linkURL?.absoluteString,
-            category: self.category
+            category: self.category,
+            customData: self.customData
         );
     }
  }

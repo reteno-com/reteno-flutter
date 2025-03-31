@@ -14,6 +14,7 @@ class AppInboxMessage {
   final String? imageUrl;
   final String? linkUrl;
   final String? category;
+  final Map<String?, Object?>? customData;
 
   AppInboxMessage({
     required this.id,
@@ -24,6 +25,7 @@ class AppInboxMessage {
     this.imageUrl,
     this.linkUrl,
     this.category,
+    this.customData,
   });
 
   @override
@@ -40,6 +42,7 @@ class AppInboxMessage {
     String? imageUrl,
     String? linkUrl,
     String? category,
+    Map<String?, Object?>? customData,
   }) {
     return AppInboxMessage(
       id: id ?? this.id,
@@ -50,6 +53,7 @@ class AppInboxMessage {
       imageUrl: imageUrl ?? this.imageUrl,
       linkUrl: linkUrl ?? this.linkUrl,
       category: category ?? this.category,
+      customData: customData,
     );
   }
 }

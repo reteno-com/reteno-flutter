@@ -1,31 +1,30 @@
 PODS:
-  - Alamofire (5.9.0)
   - app_links (0.0.1):
     - Flutter
-  - Firebase/CoreOnly (10.20.0):
-    - FirebaseCore (= 10.20.0)
-  - Firebase/Messaging (10.20.0):
+  - Firebase/CoreOnly (10.25.0):
+    - FirebaseCore (= 10.25.0)
+  - Firebase/Messaging (10.25.0):
     - Firebase/CoreOnly
-    - FirebaseMessaging (~> 10.20.0)
-  - firebase_core (2.25.4):
-    - Firebase/CoreOnly (= 10.20.0)
+    - FirebaseMessaging (~> 10.25.0)
+  - firebase_core (2.32.0):
+    - Firebase/CoreOnly (= 10.25.0)
     - Flutter
-  - firebase_messaging (14.7.15):
-    - Firebase/Messaging (= 10.20.0)
+  - firebase_messaging (14.7.10):
+    - Firebase/Messaging (= 10.25.0)
     - firebase_core
     - Flutter
-  - FirebaseCore (10.20.0):
+  - FirebaseCore (10.25.0):
     - FirebaseCoreInternal (~> 10.0)
     - GoogleUtilities/Environment (~> 7.12)
     - GoogleUtilities/Logger (~> 7.12)
-  - FirebaseCoreInternal (10.23.0):
+  - FirebaseCoreInternal (10.29.0):
     - "GoogleUtilities/NSData+zlib (~> 7.8)"
-  - FirebaseInstallations (10.23.0):
+  - FirebaseInstallations (10.29.0):
     - FirebaseCore (~> 10.0)
     - GoogleUtilities/Environment (~> 7.8)
     - GoogleUtilities/UserDefaults (~> 7.8)
     - PromisesObjC (~> 2.1)
-  - FirebaseMessaging (10.20.0):
+  - FirebaseMessaging (10.25.0):
     - FirebaseCore (~> 10.0)
     - FirebaseInstallations (~> 10.0)
     - GoogleDataTransport (~> 9.3)
@@ -33,10 +32,8 @@ PODS:
     - GoogleUtilities/Environment (~> 7.8)
     - GoogleUtilities/Reachability (~> 7.8)
     - GoogleUtilities/UserDefaults (~> 7.8)
-    - nanopb (< 2.30910.0, >= 2.30908.0)
+    - nanopb (< 2.30911.0, >= 2.30908.0)
   - Flutter (1.0.0)
-  - flutter_app_badger (1.3.0):
-    - Flutter
   - flutter_foreground_task (0.0.1):
     - Flutter
   - flutter_local_notifications (0.0.1):
@@ -45,44 +42,43 @@ PODS:
     - GoogleUtilities/Environment (~> 7.7)
     - nanopb (< 2.30911.0, >= 2.30908.0)
     - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/AppDelegateSwizzler (7.13.0):
+  - GoogleUtilities/AppDelegateSwizzler (7.13.3):
     - GoogleUtilities/Environment
     - GoogleUtilities/Logger
     - GoogleUtilities/Network
     - GoogleUtilities/Privacy
-  - GoogleUtilities/Environment (7.13.0):
+  - GoogleUtilities/Environment (7.13.3):
     - GoogleUtilities/Privacy
     - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/Logger (7.13.0):
+  - GoogleUtilities/Logger (7.13.3):
     - GoogleUtilities/Environment
     - GoogleUtilities/Privacy
-  - GoogleUtilities/Network (7.13.0):
+  - GoogleUtilities/Network (7.13.3):
     - GoogleUtilities/Logger
     - "GoogleUtilities/NSData+zlib"
     - GoogleUtilities/Privacy
     - GoogleUtilities/Reachability
-  - "GoogleUtilities/NSData+zlib (7.13.0)":
+  - "GoogleUtilities/NSData+zlib (7.13.3)":
     - GoogleUtilities/Privacy
-  - GoogleUtilities/Privacy (7.13.0)
-  - GoogleUtilities/Reachability (7.13.0):
+  - GoogleUtilities/Privacy (7.13.3)
+  - GoogleUtilities/Reachability (7.13.3):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
-  - GoogleUtilities/UserDefaults (7.13.0):
+  - GoogleUtilities/UserDefaults (7.13.3):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
-  - nanopb (2.30909.1):
-    - nanopb/decode (= 2.30909.1)
-    - nanopb/encode (= 2.30909.1)
-  - nanopb/decode (2.30909.1)
-  - nanopb/encode (2.30909.1)
+  - nanopb (2.30910.0):
+    - nanopb/decode (= 2.30910.0)
+    - nanopb/encode (= 2.30910.0)
+  - nanopb/decode (2.30910.0)
+  - nanopb/encode (2.30910.0)
   - permission_handler_apple (9.3.0):
     - Flutter
   - PromisesObjC (2.4.0)
-  - Reteno (2.0.11):
-    - Alamofire (= 5.9.0)
+  - Reteno (2.5.0)
   - reteno_plugin (0.0.1):
     - Flutter
-    - Reteno (= 2.0.11)
+    - Reteno (= 2.5.0)
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -94,17 +90,15 @@ DEPENDENCIES:
   - FirebaseCore
   - FirebaseMessaging
   - Flutter (from `Flutter`)
-  - flutter_app_badger (from `.symlinks/plugins/flutter_app_badger/ios`)
   - flutter_foreground_task (from `.symlinks/plugins/flutter_foreground_task/ios`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
-  - Reteno (= 2.0.11)
+  - Reteno (= 2.5.0)
   - reteno_plugin (from `.symlinks/plugins/reteno_plugin/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
 
 SPEC REPOS:
   trunk:
-    - Alamofire
     - Firebase
     - FirebaseCore
     - FirebaseCoreInternal
@@ -125,8 +119,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_messaging/ios"
   Flutter:
     :path: Flutter
-  flutter_app_badger:
-    :path: ".symlinks/plugins/flutter_app_badger/ios"
   flutter_foreground_task:
     :path: ".symlinks/plugins/flutter_foreground_task/ios"
   flutter_local_notifications:
@@ -139,28 +131,26 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
 
 SPEC CHECKSUMS:
-  Alamofire: 02b772c9910e8eba1a079227c32fbd9e46c90a24
-  app_links: 5ef33d0d295a89d9d16bb81b0e3b0d5f70d6c875
-  Firebase: 10c8cb12fb7ad2ae0c09ffc86cd9c1ab392a0031
-  firebase_core: a46c312d8bae4defa3d009b2aa7b5b413aeb394e
-  firebase_messaging: 40d7dd2f3e88a6367c7326cf601f84633d477582
-  FirebaseCore: 28045c1560a2600d284b9c45a904fe322dc890b6
-  FirebaseCoreInternal: 6a292e6f0bece1243a737e81556e56e5e19282e3
-  FirebaseInstallations: 42d6ead4605d6eafb3b6683674e80e18eb6f2c35
-  FirebaseMessaging: 06c414a21b122396a26847c523d5c370f8325df5
+  app_links: e70ca16b4b0f88253b3b3660200d4a10b4ea9795
+  Firebase: 0312a2352584f782ea56f66d91606891d4607f06
+  firebase_core: a626d00494efa398e7c54f25f1454a64c8abf197
+  firebase_messaging: 1541105e2a2a6ef8bd869bcc44157d31e82f3a50
+  FirebaseCore: 7ec4d0484817f12c3373955bc87762d96842d483
+  FirebaseCoreInternal: df84dd300b561c27d5571684f389bf60b0a5c934
+  FirebaseInstallations: 913cf60d0400ebd5d6b63a28b290372ab44590dd
+  FirebaseMessaging: 88950ba9485052891ebe26f6c43a52bb62248952
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  flutter_app_badger: b87fc231847b03b92ce1412aa351842e7e97932f
   flutter_foreground_task: 21ef182ab0a29a3005cc72cd70e5f45cb7f7f817
-  flutter_local_notifications: 0c0b1ae97e741e1521e4c1629a459d04b9aec743
+  flutter_local_notifications: df98d66e515e1ca797af436137b4459b160ad8c9
   GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
-  GoogleUtilities: d053d902a8edaa9904e1bd00c37535385b8ed152
-  nanopb: d4d75c12cd1316f4a64e3c6963f879ecd4b5e0d5
-  permission_handler_apple: 036b856153a2b1f61f21030ff725f3e6fece2b78
+  GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
+  nanopb: 438bc412db1928dac798aa6fd75726007be04262
+  permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  Reteno: 07fdbd6644a491b3b80f0f233d9c31fc23c2522f
-  reteno_plugin: 9cb8433666e89e9ea0da5b449dc21f7859663f18
-  shared_preferences_foundation: b4c3b4cddf1c21f02770737f147a3f5da9d39695
+  Reteno: f2944477acd767d6f3bb9664573b525e64be3fed
+  reteno_plugin: cf435e55ab03aa157920703e98353eb34d224d1f
+  shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
 
-PODFILE CHECKSUM: c242b3a355efdc1264a9abd74fb1e64cb270f418
+PODFILE CHECKSUM: e9c816aea669d808b7f63532a5c011b381c9833a
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

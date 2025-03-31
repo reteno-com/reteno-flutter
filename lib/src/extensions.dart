@@ -203,6 +203,7 @@ extension NativeAppInboxMessageExt on NativeAppInboxMessage {
       imageUrl: imageUrl,
       linkUrl: linkUrl,
       category: category,
+      customData: customData,
     );
   }
 }

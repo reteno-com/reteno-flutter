@@ -181,6 +181,12 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
                 isButtonClicked = false,
                 isOpenUrlClicked = false,
             )
+
+            InAppCloseAction.DISMISSED -> NativeInAppMessageAction(
+                isCloseButtonClicked = false,
+                isButtonClicked = false,
+                isOpenUrlClicked = false,
+            )
         }
     }
 
@@ -472,5 +478,6 @@ fun AppInboxMessage.toNativeAppInboxMessage(): NativeAppInboxMessage {
         isNewMessage = this.isNewMessage,
         linkUrl = this.linkUrl,
         category = this.category,
+        customData = this.customData?.mapValues { it.value as Any? }
     )
 }

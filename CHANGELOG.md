@@ -1,3 +1,7 @@
+## 1.7.3
+* Bump Android sdk to 2.5.1
+* Bump iOS sdk to 2.5.0
+* AppInbox add customData property. Fix createdDate on iOS
 ## 1.7.2
 * Bump Android sdk to 2.0.20
 * Bump iOS sdk to 2.0.21

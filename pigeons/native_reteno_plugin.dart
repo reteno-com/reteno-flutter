@@ -254,6 +254,7 @@ class NativeAppInboxMessage {
     this.imageUrl,
     this.linkUrl,
     this.category,
+    this.customData,
   });
 
   final String id;
@@ -264,6 +265,7 @@ class NativeAppInboxMessage {
   final String? imageUrl;
   final String? linkUrl;
   final String? category;
+  final Map<String?, Object?>? customData;
 }
 
 class NativeUserNotificationAction {

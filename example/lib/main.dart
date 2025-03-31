@@ -11,7 +11,6 @@ import 'package:app_links/app_links.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -406,7 +405,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: ElevatedButton(
                       onPressed: () async {
-                        FlutterAppBadger.removeBadge();
+                        // FlutterAppBadger.removeBadge();
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.reload();
                         print(prefs.getString('notification_id'));
