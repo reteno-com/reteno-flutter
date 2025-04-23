@@ -75,10 +75,10 @@ PODS:
   - permission_handler_apple (9.3.0):
     - Flutter
   - PromisesObjC (2.4.0)
-  - Reteno (2.5.0)
+  - Reteno (2.5.2)
   - reteno_plugin (0.0.1):
     - Flutter
-    - Reteno (= 2.5.0)
+    - Reteno (= 2.5.2)
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -93,7 +93,7 @@ DEPENDENCIES:
   - flutter_foreground_task (from `.symlinks/plugins/flutter_foreground_task/ios`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
-  - Reteno (= 2.5.0)
+  - Reteno (= 2.5.2)
   - reteno_plugin (from `.symlinks/plugins/reteno_plugin/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
 
@@ -147,10 +147,10 @@ SPEC CHECKSUMS:
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  Reteno: f2944477acd767d6f3bb9664573b525e64be3fed
-  reteno_plugin: cf435e55ab03aa157920703e98353eb34d224d1f
+  Reteno: 1d3da1e4f3999acb4579d0db3319263fceb7ade7
+  reteno_plugin: 3933e32779de028f32ebbbf934a157ed931065dc
   shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
 
-PODFILE CHECKSUM: e9c816aea669d808b7f63532a5c011b381c9833a
+PODFILE CHECKSUM: a3b91368aec7c57594d7b582fae2a76e1350d47e
 
 COCOAPODS: 1.16.2
