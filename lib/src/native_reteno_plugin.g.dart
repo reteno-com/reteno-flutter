@@ -604,6 +604,296 @@ class NativeUserNotificationAction {
   }
 }
 
+class NativeEcommerceProduct {
+  NativeEcommerceProduct({
+    required this.productId,
+    required this.price,
+    required this.inStock,
+    this.attributes,
+  });
+
+  String productId;
+
+  double price;
+
+  bool inStock;
+
+  Map<String?, List<String?>?>? attributes;
+
+  Object encode() {
+    return <Object?>[
+      productId,
+      price,
+      inStock,
+      attributes,
+    ];
+  }
+
+  static NativeEcommerceProduct decode(Object result) {
+    result as List<Object?>;
+    return NativeEcommerceProduct(
+      productId: result[0]! as String,
+      price: result[1]! as double,
+      inStock: result[2]! as bool,
+      attributes: (result[3] as Map<Object?, Object?>?)?.cast<String?, List<String?>?>(),
+    );
+  }
+}
+
+class NativeEcommerceCategory {
+  NativeEcommerceCategory({
+    required this.productCategoryId,
+    this.attributes,
+  });
+
+  String productCategoryId;
+
+  Map<String?, List<String?>?>? attributes;
+
+  Object encode() {
+    return <Object?>[
+      productCategoryId,
+      attributes,
+    ];
+  }
+
+  static NativeEcommerceCategory decode(Object result) {
+    result as List<Object?>;
+    return NativeEcommerceCategory(
+      productCategoryId: result[0]! as String,
+      attributes: (result[1] as Map<Object?, Object?>?)?.cast<String?, List<String?>?>(),
+    );
+  }
+}
+
+class NativeEcommerceProductInCart {
+  NativeEcommerceProductInCart({
+    required this.productId,
+    required this.price,
+    required this.quantity,
+    this.discount,
+    this.name,
+    this.category,
+    this.attributes,
+  });
+
+  String productId;
+
+  double price;
+
+  int quantity;
+
+  double? discount;
+
+  String? name;
+
+  String? category;
+
+  Map<String?, List<String?>?>? attributes;
+
+  Object encode() {
+    return <Object?>[
+      productId,
+      price,
+      quantity,
+      discount,
+      name,
+      category,
+      attributes,
+    ];
+  }
+
+  static NativeEcommerceProductInCart decode(Object result) {
+    result as List<Object?>;
+    return NativeEcommerceProductInCart(
+      productId: result[0]! as String,
+      price: result[1]! as double,
+      quantity: result[2]! as int,
+      discount: result[3] as double?,
+      name: result[4] as String?,
+      category: result[5] as String?,
+      attributes: (result[6] as Map<Object?, Object?>?)?.cast<String?, List<String?>?>(),
+    );
+  }
+}
+
+class NativeEcommerceItem {
+  NativeEcommerceItem({
+    required this.externalItemId,
+    required this.name,
+    required this.category,
+    required this.quantity,
+    required this.cost,
+    required this.url,
+    this.imageUrl,
+    this.description,
+  });
+
+  String externalItemId;
+
+  String name;
+
+  String category;
+
+  double quantity;
+
+  double cost;
+
+  String url;
+
+  String? imageUrl;
+
+  String? description;
+
+  Object encode() {
+    return <Object?>[
+      externalItemId,
+      name,
+      category,
+      quantity,
+      cost,
+      url,
+      imageUrl,
+      description,
+    ];
+  }
+
+  static NativeEcommerceItem decode(Object result) {
+    result as List<Object?>;
+    return NativeEcommerceItem(
+      externalItemId: result[0]! as String,
+      name: result[1]! as String,
+      category: result[2]! as String,
+      quantity: result[3]! as double,
+      cost: result[4]! as double,
+      url: result[5]! as String,
+      imageUrl: result[6] as String?,
+      description: result[7] as String?,
+    );
+  }
+}
+
+class NativeEcommerceOrder {
+  NativeEcommerceOrder({
+    required this.externalOrderId,
+    required this.totalCost,
+    required this.status,
+    required this.date,
+    this.cartId,
+    this.email,
+    this.phone,
+    this.firstName,
+    this.lastName,
+    this.shipping,
+    this.discount,
+    this.taxes,
+    this.restoreUrl,
+    this.statusDescription,
+    this.storeId,
+    this.source,
+    this.deliveryMethod,
+    this.paymentMethod,
+    this.deliveryAddress,
+    this.items,
+    this.attributes,
+  });
+
+  String externalOrderId;
+
+  double totalCost;
+
+  String status;
+
+  String date;
+
+  String? cartId;
+
+  String? email;
+
+  String? phone;
+
+  String? firstName;
+
+  String? lastName;
+
+  double? shipping;
+
+  double? discount;
+
+  double? taxes;
+
+  String? restoreUrl;
+
+  String? statusDescription;
+
+  String? storeId;
+
+  String? source;
+
+  String? deliveryMethod;
+
+  String? paymentMethod;
+
+  String? deliveryAddress;
+
+  List<NativeEcommerceItem?>? items;
+
+  Map<String?, List<String?>?>? attributes;
+
+  Object encode() {
+    return <Object?>[
+      externalOrderId,
+      totalCost,
+      status,
+      date,
+      cartId,
+      email,
+      phone,
+      firstName,
+      lastName,
+      shipping,
+      discount,
+      taxes,
+      restoreUrl,
+      statusDescription,
+      storeId,
+      source,
+      deliveryMethod,
+      paymentMethod,
+      deliveryAddress,
+      items,
+      attributes,
+    ];
+  }
+
+  static NativeEcommerceOrder decode(Object result) {
+    result as List<Object?>;
+    return NativeEcommerceOrder(
+      externalOrderId: result[0]! as String,
+      totalCost: result[1]! as double,
+      status: result[2]! as String,
+      date: result[3]! as String,
+      cartId: result[4] as String?,
+      email: result[5] as String?,
+      phone: result[6] as String?,
+      firstName: result[7] as String?,
+      lastName: result[8] as String?,
+      shipping: result[9] as double?,
+      discount: result[10] as double?,
+      taxes: result[11] as double?,
+      restoreUrl: result[12] as String?,
+      statusDescription: result[13] as String?,
+      storeId: result[14] as String?,
+      source: result[15] as String?,
+      deliveryMethod: result[16] as String?,
+      paymentMethod: result[17] as String?,
+      deliveryAddress: result[18] as String?,
+      items: (result[19] as List<Object?>?)?.cast<NativeEcommerceItem?>(),
+      attributes: (result[20] as Map<Object?, Object?>?)?.cast<String?, List<String?>?>(),
+    );
+  }
+}
+
 class _RetenoHostApiCodec extends StandardMessageCodec {
   const _RetenoHostApiCodec();
   @override
@@ -626,35 +916,50 @@ class _RetenoHostApiCodec extends StandardMessageCodec {
     } else if (value is NativeCustomEventParameter) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is NativeInAppMessageAction) {
+    } else if (value is NativeEcommerceCategory) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    } else if (value is NativeLifecycleTrackingOptions) {
+    } else if (value is NativeEcommerceItem) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomEvent) {
+    } else if (value is NativeEcommerceOrder) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomEvents) {
+    } else if (value is NativeEcommerceProduct) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomFilter) {
+    } else if (value is NativeEcommerceProductInCart) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecommendation) {
+    } else if (value is NativeInAppMessageAction) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRetenoUser) {
+    } else if (value is NativeLifecycleTrackingOptions) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserAttributes) {
+    } else if (value is NativeRecomEvent) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserCustomField) {
+    } else if (value is NativeRecomEvents) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserNotificationAction) {
+    } else if (value is NativeRecomFilter) {
       buffer.putUint8(143);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeRecommendation) {
+      buffer.putUint8(144);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeRetenoUser) {
+      buffer.putUint8(145);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeUserAttributes) {
+      buffer.putUint8(146);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeUserCustomField) {
+      buffer.putUint8(147);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeUserNotificationAction) {
+      buffer.putUint8(148);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -677,24 +982,34 @@ class _RetenoHostApiCodec extends StandardMessageCodec {
       case 133: 
         return NativeCustomEventParameter.decode(readValue(buffer)!);
       case 134: 
-        return NativeInAppMessageAction.decode(readValue(buffer)!);
+        return NativeEcommerceCategory.decode(readValue(buffer)!);
       case 135: 
-        return NativeLifecycleTrackingOptions.decode(readValue(buffer)!);
+        return NativeEcommerceItem.decode(readValue(buffer)!);
       case 136: 
-        return NativeRecomEvent.decode(readValue(buffer)!);
+        return NativeEcommerceOrder.decode(readValue(buffer)!);
       case 137: 
-        return NativeRecomEvents.decode(readValue(buffer)!);
+        return NativeEcommerceProduct.decode(readValue(buffer)!);
       case 138: 
-        return NativeRecomFilter.decode(readValue(buffer)!);
+        return NativeEcommerceProductInCart.decode(readValue(buffer)!);
       case 139: 
-        return NativeRecommendation.decode(readValue(buffer)!);
+        return NativeInAppMessageAction.decode(readValue(buffer)!);
       case 140: 
-        return NativeRetenoUser.decode(readValue(buffer)!);
+        return NativeLifecycleTrackingOptions.decode(readValue(buffer)!);
       case 141: 
-        return NativeUserAttributes.decode(readValue(buffer)!);
+        return NativeRecomEvent.decode(readValue(buffer)!);
       case 142: 
-        return NativeUserCustomField.decode(readValue(buffer)!);
+        return NativeRecomEvents.decode(readValue(buffer)!);
       case 143: 
+        return NativeRecomFilter.decode(readValue(buffer)!);
+      case 144: 
+        return NativeRecommendation.decode(readValue(buffer)!);
+      case 145: 
+        return NativeRetenoUser.decode(readValue(buffer)!);
+      case 146: 
+        return NativeUserAttributes.decode(readValue(buffer)!);
+      case 147: 
+        return NativeUserCustomField.decode(readValue(buffer)!);
+      case 148: 
         return NativeUserNotificationAction.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -1059,6 +1374,204 @@ class RetenoHostApi {
       return;
     }
   }
+
+  Future<void> logEcommerceProductViewed(NativeEcommerceProduct product, String? currency) async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceProductViewed$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[product, currency]) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> logEcommerceProductCategoryViewed(NativeEcommerceCategory category) async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceProductCategoryViewed$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[category]) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> logEcommerceProductAddedToWishlist(NativeEcommerceProduct product, String? currency) async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceProductAddedToWishlist$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[product, currency]) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> logEcommerceCartUpdated(String cartId, List<NativeEcommerceProductInCart?> products, String? currency) async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceCartUpdated$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[cartId, products, currency]) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> logEcommerceOrderCreated(NativeEcommerceOrder order, String? currency) async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceOrderCreated$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[order, currency]) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> logEcommerceOrderUpdated(NativeEcommerceOrder order, String? currency) async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceOrderUpdated$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[order, currency]) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> logEcommerceOrderDelivered(String externalOrderId) async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceOrderDelivered$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[externalOrderId]) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> logEcommerceOrderCancelled(String externalOrderId) async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceOrderCancelled$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[externalOrderId]) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> logEcommerceSearchRequest(String query, bool? isFound) async {
+    final String __pigeon_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceSearchRequest$__pigeon_messageChannelSuffix';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(<Object?>[query, isFound]) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
 }
 
 class _RetenoFlutterApiCodec extends StandardMessageCodec {
@@ -1083,35 +1596,50 @@ class _RetenoFlutterApiCodec extends StandardMessageCodec {
     } else if (value is NativeCustomEventParameter) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is NativeInAppMessageAction) {
+    } else if (value is NativeEcommerceCategory) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    } else if (value is NativeLifecycleTrackingOptions) {
+    } else if (value is NativeEcommerceItem) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomEvent) {
+    } else if (value is NativeEcommerceOrder) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomEvents) {
+    } else if (value is NativeEcommerceProduct) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomFilter) {
+    } else if (value is NativeEcommerceProductInCart) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecommendation) {
+    } else if (value is NativeInAppMessageAction) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRetenoUser) {
+    } else if (value is NativeLifecycleTrackingOptions) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserAttributes) {
+    } else if (value is NativeRecomEvent) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserCustomField) {
+    } else if (value is NativeRecomEvents) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserNotificationAction) {
+    } else if (value is NativeRecomFilter) {
       buffer.putUint8(143);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeRecommendation) {
+      buffer.putUint8(144);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeRetenoUser) {
+      buffer.putUint8(145);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeUserAttributes) {
+      buffer.putUint8(146);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeUserCustomField) {
+      buffer.putUint8(147);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeUserNotificationAction) {
+      buffer.putUint8(148);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -1134,24 +1662,34 @@ class _RetenoFlutterApiCodec extends StandardMessageCodec {
       case 133: 
         return NativeCustomEventParameter.decode(readValue(buffer)!);
       case 134: 
-        return NativeInAppMessageAction.decode(readValue(buffer)!);
+        return NativeEcommerceCategory.decode(readValue(buffer)!);
       case 135: 
-        return NativeLifecycleTrackingOptions.decode(readValue(buffer)!);
+        return NativeEcommerceItem.decode(readValue(buffer)!);
       case 136: 
-        return NativeRecomEvent.decode(readValue(buffer)!);
+        return NativeEcommerceOrder.decode(readValue(buffer)!);
       case 137: 
-        return NativeRecomEvents.decode(readValue(buffer)!);
+        return NativeEcommerceProduct.decode(readValue(buffer)!);
       case 138: 
-        return NativeRecomFilter.decode(readValue(buffer)!);
+        return NativeEcommerceProductInCart.decode(readValue(buffer)!);
       case 139: 
-        return NativeRecommendation.decode(readValue(buffer)!);
+        return NativeInAppMessageAction.decode(readValue(buffer)!);
       case 140: 
-        return NativeRetenoUser.decode(readValue(buffer)!);
+        return NativeLifecycleTrackingOptions.decode(readValue(buffer)!);
       case 141: 
-        return NativeUserAttributes.decode(readValue(buffer)!);
+        return NativeRecomEvent.decode(readValue(buffer)!);
       case 142: 
-        return NativeUserCustomField.decode(readValue(buffer)!);
+        return NativeRecomEvents.decode(readValue(buffer)!);
       case 143: 
+        return NativeRecomFilter.decode(readValue(buffer)!);
+      case 144: 
+        return NativeRecommendation.decode(readValue(buffer)!);
+      case 145: 
+        return NativeRetenoUser.decode(readValue(buffer)!);
+      case 146: 
+        return NativeUserAttributes.decode(readValue(buffer)!);
+      case 147: 
+        return NativeUserCustomField.decode(readValue(buffer)!);
+      case 148: 
         return NativeUserNotificationAction.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);

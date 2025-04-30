@@ -42,6 +42,16 @@ abstract class RetenoHostApi {
   void markAllMessagesAsOpened();
   void subscribeOnMessagesCountChanged();
   void unsubscribeAllMessagesCountChanged();
+  // Ecommerce
+  void logEcommerceProductViewed(NativeEcommerceProduct product, String? currency);
+  void logEcommerceProductCategoryViewed(NativeEcommerceCategory category);
+  void logEcommerceProductAddedToWishlist(NativeEcommerceProduct product, String? currency);
+  void logEcommerceCartUpdated(String cartId, List<NativeEcommerceProductInCart> products, String? currency);
+  void logEcommerceOrderCreated(NativeEcommerceOrder order, String? currency);
+  void logEcommerceOrderUpdated(NativeEcommerceOrder order, String? currency);
+  void logEcommerceOrderDelivered(String externalOrderId);
+  void logEcommerceOrderCancelled(String externalOrderId);
+  void logEcommerceSearchRequest(String query, bool? isFound);
 }
 
 @FlutterApi()
@@ -278,4 +288,118 @@ class NativeUserNotificationAction {
   final String? actionId;
   final Map<String?, Object?>? customData;
   final String? link;
+}
+
+class NativeEcommerceProduct {
+  NativeEcommerceProduct({
+    required this.productId,
+    required this.price,
+    required this.inStock,
+    this.attributes,
+  });
+
+  final String productId;
+  final double price;
+  final bool inStock;
+  final Map<String?, List<String>?>? attributes;
+}
+
+class NativeEcommerceCategory {
+  NativeEcommerceCategory({
+    required this.productCategoryId,
+    this.attributes,
+  });
+
+  final String productCategoryId;
+  final Map<String?, List<String>?>? attributes;
+}
+
+class NativeEcommerceProductInCart {
+  NativeEcommerceProductInCart({
+    required this.productId,
+    required this.price,
+    required this.quantity,
+    this.discount,
+    this.name,
+    this.category,
+    this.attributes,
+  });
+
+  final String productId;
+  final double price;
+  final int quantity;
+  final double? discount;
+  final String? name;
+  final String? category;
+  final Map<String?, List<String>?>? attributes;
+}
+
+class NativeEcommerceItem {
+  NativeEcommerceItem({
+    required this.externalItemId,
+    required this.name,
+    required this.category,
+    required this.quantity,
+    required this.cost,
+    required this.url,
+    this.imageUrl,
+    this.description,
+  });
+
+  final String externalItemId;
+  final String name;
+  final String category;
+  final double quantity;
+  final double cost;
+  final String url;
+  final String? imageUrl;
+  final String? description;
+}
+
+class NativeEcommerceOrder {
+  NativeEcommerceOrder({
+    required this.externalOrderId,
+    required this.totalCost,
+    required this.status,
+    required this.date,
+    this.cartId,
+    this.email,
+    this.phone,
+    this.firstName,
+    this.lastName,
+    this.shipping,
+    this.discount,
+    this.taxes,
+    this.restoreUrl,
+    this.statusDescription,
+    this.storeId,
+    this.source,
+    this.deliveryMethod,
+    this.paymentMethod,
+    this.deliveryAddress,
+    this.items,
+    this.attributes,
+  });
+
+  final String externalOrderId;
+  final double totalCost;
+  final String status;
+  final String date;
+  final String? cartId;
+  final String? email;
+  final String? phone;
+  final String? firstName;
+  final String? lastName;
+  final double? shipping;
+  final double? discount;
+  final double? taxes;
+  final String? restoreUrl;
+  final String? statusDescription;
+  final String? storeId;
+  final String? source;
+  final String? deliveryMethod;
+  final String? paymentMethod;
+  final String? deliveryAddress;
+  final List<NativeEcommerceItem?>? items;
+  final Map<String?, List<String>?>? attributes;
 }

@@ -281,4 +281,20 @@ class Reteno {
   Future<void> logRecommendationsEvent(RetenoRecomEvents events) {
     return _platform.logRecommendationsEvent(events);
   }
+
+  /// Reteno's e-commerce activity tracking helps to learn about the customer journey and use this data in your analytics.
+  /// The list of supported events:
+  /// supported events:
+  /// - `RetenoEcommerceProductViewed`
+  /// - `RetenoEcommerceProductCategoryViewed`
+  /// - `RetenoEcommerceProductAddedToWishlist`
+  /// - `RetenoEcommerceCartUpdated`
+  /// - `RetenoEcommerceOrderCreated`
+  /// - `RetenoEcommerceOrderUpdated`
+  /// - `RetenoEcommerceOrderDelivered`
+  /// - `RetenoEcommerceOrderCancelled`
+  /// - `RetenoEcommerceSearchRequest`
+  Future<void> logEcommerceEvent(RetenoEcommerceEvent event) {
+    return _platform.logEcommerceEvent(event);
+  }
 }

@@ -19,6 +19,7 @@ import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:reteno_plugin/reteno.dart';
 import 'package:reteno_plugin_example/app_inbox_messages_page.dart';
+import 'package:reteno_plugin_example/ecommerce_events.dart';
 import 'package:reteno_plugin_example/events_page.dart';
 import 'package:reteno_plugin_example/recommendation_page.dart';
 import 'package:reteno_plugin_example/widgets/app_inbox_button.dart';
@@ -130,6 +131,12 @@ final GoRouter _router = GoRouter(
           path: 'recommendations',
           builder: (BuildContext context, GoRouterState state) {
             return const RecommendationPage();
+          },
+        ),
+        GoRoute(
+          path: 'ecommerce',
+          builder: (BuildContext context, GoRouterState state) {
+            return const EcommerceEventsPage();
           },
         ),
         GoRoute(
@@ -695,18 +702,40 @@ class _MyHomePageState extends State<MyHomePage> {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        ElevatedButton(
-                          onPressed: () {
-                            context.go('/recommendations');
-                          },
-                          child: const Text(
-                            'Recommendations',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  context.go('/recommendations');
+                                },
+                                child: const Text(
+                                  'Recommendations',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  context.go('/ecommerce');
+                                },
+                                child: const Text(
+                                  'Ecommerce events',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

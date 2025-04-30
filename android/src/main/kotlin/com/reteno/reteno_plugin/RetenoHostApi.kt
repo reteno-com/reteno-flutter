@@ -514,6 +514,212 @@ data class NativeUserNotificationAction (
   }
 }
 
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeEcommerceProduct (
+  val productId: String,
+  val price: Double,
+  val inStock: Boolean,
+  val attributes: Map<String?, List<String>?>? = null
+
+) {
+  companion object {
+    @Suppress("LocalVariableName")
+    fun fromList(__pigeon_list: List<Any?>): NativeEcommerceProduct {
+      val productId = __pigeon_list[0] as String
+      val price = __pigeon_list[1] as Double
+      val inStock = __pigeon_list[2] as Boolean
+      val attributes = __pigeon_list[3] as Map<String?, List<String>?>?
+      return NativeEcommerceProduct(productId, price, inStock, attributes)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      productId,
+      price,
+      inStock,
+      attributes,
+    )
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeEcommerceCategory (
+  val productCategoryId: String,
+  val attributes: Map<String?, List<String>?>? = null
+
+) {
+  companion object {
+    @Suppress("LocalVariableName")
+    fun fromList(__pigeon_list: List<Any?>): NativeEcommerceCategory {
+      val productCategoryId = __pigeon_list[0] as String
+      val attributes = __pigeon_list[1] as Map<String?, List<String>?>?
+      return NativeEcommerceCategory(productCategoryId, attributes)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      productCategoryId,
+      attributes,
+    )
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeEcommerceProductInCart (
+  val productId: String,
+  val price: Double,
+  val quantity: Long,
+  val discount: Double? = null,
+  val name: String? = null,
+  val category: String? = null,
+  val attributes: Map<String?, List<String>?>? = null
+
+) {
+  companion object {
+    @Suppress("LocalVariableName")
+    fun fromList(__pigeon_list: List<Any?>): NativeEcommerceProductInCart {
+      val productId = __pigeon_list[0] as String
+      val price = __pigeon_list[1] as Double
+      val quantity = __pigeon_list[2].let { num -> if (num is Int) num.toLong() else num as Long }
+      val discount = __pigeon_list[3] as Double?
+      val name = __pigeon_list[4] as String?
+      val category = __pigeon_list[5] as String?
+      val attributes = __pigeon_list[6] as Map<String?, List<String>?>?
+      return NativeEcommerceProductInCart(productId, price, quantity, discount, name, category, attributes)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      productId,
+      price,
+      quantity,
+      discount,
+      name,
+      category,
+      attributes,
+    )
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeEcommerceItem (
+  val externalItemId: String,
+  val name: String,
+  val category: String,
+  val quantity: Double,
+  val cost: Double,
+  val url: String,
+  val imageUrl: String? = null,
+  val description: String? = null
+
+) {
+  companion object {
+    @Suppress("LocalVariableName")
+    fun fromList(__pigeon_list: List<Any?>): NativeEcommerceItem {
+      val externalItemId = __pigeon_list[0] as String
+      val name = __pigeon_list[1] as String
+      val category = __pigeon_list[2] as String
+      val quantity = __pigeon_list[3] as Double
+      val cost = __pigeon_list[4] as Double
+      val url = __pigeon_list[5] as String
+      val imageUrl = __pigeon_list[6] as String?
+      val description = __pigeon_list[7] as String?
+      return NativeEcommerceItem(externalItemId, name, category, quantity, cost, url, imageUrl, description)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      externalItemId,
+      name,
+      category,
+      quantity,
+      cost,
+      url,
+      imageUrl,
+      description,
+    )
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeEcommerceOrder (
+  val externalOrderId: String,
+  val totalCost: Double,
+  val status: String,
+  val date: String,
+  val cartId: String? = null,
+  val email: String? = null,
+  val phone: String? = null,
+  val firstName: String? = null,
+  val lastName: String? = null,
+  val shipping: Double? = null,
+  val discount: Double? = null,
+  val taxes: Double? = null,
+  val restoreUrl: String? = null,
+  val statusDescription: String? = null,
+  val storeId: String? = null,
+  val source: String? = null,
+  val deliveryMethod: String? = null,
+  val paymentMethod: String? = null,
+  val deliveryAddress: String? = null,
+  val items: List<NativeEcommerceItem?>? = null,
+  val attributes: Map<String?, List<String>?>? = null
+
+) {
+  companion object {
+    @Suppress("LocalVariableName")
+    fun fromList(__pigeon_list: List<Any?>): NativeEcommerceOrder {
+      val externalOrderId = __pigeon_list[0] as String
+      val totalCost = __pigeon_list[1] as Double
+      val status = __pigeon_list[2] as String
+      val date = __pigeon_list[3] as String
+      val cartId = __pigeon_list[4] as String?
+      val email = __pigeon_list[5] as String?
+      val phone = __pigeon_list[6] as String?
+      val firstName = __pigeon_list[7] as String?
+      val lastName = __pigeon_list[8] as String?
+      val shipping = __pigeon_list[9] as Double?
+      val discount = __pigeon_list[10] as Double?
+      val taxes = __pigeon_list[11] as Double?
+      val restoreUrl = __pigeon_list[12] as String?
+      val statusDescription = __pigeon_list[13] as String?
+      val storeId = __pigeon_list[14] as String?
+      val source = __pigeon_list[15] as String?
+      val deliveryMethod = __pigeon_list[16] as String?
+      val paymentMethod = __pigeon_list[17] as String?
+      val deliveryAddress = __pigeon_list[18] as String?
+      val items = __pigeon_list[19] as List<NativeEcommerceItem?>?
+      val attributes = __pigeon_list[20] as Map<String?, List<String>?>?
+      return NativeEcommerceOrder(externalOrderId, totalCost, status, date, cartId, email, phone, firstName, lastName, shipping, discount, taxes, restoreUrl, statusDescription, storeId, source, deliveryMethod, paymentMethod, deliveryAddress, items, attributes)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      externalOrderId,
+      totalCost,
+      status,
+      date,
+      cartId,
+      email,
+      phone,
+      firstName,
+      lastName,
+      shipping,
+      discount,
+      taxes,
+      restoreUrl,
+      statusDescription,
+      storeId,
+      source,
+      deliveryMethod,
+      paymentMethod,
+      deliveryAddress,
+      items,
+      attributes,
+    )
+  }
+}
+
 private object RetenoHostApiCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -549,50 +755,75 @@ private object RetenoHostApiCodec : StandardMessageCodec() {
       }
       134.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeInAppMessageAction.fromList(it)
+          NativeEcommerceCategory.fromList(it)
         }
       }
       135.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeLifecycleTrackingOptions.fromList(it)
+          NativeEcommerceItem.fromList(it)
         }
       }
       136.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomEvent.fromList(it)
+          NativeEcommerceOrder.fromList(it)
         }
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomEvents.fromList(it)
+          NativeEcommerceProduct.fromList(it)
         }
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomFilter.fromList(it)
+          NativeEcommerceProductInCart.fromList(it)
         }
       }
       139.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecommendation.fromList(it)
+          NativeInAppMessageAction.fromList(it)
         }
       }
       140.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRetenoUser.fromList(it)
+          NativeLifecycleTrackingOptions.fromList(it)
         }
       }
       141.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeUserAttributes.fromList(it)
+          NativeRecomEvent.fromList(it)
         }
       }
       142.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeUserCustomField.fromList(it)
+          NativeRecomEvents.fromList(it)
         }
       }
       143.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeRecomFilter.fromList(it)
+        }
+      }
+      144.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeRecommendation.fromList(it)
+        }
+      }
+      145.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeRetenoUser.fromList(it)
+        }
+      }
+      146.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeUserAttributes.fromList(it)
+        }
+      }
+      147.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeUserCustomField.fromList(it)
+        }
+      }
+      148.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           NativeUserNotificationAction.fromList(it)
         }
@@ -626,44 +857,64 @@ private object RetenoHostApiCodec : StandardMessageCodec() {
         stream.write(133)
         writeValue(stream, value.toList())
       }
-      is NativeInAppMessageAction -> {
+      is NativeEcommerceCategory -> {
         stream.write(134)
         writeValue(stream, value.toList())
       }
-      is NativeLifecycleTrackingOptions -> {
+      is NativeEcommerceItem -> {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is NativeRecomEvent -> {
+      is NativeEcommerceOrder -> {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is NativeRecomEvents -> {
+      is NativeEcommerceProduct -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is NativeRecomFilter -> {
+      is NativeEcommerceProductInCart -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is NativeRecommendation -> {
+      is NativeInAppMessageAction -> {
         stream.write(139)
         writeValue(stream, value.toList())
       }
-      is NativeRetenoUser -> {
+      is NativeLifecycleTrackingOptions -> {
         stream.write(140)
         writeValue(stream, value.toList())
       }
-      is NativeUserAttributes -> {
+      is NativeRecomEvent -> {
         stream.write(141)
         writeValue(stream, value.toList())
       }
-      is NativeUserCustomField -> {
+      is NativeRecomEvents -> {
         stream.write(142)
         writeValue(stream, value.toList())
       }
-      is NativeUserNotificationAction -> {
+      is NativeRecomFilter -> {
         stream.write(143)
+        writeValue(stream, value.toList())
+      }
+      is NativeRecommendation -> {
+        stream.write(144)
+        writeValue(stream, value.toList())
+      }
+      is NativeRetenoUser -> {
+        stream.write(145)
+        writeValue(stream, value.toList())
+      }
+      is NativeUserAttributes -> {
+        stream.write(146)
+        writeValue(stream, value.toList())
+      }
+      is NativeUserCustomField -> {
+        stream.write(147)
+        writeValue(stream, value.toList())
+      }
+      is NativeUserNotificationAction -> {
+        stream.write(148)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -688,6 +939,15 @@ interface RetenoHostApi {
   fun markAllMessagesAsOpened(callback: (Result<Unit>) -> Unit)
   fun subscribeOnMessagesCountChanged()
   fun unsubscribeAllMessagesCountChanged()
+  fun logEcommerceProductViewed(product: NativeEcommerceProduct, currency: String?)
+  fun logEcommerceProductCategoryViewed(category: NativeEcommerceCategory)
+  fun logEcommerceProductAddedToWishlist(product: NativeEcommerceProduct, currency: String?)
+  fun logEcommerceCartUpdated(cartId: String, products: List<NativeEcommerceProductInCart>, currency: String?)
+  fun logEcommerceOrderCreated(order: NativeEcommerceOrder, currency: String?)
+  fun logEcommerceOrderUpdated(order: NativeEcommerceOrder, currency: String?)
+  fun logEcommerceOrderDelivered(externalOrderId: String)
+  fun logEcommerceOrderCancelled(externalOrderId: String)
+  fun logEcommerceSearchRequest(query: String, isFound: Boolean?)
 
   companion object {
     /** The codec used by RetenoHostApi. */
@@ -970,6 +1230,175 @@ interface RetenoHostApi {
           channel.setMessageHandler(null)
         }
       }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceProductViewed$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val productArg = args[0] as NativeEcommerceProduct
+            val currencyArg = args[1] as String?
+            val wrapped: List<Any?> = try {
+              api.logEcommerceProductViewed(productArg, currencyArg)
+              listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceProductCategoryViewed$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val categoryArg = args[0] as NativeEcommerceCategory
+            val wrapped: List<Any?> = try {
+              api.logEcommerceProductCategoryViewed(categoryArg)
+              listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceProductAddedToWishlist$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val productArg = args[0] as NativeEcommerceProduct
+            val currencyArg = args[1] as String?
+            val wrapped: List<Any?> = try {
+              api.logEcommerceProductAddedToWishlist(productArg, currencyArg)
+              listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceCartUpdated$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val cartIdArg = args[0] as String
+            val productsArg = args[1] as List<NativeEcommerceProductInCart>
+            val currencyArg = args[2] as String?
+            val wrapped: List<Any?> = try {
+              api.logEcommerceCartUpdated(cartIdArg, productsArg, currencyArg)
+              listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceOrderCreated$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val orderArg = args[0] as NativeEcommerceOrder
+            val currencyArg = args[1] as String?
+            val wrapped: List<Any?> = try {
+              api.logEcommerceOrderCreated(orderArg, currencyArg)
+              listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceOrderUpdated$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val orderArg = args[0] as NativeEcommerceOrder
+            val currencyArg = args[1] as String?
+            val wrapped: List<Any?> = try {
+              api.logEcommerceOrderUpdated(orderArg, currencyArg)
+              listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceOrderDelivered$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val externalOrderIdArg = args[0] as String
+            val wrapped: List<Any?> = try {
+              api.logEcommerceOrderDelivered(externalOrderIdArg)
+              listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceOrderCancelled$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val externalOrderIdArg = args[0] as String
+            val wrapped: List<Any?> = try {
+              api.logEcommerceOrderCancelled(externalOrderIdArg)
+              listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceSearchRequest$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val queryArg = args[0] as String
+            val isFoundArg = args[1] as Boolean?
+            val wrapped: List<Any?> = try {
+              api.logEcommerceSearchRequest(queryArg, isFoundArg)
+              listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
     }
   }
 }
@@ -1008,50 +1437,75 @@ private object RetenoFlutterApiCodec : StandardMessageCodec() {
       }
       134.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeInAppMessageAction.fromList(it)
+          NativeEcommerceCategory.fromList(it)
         }
       }
       135.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeLifecycleTrackingOptions.fromList(it)
+          NativeEcommerceItem.fromList(it)
         }
       }
       136.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomEvent.fromList(it)
+          NativeEcommerceOrder.fromList(it)
         }
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomEvents.fromList(it)
+          NativeEcommerceProduct.fromList(it)
         }
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomFilter.fromList(it)
+          NativeEcommerceProductInCart.fromList(it)
         }
       }
       139.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecommendation.fromList(it)
+          NativeInAppMessageAction.fromList(it)
         }
       }
       140.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRetenoUser.fromList(it)
+          NativeLifecycleTrackingOptions.fromList(it)
         }
       }
       141.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeUserAttributes.fromList(it)
+          NativeRecomEvent.fromList(it)
         }
       }
       142.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeUserCustomField.fromList(it)
+          NativeRecomEvents.fromList(it)
         }
       }
       143.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeRecomFilter.fromList(it)
+        }
+      }
+      144.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeRecommendation.fromList(it)
+        }
+      }
+      145.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeRetenoUser.fromList(it)
+        }
+      }
+      146.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeUserAttributes.fromList(it)
+        }
+      }
+      147.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeUserCustomField.fromList(it)
+        }
+      }
+      148.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           NativeUserNotificationAction.fromList(it)
         }
@@ -1085,44 +1539,64 @@ private object RetenoFlutterApiCodec : StandardMessageCodec() {
         stream.write(133)
         writeValue(stream, value.toList())
       }
-      is NativeInAppMessageAction -> {
+      is NativeEcommerceCategory -> {
         stream.write(134)
         writeValue(stream, value.toList())
       }
-      is NativeLifecycleTrackingOptions -> {
+      is NativeEcommerceItem -> {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is NativeRecomEvent -> {
+      is NativeEcommerceOrder -> {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is NativeRecomEvents -> {
+      is NativeEcommerceProduct -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is NativeRecomFilter -> {
+      is NativeEcommerceProductInCart -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is NativeRecommendation -> {
+      is NativeInAppMessageAction -> {
         stream.write(139)
         writeValue(stream, value.toList())
       }
-      is NativeRetenoUser -> {
+      is NativeLifecycleTrackingOptions -> {
         stream.write(140)
         writeValue(stream, value.toList())
       }
-      is NativeUserAttributes -> {
+      is NativeRecomEvent -> {
         stream.write(141)
         writeValue(stream, value.toList())
       }
-      is NativeUserCustomField -> {
+      is NativeRecomEvents -> {
         stream.write(142)
         writeValue(stream, value.toList())
       }
-      is NativeUserNotificationAction -> {
+      is NativeRecomFilter -> {
         stream.write(143)
+        writeValue(stream, value.toList())
+      }
+      is NativeRecommendation -> {
+        stream.write(144)
+        writeValue(stream, value.toList())
+      }
+      is NativeRetenoUser -> {
+        stream.write(145)
+        writeValue(stream, value.toList())
+      }
+      is NativeUserAttributes -> {
+        stream.write(146)
+        writeValue(stream, value.toList())
+      }
+      is NativeUserCustomField -> {
+        stream.write(147)
+        writeValue(stream, value.toList())
+      }
+      is NativeUserNotificationAction -> {
+        stream.write(148)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)

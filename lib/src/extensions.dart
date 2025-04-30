@@ -4,6 +4,7 @@ import 'package:reteno_plugin/src/models/in_app_message_status.dart';
 import 'package:reteno_plugin/src/models/lifecycle_tracking_options.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event_parameter.dart';
+import 'package:reteno_plugin/src/models/reteno_ecommerce_event.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
 import 'package:reteno_plugin/src/models/reteno_user.dart';
@@ -214,6 +215,83 @@ extension NativeUserNotificationActionExt on NativeUserNotificationAction {
       actionId: actionId,
       customData: customData,
       link: link,
+    );
+  }
+}
+
+extension RetenoEcommerceProductExt on RetenoEcommerceProduct {
+  NativeEcommerceProduct toNativeEcommerceProduct() {
+    return NativeEcommerceProduct(
+      productId: productId,
+      price: price,
+      inStock: inStock,
+      attributes: attributes,
+    );
+  }
+}
+
+extension RetenoEcommerceCategoryExt on RetenoEcommerceCategory {
+  NativeEcommerceCategory toNativeEcommerceCategory() {
+    return NativeEcommerceCategory(
+      productCategoryId: productCategoryId,
+      attributes: attributes,
+    );
+  }
+}
+
+extension RetenoEcommerceProductInCartExt on RetenoEcommerceProductInCart {
+  NativeEcommerceProductInCart toNativeEcommerceProductInCart() {
+    return NativeEcommerceProductInCart(
+      productId: productId,
+      price: price,
+      quantity: quantity,
+      discount: discount,
+      name: name,
+      category: category,
+      attributes: attributes,
+    );
+  }
+}
+
+extension RetenoEcommerceOrderExt on RetenoEcommerceOrder {
+  NativeEcommerceOrder toNativeEcommerceOrder() {
+    return NativeEcommerceOrder(
+      externalOrderId: externalOrderId,
+      totalCost: totalCost,
+      status: status.toNativeString,
+      date: date,
+      cartId: cartId,
+      email: email,
+      phone: phone,
+      firstName: firstName,
+      lastName: lastName,
+      shipping: shipping,
+      discount: discount,
+      taxes: taxes,
+      restoreUrl: restoreUrl,
+      statusDescription: statusDescription,
+      storeId: storeId,
+      source: source,
+      deliveryMethod: deliveryMethod,
+      paymentMethod: paymentMethod,
+      deliveryAddress: deliveryAddress,
+      items: items?.map((i) => i.toNativeEcommerceItem()).toList(),
+      attributes: attributes,
+    );
+  }
+}
+
+extension RetenoEcommerceItemExt on RetenoEcommerceItem {
+  NativeEcommerceItem toNativeEcommerceItem() {
+    return NativeEcommerceItem(
+      externalItemId: externalItemId,
+      name: name,
+      category: category,
+      quantity: quantity,
+      cost: cost,
+      url: url,
+      imageUrl: imageUrl,
+      description: description,
     );
   }
 }

@@ -544,6 +544,249 @@ struct NativeUserNotificationAction {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeEcommerceProduct {
+  var productId: String
+  var price: Double
+  var inStock: Bool
+  var attributes: [String?: [String]?]? = nil
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ __pigeon_list: [Any?]) -> NativeEcommerceProduct? {
+    let productId = __pigeon_list[0] as! String
+    let price = __pigeon_list[1] as! Double
+    let inStock = __pigeon_list[2] as! Bool
+    let attributes: [String?: [String]?]? = nilOrValue(__pigeon_list[3])
+
+    return NativeEcommerceProduct(
+      productId: productId,
+      price: price,
+      inStock: inStock,
+      attributes: attributes
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      productId,
+      price,
+      inStock,
+      attributes,
+    ]
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeEcommerceCategory {
+  var productCategoryId: String
+  var attributes: [String?: [String]?]? = nil
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ __pigeon_list: [Any?]) -> NativeEcommerceCategory? {
+    let productCategoryId = __pigeon_list[0] as! String
+    let attributes: [String?: [String]?]? = nilOrValue(__pigeon_list[1])
+
+    return NativeEcommerceCategory(
+      productCategoryId: productCategoryId,
+      attributes: attributes
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      productCategoryId,
+      attributes,
+    ]
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeEcommerceProductInCart {
+  var productId: String
+  var price: Double
+  var quantity: Int64
+  var discount: Double? = nil
+  var name: String? = nil
+  var category: String? = nil
+  var attributes: [String?: [String]?]? = nil
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ __pigeon_list: [Any?]) -> NativeEcommerceProductInCart? {
+    let productId = __pigeon_list[0] as! String
+    let price = __pigeon_list[1] as! Double
+    let quantity = __pigeon_list[2] is Int64 ? __pigeon_list[2] as! Int64 : Int64(__pigeon_list[2] as! Int32)
+    let discount: Double? = nilOrValue(__pigeon_list[3])
+    let name: String? = nilOrValue(__pigeon_list[4])
+    let category: String? = nilOrValue(__pigeon_list[5])
+    let attributes: [String?: [String]?]? = nilOrValue(__pigeon_list[6])
+
+    return NativeEcommerceProductInCart(
+      productId: productId,
+      price: price,
+      quantity: quantity,
+      discount: discount,
+      name: name,
+      category: category,
+      attributes: attributes
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      productId,
+      price,
+      quantity,
+      discount,
+      name,
+      category,
+      attributes,
+    ]
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeEcommerceItem {
+  var externalItemId: String
+  var name: String
+  var category: String
+  var quantity: Double
+  var cost: Double
+  var url: String
+  var imageUrl: String? = nil
+  var description: String? = nil
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ __pigeon_list: [Any?]) -> NativeEcommerceItem? {
+    let externalItemId = __pigeon_list[0] as! String
+    let name = __pigeon_list[1] as! String
+    let category = __pigeon_list[2] as! String
+    let quantity = __pigeon_list[3] as! Double
+    let cost = __pigeon_list[4] as! Double
+    let url = __pigeon_list[5] as! String
+    let imageUrl: String? = nilOrValue(__pigeon_list[6])
+    let description: String? = nilOrValue(__pigeon_list[7])
+
+    return NativeEcommerceItem(
+      externalItemId: externalItemId,
+      name: name,
+      category: category,
+      quantity: quantity,
+      cost: cost,
+      url: url,
+      imageUrl: imageUrl,
+      description: description
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      externalItemId,
+      name,
+      category,
+      quantity,
+      cost,
+      url,
+      imageUrl,
+      description,
+    ]
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeEcommerceOrder {
+  var externalOrderId: String
+  var totalCost: Double
+  var status: String
+  var date: String
+  var cartId: String? = nil
+  var email: String? = nil
+  var phone: String? = nil
+  var firstName: String? = nil
+  var lastName: String? = nil
+  var shipping: Double? = nil
+  var discount: Double? = nil
+  var taxes: Double? = nil
+  var restoreUrl: String? = nil
+  var statusDescription: String? = nil
+  var storeId: String? = nil
+  var source: String? = nil
+  var deliveryMethod: String? = nil
+  var paymentMethod: String? = nil
+  var deliveryAddress: String? = nil
+  var items: [NativeEcommerceItem?]? = nil
+  var attributes: [String?: [String]?]? = nil
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ __pigeon_list: [Any?]) -> NativeEcommerceOrder? {
+    let externalOrderId = __pigeon_list[0] as! String
+    let totalCost = __pigeon_list[1] as! Double
+    let status = __pigeon_list[2] as! String
+    let date = __pigeon_list[3] as! String
+    let cartId: String? = nilOrValue(__pigeon_list[4])
+    let email: String? = nilOrValue(__pigeon_list[5])
+    let phone: String? = nilOrValue(__pigeon_list[6])
+    let firstName: String? = nilOrValue(__pigeon_list[7])
+    let lastName: String? = nilOrValue(__pigeon_list[8])
+    let shipping: Double? = nilOrValue(__pigeon_list[9])
+    let discount: Double? = nilOrValue(__pigeon_list[10])
+    let taxes: Double? = nilOrValue(__pigeon_list[11])
+    let restoreUrl: String? = nilOrValue(__pigeon_list[12])
+    let statusDescription: String? = nilOrValue(__pigeon_list[13])
+    let storeId: String? = nilOrValue(__pigeon_list[14])
+    let source: String? = nilOrValue(__pigeon_list[15])
+    let deliveryMethod: String? = nilOrValue(__pigeon_list[16])
+    let paymentMethod: String? = nilOrValue(__pigeon_list[17])
+    let deliveryAddress: String? = nilOrValue(__pigeon_list[18])
+    let items: [NativeEcommerceItem?]? = nilOrValue(__pigeon_list[19])
+    let attributes: [String?: [String]?]? = nilOrValue(__pigeon_list[20])
+
+    return NativeEcommerceOrder(
+      externalOrderId: externalOrderId,
+      totalCost: totalCost,
+      status: status,
+      date: date,
+      cartId: cartId,
+      email: email,
+      phone: phone,
+      firstName: firstName,
+      lastName: lastName,
+      shipping: shipping,
+      discount: discount,
+      taxes: taxes,
+      restoreUrl: restoreUrl,
+      statusDescription: statusDescription,
+      storeId: storeId,
+      source: source,
+      deliveryMethod: deliveryMethod,
+      paymentMethod: paymentMethod,
+      deliveryAddress: deliveryAddress,
+      items: items,
+      attributes: attributes
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      externalOrderId,
+      totalCost,
+      status,
+      date,
+      cartId,
+      email,
+      phone,
+      firstName,
+      lastName,
+      shipping,
+      discount,
+      taxes,
+      restoreUrl,
+      statusDescription,
+      storeId,
+      source,
+      deliveryMethod,
+      paymentMethod,
+      deliveryAddress,
+      items,
+      attributes,
+    ]
+  }
+}
+
 private class RetenoHostApiCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -560,24 +803,34 @@ private class RetenoHostApiCodecReader: FlutterStandardReader {
     case 133:
       return NativeCustomEventParameter.fromList(self.readValue() as! [Any?])
     case 134:
-      return NativeInAppMessageAction.fromList(self.readValue() as! [Any?])
+      return NativeEcommerceCategory.fromList(self.readValue() as! [Any?])
     case 135:
-      return NativeLifecycleTrackingOptions.fromList(self.readValue() as! [Any?])
+      return NativeEcommerceItem.fromList(self.readValue() as! [Any?])
     case 136:
-      return NativeRecomEvent.fromList(self.readValue() as! [Any?])
+      return NativeEcommerceOrder.fromList(self.readValue() as! [Any?])
     case 137:
-      return NativeRecomEvents.fromList(self.readValue() as! [Any?])
+      return NativeEcommerceProduct.fromList(self.readValue() as! [Any?])
     case 138:
-      return NativeRecomFilter.fromList(self.readValue() as! [Any?])
+      return NativeEcommerceProductInCart.fromList(self.readValue() as! [Any?])
     case 139:
-      return NativeRecommendation.fromList(self.readValue() as! [Any?])
+      return NativeInAppMessageAction.fromList(self.readValue() as! [Any?])
     case 140:
-      return NativeRetenoUser.fromList(self.readValue() as! [Any?])
+      return NativeLifecycleTrackingOptions.fromList(self.readValue() as! [Any?])
     case 141:
-      return NativeUserAttributes.fromList(self.readValue() as! [Any?])
+      return NativeRecomEvent.fromList(self.readValue() as! [Any?])
     case 142:
-      return NativeUserCustomField.fromList(self.readValue() as! [Any?])
+      return NativeRecomEvents.fromList(self.readValue() as! [Any?])
     case 143:
+      return NativeRecomFilter.fromList(self.readValue() as! [Any?])
+    case 144:
+      return NativeRecommendation.fromList(self.readValue() as! [Any?])
+    case 145:
+      return NativeRetenoUser.fromList(self.readValue() as! [Any?])
+    case 146:
+      return NativeUserAttributes.fromList(self.readValue() as! [Any?])
+    case 147:
+      return NativeUserCustomField.fromList(self.readValue() as! [Any?])
+    case 148:
       return NativeUserNotificationAction.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -605,35 +858,50 @@ private class RetenoHostApiCodecWriter: FlutterStandardWriter {
     } else if let value = value as? NativeCustomEventParameter {
       super.writeByte(133)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeInAppMessageAction {
+    } else if let value = value as? NativeEcommerceCategory {
       super.writeByte(134)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeLifecycleTrackingOptions {
+    } else if let value = value as? NativeEcommerceItem {
       super.writeByte(135)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomEvent {
+    } else if let value = value as? NativeEcommerceOrder {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomEvents {
+    } else if let value = value as? NativeEcommerceProduct {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomFilter {
+    } else if let value = value as? NativeEcommerceProductInCart {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecommendation {
+    } else if let value = value as? NativeInAppMessageAction {
       super.writeByte(139)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRetenoUser {
+    } else if let value = value as? NativeLifecycleTrackingOptions {
       super.writeByte(140)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserAttributes {
+    } else if let value = value as? NativeRecomEvent {
       super.writeByte(141)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserCustomField {
+    } else if let value = value as? NativeRecomEvents {
       super.writeByte(142)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserNotificationAction {
+    } else if let value = value as? NativeRecomFilter {
       super.writeByte(143)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeRecommendation {
+      super.writeByte(144)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeRetenoUser {
+      super.writeByte(145)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeUserAttributes {
+      super.writeByte(146)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeUserCustomField {
+      super.writeByte(147)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeUserNotificationAction {
+      super.writeByte(148)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -672,6 +940,15 @@ protocol RetenoHostApi {
   func markAllMessagesAsOpened(completion: @escaping (Result<Void, Error>) -> Void)
   func subscribeOnMessagesCountChanged() throws
   func unsubscribeAllMessagesCountChanged() throws
+  func logEcommerceProductViewed(product: NativeEcommerceProduct, currency: String?) throws
+  func logEcommerceProductCategoryViewed(category: NativeEcommerceCategory) throws
+  func logEcommerceProductAddedToWishlist(product: NativeEcommerceProduct, currency: String?) throws
+  func logEcommerceCartUpdated(cartId: String, products: [NativeEcommerceProductInCart], currency: String?) throws
+  func logEcommerceOrderCreated(order: NativeEcommerceOrder, currency: String?) throws
+  func logEcommerceOrderUpdated(order: NativeEcommerceOrder, currency: String?) throws
+  func logEcommerceOrderDelivered(externalOrderId: String) throws
+  func logEcommerceOrderCancelled(externalOrderId: String) throws
+  func logEcommerceSearchRequest(query: String, isFound: Bool?) throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -911,6 +1188,148 @@ class RetenoHostApiSetup {
     } else {
       unsubscribeAllMessagesCountChangedChannel.setMessageHandler(nil)
     }
+    let logEcommerceProductViewedChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceProductViewed\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      logEcommerceProductViewedChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let productArg = args[0] as! NativeEcommerceProduct
+        let currencyArg: String? = nilOrValue(args[1])
+        do {
+          try api.logEcommerceProductViewed(product: productArg, currency: currencyArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      logEcommerceProductViewedChannel.setMessageHandler(nil)
+    }
+    let logEcommerceProductCategoryViewedChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceProductCategoryViewed\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      logEcommerceProductCategoryViewedChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let categoryArg = args[0] as! NativeEcommerceCategory
+        do {
+          try api.logEcommerceProductCategoryViewed(category: categoryArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      logEcommerceProductCategoryViewedChannel.setMessageHandler(nil)
+    }
+    let logEcommerceProductAddedToWishlistChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceProductAddedToWishlist\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      logEcommerceProductAddedToWishlistChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let productArg = args[0] as! NativeEcommerceProduct
+        let currencyArg: String? = nilOrValue(args[1])
+        do {
+          try api.logEcommerceProductAddedToWishlist(product: productArg, currency: currencyArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      logEcommerceProductAddedToWishlistChannel.setMessageHandler(nil)
+    }
+    let logEcommerceCartUpdatedChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceCartUpdated\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      logEcommerceCartUpdatedChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let cartIdArg = args[0] as! String
+        let productsArg = args[1] as! [NativeEcommerceProductInCart]
+        let currencyArg: String? = nilOrValue(args[2])
+        do {
+          try api.logEcommerceCartUpdated(cartId: cartIdArg, products: productsArg, currency: currencyArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      logEcommerceCartUpdatedChannel.setMessageHandler(nil)
+    }
+    let logEcommerceOrderCreatedChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceOrderCreated\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      logEcommerceOrderCreatedChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let orderArg = args[0] as! NativeEcommerceOrder
+        let currencyArg: String? = nilOrValue(args[1])
+        do {
+          try api.logEcommerceOrderCreated(order: orderArg, currency: currencyArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      logEcommerceOrderCreatedChannel.setMessageHandler(nil)
+    }
+    let logEcommerceOrderUpdatedChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceOrderUpdated\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      logEcommerceOrderUpdatedChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let orderArg = args[0] as! NativeEcommerceOrder
+        let currencyArg: String? = nilOrValue(args[1])
+        do {
+          try api.logEcommerceOrderUpdated(order: orderArg, currency: currencyArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      logEcommerceOrderUpdatedChannel.setMessageHandler(nil)
+    }
+    let logEcommerceOrderDeliveredChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceOrderDelivered\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      logEcommerceOrderDeliveredChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let externalOrderIdArg = args[0] as! String
+        do {
+          try api.logEcommerceOrderDelivered(externalOrderId: externalOrderIdArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      logEcommerceOrderDeliveredChannel.setMessageHandler(nil)
+    }
+    let logEcommerceOrderCancelledChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceOrderCancelled\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      logEcommerceOrderCancelledChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let externalOrderIdArg = args[0] as! String
+        do {
+          try api.logEcommerceOrderCancelled(externalOrderId: externalOrderIdArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      logEcommerceOrderCancelledChannel.setMessageHandler(nil)
+    }
+    let logEcommerceSearchRequestChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEcommerceSearchRequest\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      logEcommerceSearchRequestChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let queryArg = args[0] as! String
+        let isFoundArg: Bool? = nilOrValue(args[1])
+        do {
+          try api.logEcommerceSearchRequest(query: queryArg, isFound: isFoundArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      logEcommerceSearchRequestChannel.setMessageHandler(nil)
+    }
   }
 }
 private class RetenoFlutterApiCodecReader: FlutterStandardReader {
@@ -929,24 +1348,34 @@ private class RetenoFlutterApiCodecReader: FlutterStandardReader {
     case 133:
       return NativeCustomEventParameter.fromList(self.readValue() as! [Any?])
     case 134:
-      return NativeInAppMessageAction.fromList(self.readValue() as! [Any?])
+      return NativeEcommerceCategory.fromList(self.readValue() as! [Any?])
     case 135:
-      return NativeLifecycleTrackingOptions.fromList(self.readValue() as! [Any?])
+      return NativeEcommerceItem.fromList(self.readValue() as! [Any?])
     case 136:
-      return NativeRecomEvent.fromList(self.readValue() as! [Any?])
+      return NativeEcommerceOrder.fromList(self.readValue() as! [Any?])
     case 137:
-      return NativeRecomEvents.fromList(self.readValue() as! [Any?])
+      return NativeEcommerceProduct.fromList(self.readValue() as! [Any?])
     case 138:
-      return NativeRecomFilter.fromList(self.readValue() as! [Any?])
+      return NativeEcommerceProductInCart.fromList(self.readValue() as! [Any?])
     case 139:
-      return NativeRecommendation.fromList(self.readValue() as! [Any?])
+      return NativeInAppMessageAction.fromList(self.readValue() as! [Any?])
     case 140:
-      return NativeRetenoUser.fromList(self.readValue() as! [Any?])
+      return NativeLifecycleTrackingOptions.fromList(self.readValue() as! [Any?])
     case 141:
-      return NativeUserAttributes.fromList(self.readValue() as! [Any?])
+      return NativeRecomEvent.fromList(self.readValue() as! [Any?])
     case 142:
-      return NativeUserCustomField.fromList(self.readValue() as! [Any?])
+      return NativeRecomEvents.fromList(self.readValue() as! [Any?])
     case 143:
+      return NativeRecomFilter.fromList(self.readValue() as! [Any?])
+    case 144:
+      return NativeRecommendation.fromList(self.readValue() as! [Any?])
+    case 145:
+      return NativeRetenoUser.fromList(self.readValue() as! [Any?])
+    case 146:
+      return NativeUserAttributes.fromList(self.readValue() as! [Any?])
+    case 147:
+      return NativeUserCustomField.fromList(self.readValue() as! [Any?])
+    case 148:
       return NativeUserNotificationAction.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -974,35 +1403,50 @@ private class RetenoFlutterApiCodecWriter: FlutterStandardWriter {
     } else if let value = value as? NativeCustomEventParameter {
       super.writeByte(133)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeInAppMessageAction {
+    } else if let value = value as? NativeEcommerceCategory {
       super.writeByte(134)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeLifecycleTrackingOptions {
+    } else if let value = value as? NativeEcommerceItem {
       super.writeByte(135)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomEvent {
+    } else if let value = value as? NativeEcommerceOrder {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomEvents {
+    } else if let value = value as? NativeEcommerceProduct {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomFilter {
+    } else if let value = value as? NativeEcommerceProductInCart {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecommendation {
+    } else if let value = value as? NativeInAppMessageAction {
       super.writeByte(139)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRetenoUser {
+    } else if let value = value as? NativeLifecycleTrackingOptions {
       super.writeByte(140)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserAttributes {
+    } else if let value = value as? NativeRecomEvent {
       super.writeByte(141)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserCustomField {
+    } else if let value = value as? NativeRecomEvents {
       super.writeByte(142)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserNotificationAction {
+    } else if let value = value as? NativeRecomFilter {
       super.writeByte(143)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeRecommendation {
+      super.writeByte(144)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeRetenoUser {
+      super.writeByte(145)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeUserAttributes {
+      super.writeByte(146)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeUserCustomField {
+      super.writeByte(147)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeUserNotificationAction {
+      super.writeByte(148)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)

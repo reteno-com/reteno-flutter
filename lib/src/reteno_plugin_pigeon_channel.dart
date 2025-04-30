@@ -7,6 +7,7 @@ import 'package:reteno_plugin/src/models/app_inbox_messages.dart';
 import 'package:reteno_plugin/src/models/in_app_message_status.dart';
 import 'package:reteno_plugin/src/models/lifecycle_tracking_options.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
+import 'package:reteno_plugin/src/models/reteno_ecommerce_event.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
 import 'package:reteno_plugin/src/models/reteno_user.dart';
@@ -145,6 +146,71 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
   @override
   Future<void> logRecommendationsEvent(RetenoRecomEvents events) {
     return _api.logRecommendationsEvent(events.toNativeRecomEvents());
+  }
+
+  @override
+  Future<void> logEcommerceEvent(RetenoEcommerceEvent event) {
+    return switch (event) {
+      RetenoEcommerceProductViewed(
+        product: RetenoEcommerceProduct product,
+        currency: String? currency,
+      ) =>
+        _api.logEcommerceProductViewed(
+          product.toNativeEcommerceProduct(),
+          currency,
+        ),
+      RetenoEcommerceProductCategoryViewed(category: RetenoEcommerceCategory category) =>
+        _api.logEcommerceProductCategoryViewed(
+          category.toNativeEcommerceCategory(),
+        ),
+      RetenoEcommerceProductAddedToWishlist(
+        product: RetenoEcommerceProduct product,
+        currency: String? currency,
+      ) =>
+        _api.logEcommerceProductAddedToWishlist(
+          product.toNativeEcommerceProduct(),
+          currency,
+        ),
+      RetenoEcommerceCartUpdated(
+        cartId: String cartId,
+        products: List<RetenoEcommerceProductInCart> products,
+        currency: String? currency,
+      ) =>
+        _api.logEcommerceCartUpdated(
+          cartId,
+          products.map((e) => e.toNativeEcommerceProductInCart()).toList(),
+          currency,
+        ),
+      RetenoEcommerceOrderCreated(
+        order: RetenoEcommerceOrder order,
+        currency: String? currency,
+      ) =>
+        _api.logEcommerceOrderCreated(
+          order.toNativeEcommerceOrder(),
+          currency,
+        ),
+      RetenoEcommerceOrderUpdated(
+        order: RetenoEcommerceOrder order,
+        currency: String? currency,
+      ) =>
+        _api.logEcommerceOrderUpdated(
+          order.toNativeEcommerceOrder(),
+          currency,
+        ),
+      RetenoEcommerceOrderDelivered(
+        externalOrderId: String externalOrderId,
+      ) =>
+        _api.logEcommerceOrderDelivered(externalOrderId),
+      RetenoEcommerceOrderCancelled(
+        externalOrderId: String externalOrderId,
+      ) =>
+        _api.logEcommerceOrderCancelled(externalOrderId),
+      RetenoEcommerceSearchRequest(
+        query: String query,
+        isFound: bool? isFound,
+      ) =>
+        _api.logEcommerceSearchRequest(query, isFound),
+    };
   }
 
   static Future<String>? _getCustomDeviceIdInternal() {

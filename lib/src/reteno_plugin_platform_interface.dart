@@ -4,6 +4,7 @@ import 'package:reteno_plugin/src/models/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/src/models/in_app_message_status.dart';
 import 'package:reteno_plugin/src/models/lifecycle_tracking_options.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
+import 'package:reteno_plugin/src/models/reteno_ecommerce_event.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
 import 'package:reteno_plugin/src/models/reteno_user.dart';
@@ -66,5 +67,9 @@ abstract class RetenoPluginPlatform {
 
   Future<void> logRecommendationsEvent(RetenoRecomEvents events) {
     throw UnimplementedError('logRecommendationsEvent() has not been implemented.');
+  }
+
+  Future<void> logEcommerceEvent(RetenoEcommerceEvent event) {
+    throw UnimplementedError('logEcommerceEvent() has not been implemented.');
   }
 }

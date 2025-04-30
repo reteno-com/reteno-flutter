@@ -300,6 +300,104 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
     func unsubscribeAllMessagesCountChanged() throws {
         Reteno.inbox().onUnreadMessagesCountChanged = nil
     }
+    
+    func logEcommerceProductViewed(product: NativeEcommerceProduct, currency: String?) throws {
+        Reteno.ecommerce().logEvent(
+            type: .productViewed(
+                product: Ecommerce.Product(
+                    productId: product.productId,
+                    price: Float(product.price),
+                    isInStock: product.inStock,
+                    attributes: product.attributes?.normalized()
+                ),
+                currencyCode: currency
+            )
+        )
+    }
+    
+    func logEcommerceProductCategoryViewed(category: NativeEcommerceCategory) throws {
+        Reteno.ecommerce().logEvent(
+            type: .productCategoryViewed(
+                category: Ecommerce.ProductCategory(
+                    productCategoryId: category.productCategoryId,
+                    attributes: category.attributes?.normalized()
+                )
+            )
+        )
+    }
+    
+    func logEcommerceProductAddedToWishlist(product: NativeEcommerceProduct, currency: String?) throws {
+        Reteno.ecommerce().logEvent(
+            type: .productAddedToWishlist(
+                product: Ecommerce.Product(
+                    productId: product.productId,
+                    price: Float(product.price),
+                    isInStock: product.inStock,
+                    attributes: product.attributes?.normalized()),
+                currencyCode: currency
+            )
+        )
+    }
+    
+    func logEcommerceCartUpdated(cartId: String, products: [NativeEcommerceProductInCart], currency: String?) throws {
+        Reteno.ecommerce().logEvent(
+            type: .cartUpdated(
+                cartId: cartId,
+                products: products.map({ native in
+                    Ecommerce.ProductInCart(
+                        productId: native.productId,
+                        price: Float(native.price),
+                        quantity: Int(native.quantity)
+                    )
+                }),
+                currencyCode: currency
+            )
+        )
+    }
+    
+    func logEcommerceOrderCreated(order: NativeEcommerceOrder, currency: String?) throws {
+        let dateFormatter = ISO8601DateFormatter();
+
+        Reteno.ecommerce().logEvent(
+            type: .orderCreated(
+                order: Ecommerce.Order(
+                    externalOrderId: order.externalOrderId,
+                    totalCost: Float(order.totalCost),
+                    status: Ecommerce.Order.Status(rawValue: order.status)!,
+                    date: dateFormatter.date(from: order.date) ?? Date()
+                ),
+                currencyCode: currency
+            )
+        )
+    }
+    
+    func logEcommerceOrderUpdated(order: NativeEcommerceOrder, currency: String?) throws {
+        let dateFormatter = ISO8601DateFormatter();
+
+        Reteno.ecommerce().logEvent(
+            type: .orderUpdated(
+                order: Ecommerce.Order(
+                    externalOrderId: order.externalOrderId,
+                    totalCost: Float(order.totalCost),
+                    status: Ecommerce.Order.Status(rawValue: order.status)!,
+                    date: dateFormatter.date(from: order.date) ?? Date()
+                ),
+                currencyCode: currency
+            )
+        )
+    }
+    
+    func logEcommerceOrderDelivered(externalOrderId: String) throws {
+        Reteno.ecommerce().logEvent(type: .orderDelivered(externalOrderId: externalOrderId))
+    }
+    
+    func logEcommerceOrderCancelled(externalOrderId: String) throws {
+        Reteno.ecommerce().logEvent(type: .orderCancelled(externalOrderId: externalOrderId))
+    }
+    
+    func logEcommerceSearchRequest(query: String, isFound: Bool?) throws {
+        Reteno.ecommerce().logEvent(type: .searchRequest(query: query, isFound: isFound))
+    }
 
 }
 
@@ -371,5 +469,19 @@ extension RetenoUserNotificationAction {
             customData: self.customData,
             link: self.link?.absoluteString
         )
+    }
+}
+
+extension Dictionary where Key == Optional<String>, Value == Optional<[String]> {
+    func normalized() -> [String: [String]]? {
+        let result = self.compactMap { key, value -> (String, [String])? in
+            if let key = key, let value = value {
+                return (key, value)
+            }
+            return nil
+        }.reduce(into: [String: [String]]()) { result, pair in
+            result[pair.0] = pair.1
+        }
+        return result.isEmpty ? nil : result
     }
 }
