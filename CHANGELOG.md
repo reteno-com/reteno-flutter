@@ -1,3 +1,6 @@
+## 1.7.6
+* Bump Android sdk to 2.6.3
+
 ## 1.7.5
 * Add Ecommerce Activity Tracking `Reteno().logEcommerceEvent()`
 * Bump Android sdk to 2.6.2
