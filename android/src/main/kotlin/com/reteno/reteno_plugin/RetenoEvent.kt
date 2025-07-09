@@ -7,27 +7,20 @@ import java.time.ZonedDateTime
 object RetenoEvent {
     @Throws(Exception::class)
     fun buildEventFromCustomEvent(customEvent: NativeCustomEvent): Event {
-        if (customEvent.eventTypeKey == null) {
-            throw Exception("logEvent: missing 'eventName' parameter!")
-        }
 
         val stringDate = customEvent.dateOccurred
         val inputParameters = customEvent.parameters
 
         var parameters: List<Parameter>? = null
 
-        val date: ZonedDateTime = if (stringDate != null) {
-            ZonedDateTime.parse(stringDate)
-        } else {
-            ZonedDateTime.now()
-        }
+        val date: ZonedDateTime = ZonedDateTime.parse(stringDate)
 
-        if (inputParameters != null) {
-            parameters = inputParameters?.mapNotNull { entry ->
-                entry?.let {
+        parameters = inputParameters.mapNotNull { entry ->
+            entry?.let {
+                it.value?.let { it1 ->
                     Parameter(
                         it.name,
-                        it.value
+                        it1
                     )
                 }
             }

@@ -1,3 +1,8 @@
+## 1.7.7
+* Bump Android sdk to 2.7.2
+* Bump iOS sdk to 2.5.10
+* customDeviceId parameter in Reteno initialization allow return null (Android only)
+
 ## 1.7.6
 * Bump Android sdk to 2.6.3
 

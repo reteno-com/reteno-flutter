@@ -37,7 +37,7 @@ class Reteno {
     required String accessKey,
     bool isPausedInAppMessages = false,
     LifecycleTrackingOptions? lifecycleTrackingOptions,
-    Future<String> Function()? customDeviceId,
+    Future<String?> Function()? customDeviceId,
   }) {
     return _platform.initWith(
       accessKey: accessKey,

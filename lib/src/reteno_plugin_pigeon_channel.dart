@@ -34,7 +34,7 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
   late final RetenoHostApi _api;
   late final AppInbox appInbox;
 
-  static Future<String> Function()? _getCustomDeviceId;
+  static Future<String?> Function()? _getCustomDeviceId;
 
   RetenoPigeonChannel._({
     RetenoHostApi? api,
@@ -72,7 +72,7 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
     required String accessKey,
     bool isPausedInAppMessages = false,
     LifecycleTrackingOptions? lifecycleTrackingOptions,
-    Future<String> Function()? customDeviceId,
+    Future<String?> Function()? customDeviceId,
   }) {
     _getCustomDeviceId = customDeviceId;
     return _api.initWith(
@@ -213,7 +213,7 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
     };
   }
 
-  static Future<String>? _getCustomDeviceIdInternal() {
+  static Future<String?>? _getCustomDeviceIdInternal() {
     return _getCustomDeviceId?.call();
   }
 }

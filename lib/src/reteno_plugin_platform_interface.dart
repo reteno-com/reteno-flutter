@@ -15,7 +15,7 @@ abstract class RetenoPluginPlatform {
     required String accessKey,
     bool isPausedInAppMessages = false,
     LifecycleTrackingOptions? lifecycleTrackingOptions,
-    Future<String> Function()? customDeviceId,
+    Future<String?> Function()? customDeviceId,
   }) {
     throw UnimplementedError('initWith() has not been implemented.');
   }

@@ -400,7 +400,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
                 val error = throwable ?: Exception("Failed to get AppInbox messages count. Status: $statusCode, Response: $response")
                 callback(Result.failure(error))
             }
-        });
+        })
     }
 
     override fun subscribeOnMessagesCountChanged() {
@@ -413,7 +413,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     }
 
     override fun unsubscribeAllMessagesCountChanged() {
-        reteno.appInbox.unsubscribeAllMessagesCountChanged();
+        reteno.appInbox.unsubscribeAllMessagesCountChanged()
     }
 
     override fun logEcommerceProductViewed(product: NativeEcommerceProduct, currency: String?) {
