@@ -292,7 +292,6 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
 
     func subscribeOnMessagesCountChanged() throws {
         Reteno.inbox().onUnreadMessagesCountChanged = { count in
-            print(count)
             SwiftRetenoPlugin._flutterApi?.onMessagesCountChanged(count: Int64(count)) {_ in }
         }
     }
@@ -360,12 +359,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
 
         Reteno.ecommerce().logEvent(
             type: .orderCreated(
-                order: Ecommerce.Order(
-                    externalOrderId: order.externalOrderId,
-                    totalCost: Float(order.totalCost),
-                    status: Ecommerce.Order.Status(rawValue: order.status)!,
-                    date: dateFormatter.date(from: order.date) ?? Date()
-                ),
+                order: order.toEcommerceOrder(),
                 currencyCode: currency
             )
         )
@@ -376,12 +370,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
 
         Reteno.ecommerce().logEvent(
             type: .orderUpdated(
-                order: Ecommerce.Order(
-                    externalOrderId: order.externalOrderId,
-                    totalCost: Float(order.totalCost),
-                    status: Ecommerce.Order.Status(rawValue: order.status)!,
-                    date: dateFormatter.date(from: order.date) ?? Date()
-                ),
+                order: order.toEcommerceOrder(),
                 currencyCode: currency
             )
         )
@@ -483,5 +472,81 @@ extension Dictionary where Key == Optional<String>, Value == Optional<[String]> 
             result[pair.0] = pair.1
         }
         return result.isEmpty ? nil : result
+    }
+}
+
+extension NativeEcommerceOrder {
+    
+    func toEcommerceOrder() -> Ecommerce.Order {
+        let dateFormatter = ISO8601DateFormatter();
+
+         let orderStatus = Ecommerce.Order.Status(rawValue: self.status)!
+        
+        var convertedItems: [Ecommerce.Order.Item]? = nil
+        if let nativeItems = self.items {
+            convertedItems = []
+            for nativeItem in nativeItems {
+                if let item = nativeItem?.toEcommerceItem() {
+                    convertedItems?.append(item)
+                }
+            }
+            if convertedItems?.isEmpty == true {
+                convertedItems = nil
+            }
+        }
+        
+        var convertedAttributes: [String: [String: Any]]? = nil
+        if let nativeAttributes = self.attributes {
+            convertedAttributes = [:]
+            for (key, value) in nativeAttributes {
+                if let unwrappedKey = key, let unwrappedValue = value {
+                    let attributeDict: [String: Any] = ["values": unwrappedValue]
+                    convertedAttributes?[unwrappedKey] = attributeDict
+                }
+            }
+            if convertedAttributes?.isEmpty == true {
+                convertedAttributes = nil
+            }
+        }
+        
+        return Ecommerce.Order(
+            externalOrderId: self.externalOrderId,
+            totalCost: Float(self.totalCost),
+            status: orderStatus,
+            date: dateFormatter.date(from: date) ?? Date(),
+            cartId: self.cartId,
+            email: self.email,
+            phone: self.phone,
+            firstName: self.firstName,
+            lastName: self.lastName,
+            shipping: self.shipping.map { Float($0) },
+            discount: self.discount.map { Float($0) },
+            taxes: self.taxes.map { Float($0) },
+            restoreUrl: self.restoreUrl,
+            statusDescription: self.statusDescription,
+            storeId: self.storeId,
+            source: self.source,
+            deliveryMethod: self.deliveryMethod,
+            paymentMethod: self.paymentMethod,
+            deliveryAddress: self.deliveryAddress,
+            items: convertedItems,
+            attributes: convertedAttributes
+        )
+    }
+}
+
+extension NativeEcommerceItem {
+    
+    func toEcommerceItem() -> Ecommerce.Order.Item? {
+        return Ecommerce.Order.Item(
+            externalItemId: self.externalItemId,
+            name: self.name,
+            category: self.category,
+            quantity: self.quantity,
+            cost: Float(self.cost),
+            url: self.url,
+            imageUrl: self.imageUrl,
+            description: self.description
+        )
     }
 }

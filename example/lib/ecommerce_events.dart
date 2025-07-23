@@ -128,7 +128,17 @@ class EcommerceEventsPage extends StatelessWidget {
                       deliveryMethod: null,
                       paymentMethod: null,
                       deliveryAddress: null,
-                      items: null,
+                      items: [
+                        const RetenoEcommerceItem(
+                          externalItemId: 'external_item_id',
+                          name: 'Product Name',
+                          category: 'Category',
+                          cost: 10000,
+                          quantity: 1,
+                          url: 'https://example.com/product',
+                          imageUrl: 'https://example.com/image.jpg',
+                        ),
+                      ],
                       attributes: {
                         'color': ['red', 'blue'],
                         'size': ['S', 'M'],

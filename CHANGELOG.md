@@ -1,3 +1,7 @@
+## 1.7.8
+* Bump Android sdk to 2.7.4
+* Fix Ecommerce Activity Tracking
+
 ## 1.7.7
 * Bump Android sdk to 2.7.2
 * Bump iOS sdk to 2.5.10

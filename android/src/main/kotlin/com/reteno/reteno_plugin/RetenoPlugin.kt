@@ -46,7 +46,6 @@ import java.time.format.DateTimeParseException
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import android.util.Pair as AndroidPair
-
 private const val TAG = "RetenoPlugin"
 private const val ES_INTERACTION_ID_KEY: String = "es_interaction_id"
 
@@ -575,16 +574,17 @@ fun String.toZonedDateTime(): ZonedDateTime =
         LocalDateTime.parse(this).atZone(ZoneId.systemDefault())
     }
 
-fun Map<String?, List<String>?>?.toAndroidPairs(): List<AndroidPair<String, String>>? =
-    this?.flatMap { (key, list) ->
+fun Map<String?, List<String>?>.toPairsList(): List<AndroidPair<String, String>> {
+    val list: MutableList<AndroidPair<String, String>> = ArrayList()
+    this.forEach { (key, values) ->
         key?.let { k ->
-            val values = list ?: listOf("")
-            if (values.isEmpty())
-                listOf(AndroidPair(k, ""))
-            else
-                values.map { v -> AndroidPair(k, v ?: "") }
-        } ?: emptyList()
-    }?.takeUnless { it.isEmpty() }
+            val joinedValues = values?.joinToString(",") ?: ""
+            list.add(AndroidPair(k, joinedValues))
+        }
+    }
+
+    return list
+}
 
 fun NativeEcommerceItem.toOrderItem(): OrderItem = OrderItem(
     externalItemId = externalItemId,
@@ -622,5 +622,5 @@ fun NativeEcommerceOrder.toOrder(): Order = Order(
     paymentMethod       = paymentMethod,
     deliveryAddress     = deliveryAddress,
     items               = items.toOrderItems(),
-    attributes          = attributes.toAndroidPairs()
+    attributes          = attributes?.toPairsList()
 )
