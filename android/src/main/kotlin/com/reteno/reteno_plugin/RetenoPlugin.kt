@@ -7,7 +7,6 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import com.reteno.core.Reteno
-import com.reteno.core.RetenoApplication
 import com.reteno.core.RetenoConfig
 import com.reteno.core.data.remote.model.recommendation.get.Recoms
 import com.reteno.core.domain.callback.appinbox.RetenoResultCallback
@@ -46,6 +45,7 @@ import java.time.format.DateTimeParseException
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import android.util.Pair as AndroidPair
+
 private const val TAG = "RetenoPlugin"
 private const val ES_INTERACTION_ID_KEY: String = "es_interaction_id"
 
@@ -92,7 +92,6 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
         }
     }
 
-    private lateinit var reteno: Reteno
     private var initialNotification: HashMap<String, Any>? = null
     private var mainActivity: Activity? = null
     private val uiThreadHandler: Handler = Handler(Looper.getMainLooper())
@@ -103,7 +102,6 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
         pluginBinding = flutterPluginBinding
         initializeFlutterApi(flutterPluginBinding.binaryMessenger)
 
-        reteno = (flutterPluginBinding.applicationContext as RetenoApplication).getRetenoInstance()
         applicationContext = flutterPluginBinding.applicationContext
         createInAppLifecycleListener()
     }
@@ -121,7 +119,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     }
 
     private fun createInAppLifecycleListener() {
-        reteno.setInAppLifecycleCallback(object : InAppLifecycleCallback {
+        Reteno.instance.setInAppLifecycleCallback(object : InAppLifecycleCallback {
             override fun afterClose(closeData: InAppCloseData) {
                 uiThreadHandler.post {
                     flutterApi?.onInAppMessageStatusChanged(
@@ -256,23 +254,27 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
         isPausedInAppMessages: Boolean,
         useCustomDeviceIdProvider: Boolean
     ) {
-        val config = RetenoConfig(
-            isPausedInAppMessages,
-            userIdProvider = if (useCustomDeviceIdProvider) CustomDeviceIdProvider() else null,
-            lifecycleTrackingOptions.toLifecycleTrackingOptions(),
-            accessKey
-        )
-        reteno.initWith(config)
+
+        val configBuilder = RetenoConfig.Builder()
+            .pauseInAppMessages(isPausedInAppMessages)
+            .lifecycleTrackingOptions(lifecycleTrackingOptions.toLifecycleTrackingOptions())
+            .accessKey(accessKey)
+
+        if (useCustomDeviceIdProvider) {
+            configBuilder.customDeviceIdProvider(CustomDeviceIdProvider())
+        }
+
+        Reteno.initWithConfig(configBuilder.build())
     }
 
     override fun setUserAttributes(externalUserId: String, user: NativeRetenoUser?) {
         Log.i(TAG, "setUserAttributes")
-        return reteno.setUserAttributes(externalUserId, UserUtils.fromRetenoUser(user))
+        return Reteno.instance.setUserAttributes(externalUserId, UserUtils.fromRetenoUser(user))
     }
 
     override fun setAnonymousUserAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes) {
         Log.i(TAG, "setAnonymousUserAttributes")
-        return reteno.setAnonymousUserAttributes(
+        return Reteno.instance.setAnonymousUserAttributes(
             UserUtils.parseAnonymousAttributes(
                 anonymousUserAttributes
             )
@@ -281,12 +283,12 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
 
     override fun logEvent(event: NativeCustomEvent) {
         Log.i(TAG, "logEvent")
-        return reteno.logEvent(buildEventFromCustomEvent(event))
+        return Reteno.instance.logEvent(buildEventFromCustomEvent(event))
     }
 
     override fun updatePushPermissionStatus() {
         Log.i(TAG, "updatePushPermissionStatus")
-        return reteno.updatePushPermissionStatus()
+        return Reteno.instance.updatePushPermissionStatus()
     }
 
     override fun getInitialNotification(): Map<String, Any>? {
@@ -302,7 +304,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     override fun getRecommendations(
         recomVariantId: String,
         productIds: List<String>,
-        categoryId: String,
+        categoryId: String?,
         filters: List<NativeRecomFilter>?,
         fields: List<String>?,
         callback: (Result<List<NativeRecommendation>>) -> Unit
@@ -313,7 +315,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
             fields = fields,
             filters = convertToRecomFilterList(filters)
         )
-        reteno.recommendation.fetchRecommendation<RecommendationResponse>(
+        Reteno.instance.recommendation.fetchRecommendation(
             recomVariantId,
             request,
             RecommendationResponse::class.java,
@@ -345,7 +347,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     }
 
     override fun logRecommendationsEvent(events: NativeRecomEvents) {
-        reteno.recommendation.logRecommendations(
+        Reteno.instance.recommendation.logRecommendations(
             RecomEvents(events.recomVariantId, convertToRecomEventList(events))
         )
     }
@@ -355,7 +357,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
         pageSize: Long?,
         callback: (Result<NativeAppInboxMessages>) -> Unit
     ) {
-        reteno.appInbox.getAppInboxMessages(
+        Reteno.instance.appInbox.getAppInboxMessages(
             page = page?.toInt(),
             pageSize = pageSize?.toInt(),
             callback = object : RetenoResultCallback<AppInboxMessages> {
@@ -373,7 +375,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     }
 
     override fun getAppInboxMessagesCount(callback: (Result<Long>) -> Unit) {
-        reteno.appInbox.getAppInboxMessagesCount(object : RetenoResultCallback<Int> {
+        Reteno.instance.appInbox.getAppInboxMessagesCount(object : RetenoResultCallback<Int> {
             override fun onSuccess(result: Int) {
                 callback(Result.success(result.toLong()))
             }
@@ -386,11 +388,11 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     }
 
     override fun markAsOpened(messageId: String) {
-        reteno.appInbox.markAsOpened(messageId)
+        Reteno.instance.appInbox.markAsOpened(messageId)
     }
 
     override fun markAllMessagesAsOpened(callback: (Result<Unit>) -> Unit) {
-        reteno.appInbox.markAllMessagesAsOpened(object : RetenoResultCallback<Unit> {
+        Reteno.instance.appInbox.markAllMessagesAsOpened(object : RetenoResultCallback<Unit> {
             override fun onSuccess(result: Unit) {
                 callback(Result.success(Unit))
             }
@@ -403,7 +405,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     }
 
     override fun subscribeOnMessagesCountChanged() {
-        reteno.appInbox.subscribeOnMessagesCountChanged(object : RetenoResultCallback<Int> {
+        Reteno.instance.appInbox.subscribeOnMessagesCountChanged(object : RetenoResultCallback<Int> {
             override fun onSuccess(result: Int) {
                 flutterApi?.onMessagesCountChanged(result.toLong()){}
             }
@@ -412,7 +414,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     }
 
     override fun unsubscribeAllMessagesCountChanged() {
-        reteno.appInbox.unsubscribeAllMessagesCountChanged()
+        Reteno.instance.appInbox.unsubscribeAllMessagesCountChanged()
     }
 
     override fun logEcommerceProductViewed(product: NativeEcommerceProduct, currency: String?) {
@@ -423,7 +425,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
             product.attributes.toAttributesList()
         )
         val ecomEvent: EcomEvent = EcomEvent.ProductViewed(productView, currency)
-        reteno.logEcommerceEvent(ecomEvent)
+        Reteno.instance.logEcommerceEvent(ecomEvent)
     }
 
     override fun logEcommerceProductCategoryViewed(category: NativeEcommerceCategory) {
@@ -432,7 +434,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
             category.attributes.toAttributesList()
         )
         val ecomEvent: EcomEvent = EcomEvent.ProductCategoryViewed(productCategoryView)
-        reteno.logEcommerceEvent(ecomEvent)
+        Reteno.instance.logEcommerceEvent(ecomEvent)
     }
 
     override fun logEcommerceProductAddedToWishlist(
@@ -446,7 +448,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
             product.attributes.toAttributesList()
         )
         val ecomEvent: EcomEvent = EcomEvent.ProductAddedToWishlist(productView, currency)
-        reteno.logEcommerceEvent(ecomEvent)
+        Reteno.instance.logEcommerceEvent(ecomEvent)
     }
 
     override fun logEcommerceCartUpdated(
@@ -459,36 +461,36 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
             products.toProductInCartList(),
             currency
         )
-        reteno.logEcommerceEvent(ecomEvent)
+        Reteno.instance.logEcommerceEvent(ecomEvent)
     }
 
     override fun logEcommerceOrderCreated(order: NativeEcommerceOrder, currency: String?) {
         val ecomEvent: EcomEvent = EcomEvent.OrderCreated(order.toOrder(), currency)
-        reteno.logEcommerceEvent(ecomEvent)
+        Reteno.instance.logEcommerceEvent(ecomEvent)
     }
 
     override fun logEcommerceOrderUpdated(order: NativeEcommerceOrder, currency: String?) {
         val ecomEvent: EcomEvent = EcomEvent.OrderUpdated(order.toOrder(), currency)
-        reteno.logEcommerceEvent(ecomEvent)
+        Reteno.instance.logEcommerceEvent(ecomEvent)
     }
 
     override fun logEcommerceOrderDelivered(externalOrderId: String) {
         val ecomEvent: EcomEvent = EcomEvent.OrderDelivered(externalOrderId)
-        reteno.logEcommerceEvent(ecomEvent)
+        Reteno.instance.logEcommerceEvent(ecomEvent)
     }
 
     override fun logEcommerceOrderCancelled(externalOrderId: String) {
         val ecomEvent: EcomEvent = EcomEvent.OrderCancelled(externalOrderId)
-        reteno.logEcommerceEvent(ecomEvent)
+        Reteno.instance.logEcommerceEvent(ecomEvent)
     }
 
     override fun logEcommerceSearchRequest(query: String, isFound: Boolean?) {
         val ecomEvent: EcomEvent = EcomEvent.SearchRequest(query, isFound == true)
-        reteno.logEcommerceEvent(ecomEvent)
+        Reteno.instance.logEcommerceEvent(ecomEvent)
     }
 
     override fun pauseInAppMessages(isPaused: Boolean) {
-        reteno.pauseInAppMessages(isPaused)
+        Reteno.instance.pauseInAppMessages(isPaused)
     }
 }
 

@@ -129,9 +129,9 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
   Future<List<RetenoRecommendation>> getRecommendations({
     required String recomenedationVariantId,
     required List<String> productIds,
-    required String categoryId,
+    String? categoryId,
     List<RetenoRecomendationFilter>? filters,
-    List<String?>? fields,
+    List<String>? fields,
   }) async {
     final response = await _api.getRecommendations(
       recomVariantId: recomenedationVariantId,
@@ -140,7 +140,7 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
       filters: filters?.map((e) => e.toNativeRecomFilter()).toList(),
       fields: fields,
     );
-    return response.where((element) => element != null).map((e) => e!.toRetenoRecommendation()).toList();
+    return response.map((e) => e.toRetenoRecommendation()).toList();
   }
 
   @override

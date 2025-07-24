@@ -43,8 +43,7 @@ class _RecommendationPageState extends State<RecommendationPage> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () async {
-              final newSettings =
-                  await Navigator.of(context).push<RecommendationSettings>(
+              final newSettings = await Navigator.of(context).push<RecommendationSettings>(
                 MaterialPageRoute(
                   builder: (context) => RecommendationSettingsPage(
                     settings: _settingsNotifier.value,
@@ -66,8 +65,7 @@ class _RecommendationPageState extends State<RecommendationPage> {
               return const Center(
                 child: CircularProgressIndicator(),
               );
-            } else if (snapshot.connectionState == ConnectionState.done &&
-                snapshot.hasData) {
+            } else if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
               return ListView.builder(
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) {
@@ -83,16 +81,13 @@ class _RecommendationPageState extends State<RecommendationPage> {
                         height: 50,
                       ),
                     ),
-                    trailing: recommendation.price != null
-                        ? Text('\$${recommendation.price}')
-                        : null,
+                    trailing: recommendation.price != null ? Text('\$${recommendation.price}') : null,
                     onTap: () async {
                       // Log recommendation event
                       try {
                         await Reteno().logRecommendationsEvent(
                           RetenoRecomEvents(
-                            recomVariantId:
-                                _settingsNotifier.value.recomenedationVariantId,
+                            recomVariantId: _settingsNotifier.value.recomenedationVariantId,
                             events: [
                               RetenoRecomEvent(
                                 productId: recommendation.productId,
@@ -173,8 +168,7 @@ class RecommendationSettings {
     List<String>? fields,
   }) {
     return RecommendationSettings(
-      recomenedationVariantId:
-          recomenedationVariantId ?? this.recomenedationVariantId,
+      recomenedationVariantId: recomenedationVariantId ?? this.recomenedationVariantId,
       productIds: productIds ?? this.productIds,
       categoryId: categoryId ?? this.categoryId,
       filters: filters ?? this.filters,
@@ -188,12 +182,10 @@ class RecommendationSettingsPage extends StatefulWidget {
   final RecommendationSettings settings;
 
   @override
-  State<RecommendationSettingsPage> createState() =>
-      _RecommendationSettingsPageState();
+  State<RecommendationSettingsPage> createState() => _RecommendationSettingsPageState();
 }
 
-class _RecommendationSettingsPageState
-    extends State<RecommendationSettingsPage> {
+class _RecommendationSettingsPageState extends State<RecommendationSettingsPage> {
   final _formKey = GlobalKey<FormState>();
   late final ValueNotifier<RecommendationSettings> _settingsNotifier;
 
@@ -219,49 +211,36 @@ class _RecommendationSettingsPageState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextFormField(
-                  decoration: const InputDecoration(
-                      labelText: 'Recommendation Variant ID'),
+                  decoration: const InputDecoration(labelText: 'Recommendation Variant ID'),
                   initialValue: _settingsNotifier.value.recomenedationVariantId,
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Please enter a value'
-                      : null,
+                  validator: (value) => value == null || value.isEmpty ? 'Please enter a value' : null,
                   onSaved: (value) {
-                    _settingsNotifier.value = _settingsNotifier.value
-                        .copyWith(recomenedationVariantId: value);
+                    _settingsNotifier.value = _settingsNotifier.value.copyWith(recomenedationVariantId: value);
                   },
                 ),
                 TextFormField(
                   decoration: const InputDecoration(labelText: 'Category ID'),
                   initialValue: _settingsNotifier.value.categoryId,
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Please enter a value'
-                      : null,
+                  validator: (value) => value == null || value.isEmpty ? 'Please enter a value' : null,
                   onSaved: (value) {
-                    _settingsNotifier.value =
-                        _settingsNotifier.value.copyWith(categoryId: value);
+                    _settingsNotifier.value = _settingsNotifier.value.copyWith(categoryId: value);
                   },
                 ),
                 TextFormField(
-                  decoration: const InputDecoration(
-                      labelText: 'Product IDs: (comma separated)'),
+                  decoration: const InputDecoration(labelText: 'Product IDs: (comma separated)'),
                   initialValue: _settingsNotifier.value.productIds.join(','),
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Please enter a value'
-                      : null,
+                  validator: (value) => value == null || value.isEmpty ? 'Please enter a value' : null,
                   onSaved: (value) {
                     if (value != null) {
-                      _settingsNotifier.value = _settingsNotifier.value
-                          .copyWith(productIds: value.split(','));
+                      _settingsNotifier.value = _settingsNotifier.value.copyWith(productIds: value.split(','));
                     }
                   },
                 ),
                 TextFormField(
-                  decoration: const InputDecoration(
-                      labelText: 'Fields: (comma separated)'),
+                  decoration: const InputDecoration(labelText: 'Fields: (comma separated)'),
                   initialValue: _settingsNotifier.value.fields?.join(','),
                   onSaved: (value) {
-                    _settingsNotifier.value = _settingsNotifier.value
-                        .copyWith(fields: value?.split(','));
+                    _settingsNotifier.value = _settingsNotifier.value.copyWith(fields: value?.split(','));
                   },
                 ),
                 const SizedBox(height: 10),
@@ -271,18 +250,13 @@ class _RecommendationSettingsPageState
                     IconButton(
                       icon: const Icon(Icons.add),
                       onPressed: () async {
-                        final filter =
-                            await showDialog<RetenoRecomendationFilter>(
+                        final filter = await showDialog<RetenoRecomendationFilter>(
                           context: context,
                           builder: (context) => const FilterDialog(),
                         );
                         if (filter != null) {
-                          _settingsNotifier.value =
-                              _settingsNotifier.value.copyWith(
-                            filters: [
-                              ..._settingsNotifier.value.filters,
-                              filter
-                            ],
+                          _settingsNotifier.value = _settingsNotifier.value.copyWith(
+                            filters: [..._settingsNotifier.value.filters, filter],
                           );
                         }
                       },
@@ -298,14 +272,10 @@ class _RecommendationSettingsPageState
                               (filter) => Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: InputChip(
-                                  label: Text(
-                                      '${filter.name}: ${filter.values.join(',')}'),
+                                  label: Text('${filter.name}: ${filter.values.join(',')}'),
                                   onDeleted: () {
-                                    _settingsNotifier.value =
-                                        _settingsNotifier.value.copyWith(
-                                      filters: _settingsNotifier.value.filters
-                                          .where((f) => f != filter)
-                                          .toList(),
+                                    _settingsNotifier.value = _settingsNotifier.value.copyWith(
+                                      filters: _settingsNotifier.value.filters.where((f) => f != filter).toList(),
                                     );
                                   },
                                 ),
@@ -364,17 +334,12 @@ class _FilterDialogState extends State<FilterDialog> {
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Name'),
-              validator: (value) => value == null || value.isEmpty
-                  ? 'Please enter a value'
-                  : null,
+              validator: (value) => value == null || value.isEmpty ? 'Please enter a value' : null,
             ),
             TextFormField(
               controller: _valuesController,
-              decoration:
-                  const InputDecoration(labelText: 'Values (comma separated)'),
-              validator: (value) => value == null || value.isEmpty
-                  ? 'Please enter a value'
-                  : null,
+              decoration: const InputDecoration(labelText: 'Values (comma separated)'),
+              validator: (value) => value == null || value.isEmpty ? 'Please enter a value' : null,
             ),
           ],
         ),

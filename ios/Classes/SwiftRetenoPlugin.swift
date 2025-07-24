@@ -199,7 +199,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
     func getRecommendations(
         recomVariantId: String,
         productIds: [String],
-        categoryId: String,
+        categoryId: String?,
         filters: [NativeRecomFilter]?,
         fields: [String]?,
         completion: @escaping (Result<[NativeRecommendation], Error>
@@ -420,7 +420,36 @@ extension Recommendation {
             name: self.name,
             description: self.description,
             imageUrl: self.imageUrl?.absoluteString,
-            price: self.price != nil ? Double(self.price!) : nil
+            price: self.price != nil ? Double(self.price!) : nil,
+            category: self.category,
+            categoryAncestor: self.categoryAncestor,
+            categoryLayout: self.categoryLayout,
+            categoryParent: self.categoryParent,
+            dateCreatedAs: self.dateCreatedAs,
+            dateCreatedEs: self.dateCreatedEs,
+            dateModifiedAs: self.dateModifiedAs,
+            itemGroup: self.itemGroup,
+            nameKeyword: self.nameKeyword,
+            productIdAlt: self.productIdAlt,
+            tagsAllCategoryNames: self.tagsAllCategoryNames,
+            tagsBestseller: self.tagsBestseller,
+            tagsCashback: self.tagsCashback,
+            tagsCategoryBestseller: self.tagsCategoryBestseller,
+            tagsCredit: self.tagsCredit,
+            tagsDelivery: self.tagsDelivery,
+            tagsDescriptionPriceRange: self.tagsDescriptionPriceRange,
+            tagsDiscount: self.tagsDiscount,
+            tagsHasPurchases21Days: self.tagsHasPurchases21Days,
+            tagsIsBestseller: self.tagsIsBestseller,
+            tagsIsBestsellerByCategories: self.tagsIsBestsellerByCategories,
+            tagsItemGroupId: self.tagsItemGroupId,
+            tagsNumPurchases21Days: self.tagsNumPurchases21Days,
+            tagsOldPrice: self.tagsOldPrice,
+            tagsOldprice: self.tagsOldprice,
+            tagsPriceRange: self.tagsPriceRange,
+            tagsRating: self.tagsRating,
+            tagsSale: self.tagsSale,
+            url: self.url?.absoluteString
         );
     }
 }

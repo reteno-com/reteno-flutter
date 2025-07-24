@@ -243,7 +243,7 @@ class Reteno {
     required List<String> productIds,
     required String categoryId,
     List<RetenoRecomendationFilter>? filters,
-    List<String?>? fields,
+    List<String>? fields,
   }) {
     return _platform.getRecommendations(
       recomenedationVariantId: recomenedationVariantId,

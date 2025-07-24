@@ -1,3 +1,14 @@
+## 1.8.0
+* Android: not need create `CustomApplication` class. All initialization is done via `Reteno.initWith` method.
+* Enhance `RetenoRecommendation` model with additional fields:
+  - Add category, categoryAncestor, categoryLayout, categoryParent
+  - Add dateCreatedAs, dateCreatedEs, dateModifiedAs
+  - Add itemGroup, nameKeyword, productIdAlt
+  - Add various tags fields (tagsBestseller, tagsCashback, etc.)
+  - Add url field for product recommendations
+* Make categoryId parameter optional in `getRecommendations` method
+
+
 ## 1.7.8
 * Bump Android sdk to 2.7.4
 * Fix Ecommerce Activity Tracking

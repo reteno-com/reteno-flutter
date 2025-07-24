@@ -58,9 +58,9 @@ abstract class RetenoPluginPlatform {
   Future<List<RetenoRecommendation>> getRecommendations({
     required String recomenedationVariantId,
     required List<String> productIds,
-    required String categoryId,
+    String? categoryId,
     List<RetenoRecomendationFilter>? filters,
-    List<String?>? fields,
+    List<String>? fields,
   }) {
     throw UnimplementedError('getRecommendations() has not been implemented.');
   }

@@ -5,9 +5,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-   <application
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <application
         android:label="Reteno Flutter Example"
-        android:name=".reteno_plugin_example.CustomApplication"
         android:networkSecurityConfig="@xml/network_security_config"
         android:icon="@mipmap/ic_launcher">
         <meta-data
@@ -85,7 +86,13 @@
           android:host="example-app.esclick.me" />
       </intent-filter>
     </activity>
-    <service android:name="com.pravera.flutter_foreground_task.service.ForegroundService" />
+<!--    <service android:name="com.pravera.flutter_foreground_task.service.ForegroundService" />-->
+        <service
+            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+            android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Type your explanation here why"/>
+        </service>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
