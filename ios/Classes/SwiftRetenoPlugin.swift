@@ -125,7 +125,8 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
         accessKey: String,
         lifecycleTrackingOptions: NativeLifecycleTrackingOptions?,
         isPausedInAppMessages: Bool,
-        useCustomDeviceIdProvider: Bool
+        useCustomDeviceIdProvider: Bool,
+        isDebug: Bool
     ) throws {
         // No op
     }

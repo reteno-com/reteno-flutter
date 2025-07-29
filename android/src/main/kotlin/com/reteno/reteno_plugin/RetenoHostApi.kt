@@ -1252,7 +1252,7 @@ private open class RetenoHostApiPigeonCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface RetenoHostApi {
-  fun initWith(accessKey: String, lifecycleTrackingOptions: NativeLifecycleTrackingOptions?, isPausedInAppMessages: Boolean, useCustomDeviceIdProvider: Boolean)
+  fun initWith(accessKey: String, lifecycleTrackingOptions: NativeLifecycleTrackingOptions?, isPausedInAppMessages: Boolean, useCustomDeviceIdProvider: Boolean, isDebug: Boolean)
   fun setUserAttributes(externalUserId: String, user: NativeRetenoUser?)
   fun setAnonymousUserAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes)
   fun logEvent(event: NativeCustomEvent)
@@ -1295,8 +1295,9 @@ interface RetenoHostApi {
             val lifecycleTrackingOptionsArg = args[1] as NativeLifecycleTrackingOptions?
             val isPausedInAppMessagesArg = args[2] as Boolean
             val useCustomDeviceIdProviderArg = args[3] as Boolean
+            val isDebugArg = args[4] as Boolean
             val wrapped: List<Any?> = try {
-              api.initWith(accessKeyArg, lifecycleTrackingOptionsArg, isPausedInAppMessagesArg, useCustomDeviceIdProviderArg)
+              api.initWith(accessKeyArg, lifecycleTrackingOptionsArg, isPausedInAppMessagesArg, useCustomDeviceIdProviderArg, isDebugArg)
               listOf(null)
             } catch (exception: Throwable) {
               RetenoHostApiPigeonUtils.wrapError(exception)

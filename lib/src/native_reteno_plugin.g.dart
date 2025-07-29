@@ -1625,14 +1625,14 @@ class RetenoHostApi {
 
   final String pigeonVar_messageChannelSuffix;
 
-  Future<void> initWith({required String accessKey, NativeLifecycleTrackingOptions? lifecycleTrackingOptions, bool isPausedInAppMessages = false, bool useCustomDeviceIdProvider = false, }) async {
+  Future<void> initWith({required String accessKey, NativeLifecycleTrackingOptions? lifecycleTrackingOptions, bool isPausedInAppMessages = false, bool useCustomDeviceIdProvider = false, bool isDebug = false, }) async {
     final String pigeonVar_channelName = 'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.initWith$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[accessKey, lifecycleTrackingOptions, isPausedInAppMessages, useCustomDeviceIdProvider]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[accessKey, lifecycleTrackingOptions, isPausedInAppMessages, useCustomDeviceIdProvider, isDebug]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {

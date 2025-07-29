@@ -71,6 +71,7 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
   Future<void> initWith({
     required String accessKey,
     bool isPausedInAppMessages = false,
+    bool isDebug = false,
     LifecycleTrackingOptions? lifecycleTrackingOptions,
     Future<String?> Function()? customDeviceId,
   }) {
@@ -78,6 +79,7 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
     return _api.initWith(
       accessKey: accessKey,
       isPausedInAppMessages: isPausedInAppMessages,
+      isDebug: isDebug,
       lifecycleTrackingOptions: lifecycleTrackingOptions?.toNativeLifecycleTrackingOptions(),
       useCustomDeviceIdProvider: customDeviceId != null,
     );

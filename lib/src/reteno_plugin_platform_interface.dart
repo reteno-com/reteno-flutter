@@ -14,6 +14,7 @@ abstract class RetenoPluginPlatform {
   Future<void> initWith({
     required String accessKey,
     bool isPausedInAppMessages = false,
+    bool isDebug = false,
     LifecycleTrackingOptions? lifecycleTrackingOptions,
     Future<String?> Function()? customDeviceId,
   }) {

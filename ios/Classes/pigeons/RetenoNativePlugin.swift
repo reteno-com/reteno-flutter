@@ -1275,7 +1275,7 @@ class RetenoNativePluginPigeonCodec: FlutterStandardMessageCodec, @unchecked Sen
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol RetenoHostApi {
-  func initWith(accessKey: String, lifecycleTrackingOptions: NativeLifecycleTrackingOptions?, isPausedInAppMessages: Bool, useCustomDeviceIdProvider: Bool) throws
+  func initWith(accessKey: String, lifecycleTrackingOptions: NativeLifecycleTrackingOptions?, isPausedInAppMessages: Bool, useCustomDeviceIdProvider: Bool, isDebug: Bool) throws
   func setUserAttributes(externalUserId: String, user: NativeRetenoUser?) throws
   func setAnonymousUserAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes) throws
   func logEvent(event: NativeCustomEvent) throws
@@ -1315,8 +1315,9 @@ class RetenoHostApiSetup {
         let lifecycleTrackingOptionsArg: NativeLifecycleTrackingOptions? = nilOrValue(args[1])
         let isPausedInAppMessagesArg = args[2] as! Bool
         let useCustomDeviceIdProviderArg = args[3] as! Bool
+        let isDebugArg = args[4] as! Bool
         do {
-          try api.initWith(accessKey: accessKeyArg, lifecycleTrackingOptions: lifecycleTrackingOptionsArg, isPausedInAppMessages: isPausedInAppMessagesArg, useCustomDeviceIdProvider: useCustomDeviceIdProviderArg)
+          try api.initWith(accessKey: accessKeyArg, lifecycleTrackingOptions: lifecycleTrackingOptionsArg, isPausedInAppMessages: isPausedInAppMessagesArg, useCustomDeviceIdProvider: useCustomDeviceIdProviderArg, isDebug: isDebugArg)
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))

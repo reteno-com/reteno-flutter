@@ -12,6 +12,7 @@ class Reteno {
   /// NOTE: Android SDK only
   /// Method for finishing delayed initialization of RetenoSDK,
   /// - Parameter `accessKey`: Reteno Access Key
+  /// - Parameter `isDebug`: enables debug mode for Reteno SDK (Android only)
   /// - Parameter `isPausedInAppMessages`: indicates paused/resumed state for in-app messages
   ///   Reteno SDK will wait till id is going to be non-null then will initialize itself
   /// - Parameter `lifecycleTrackingOptions`: behavior of automatic app lifecycle event tracking
@@ -36,6 +37,7 @@ class Reteno {
   Future<void> initWith({
     required String accessKey,
     bool isPausedInAppMessages = false,
+    bool isDebug = false,
     LifecycleTrackingOptions? lifecycleTrackingOptions,
     Future<String?> Function()? customDeviceId,
   }) {
@@ -44,6 +46,7 @@ class Reteno {
       isPausedInAppMessages: isPausedInAppMessages,
       lifecycleTrackingOptions: lifecycleTrackingOptions,
       customDeviceId: customDeviceId,
+      isDebug: isDebug,
     );
   }
 

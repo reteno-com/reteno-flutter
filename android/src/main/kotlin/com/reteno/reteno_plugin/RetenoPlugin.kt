@@ -252,13 +252,15 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
         accessKey: String,
         lifecycleTrackingOptions: NativeLifecycleTrackingOptions?,
         isPausedInAppMessages: Boolean,
-        useCustomDeviceIdProvider: Boolean
+        useCustomDeviceIdProvider: Boolean,
+        isDebug: Boolean
     ) {
 
         val configBuilder = RetenoConfig.Builder()
             .pauseInAppMessages(isPausedInAppMessages)
             .lifecycleTrackingOptions(lifecycleTrackingOptions.toLifecycleTrackingOptions())
             .accessKey(accessKey)
+            .setDebug(isDebug)
 
         if (useCustomDeviceIdProvider) {
             configBuilder.customDeviceIdProvider(CustomDeviceIdProvider())

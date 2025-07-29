@@ -1,3 +1,6 @@
+## 1.8.1
+* `Reteno.initWith` method now accepts `isDebug` parameter to enable debug mode (Android only).
+
 ## 1.8.0
 * Android: not need create `CustomApplication` class. All initialization is done via `Reteno.initWith` method.
 * Enhance `RetenoRecommendation` model with additional fields:

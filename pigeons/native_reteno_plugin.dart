@@ -17,6 +17,7 @@ abstract class RetenoHostApi {
     NativeLifecycleTrackingOptions? lifecycleTrackingOptions,
     bool isPausedInAppMessages = false,
     bool useCustomDeviceIdProvider = false,
+    bool isDebug = false,
   });
   void setUserAttributes(String externalUserId, NativeRetenoUser? user);
   void setAnonymousUserAttributes(NativeAnonymousUserAttributes anonymousUserAttributes);
