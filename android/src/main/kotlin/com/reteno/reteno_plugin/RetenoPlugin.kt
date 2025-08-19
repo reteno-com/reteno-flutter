@@ -24,6 +24,7 @@ import com.reteno.core.domain.model.event.LifecycleTrackingOptions
 import com.reteno.core.domain.model.recommendation.get.RecomRequest
 import com.reteno.core.domain.model.recommendation.post.RecomEvents
 import com.reteno.core.features.recommendation.GetRecommendationResponseCallback
+import com.reteno.core.features.recommendation.GetRecommendationResponseJsonCallback
 import com.reteno.core.identification.DeviceIdProvider
 import com.reteno.core.view.iam.callback.InAppCloseAction
 import com.reteno.core.view.iam.callback.InAppCloseData
@@ -348,6 +349,51 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
             })
     }
 
+    override fun getRecommendationsJson(
+        recomVariantId: String,
+        productIds: List<String>,
+        categoryId: String?,
+        filters: List<NativeRecomFilter>?,
+        fields: List<String>?,
+        callback: (Result<Map<String, Any>>) -> Unit
+    ) {
+        val request = RecomRequest(
+            products = productIds,
+            category = categoryId,
+            fields = fields,
+            filters = convertToRecomFilterList(filters)
+        )
+
+        Reteno.instance.recommendation.fetchRecommendationJson(
+            recomVariantId,
+            request,
+            object : GetRecommendationResponseJsonCallback {
+                override fun onSuccess(response: String) {
+                    try {
+                        val jsonMap = parseJsonToMap(response)
+                        callback(Result.success(jsonMap))
+                    } catch (e: Exception) {
+                        val resultMap = mapOf("response" to response)
+                        callback(Result.success(resultMap))
+                    }
+                }
+
+                override fun onFailure(statusCode: Int?, response: String?, throwable: Throwable?) {
+                    val errorMessage = buildString {
+                        append("Recommendation request failed")
+                        statusCode?.let { append(" with status code: $it") }
+                        response?.let { append(", response: $it") }
+                        throwable?.let { append(", error: ${it.message}") }
+                    }
+
+                    val exception = throwable ?: Exception(errorMessage)
+                    callback(Result.failure(exception))
+                }
+            }
+        )
+
+    }
+
     override fun logRecommendationsEvent(events: NativeRecomEvents) {
         Reteno.instance.recommendation.logRecommendations(
             RecomEvents(events.recomVariantId, convertToRecomEventList(events))
@@ -628,3 +674,42 @@ fun NativeEcommerceOrder.toOrder(): Order = Order(
     items               = items.toOrderItems(),
     attributes          = attributes?.toPairsList()
 )
+
+private fun parseJsonToMap(jsonString: String): Map<String, Any> {
+    val jsonObject = org.json.JSONObject(jsonString)
+    return jsonObjectToMap(jsonObject)
+}
+
+private fun jsonObjectToMap(jsonObject: org.json.JSONObject): Map<String, Any> {
+    val map = mutableMapOf<String, Any>()
+    val keys = jsonObject.keys()
+
+    while (keys.hasNext()) {
+        val key = keys.next()
+        val value = jsonObject.get(key)
+
+        map[key] = when (value) {
+            is org.json.JSONObject -> jsonObjectToMap(value)
+            is org.json.JSONArray -> jsonArrayToList(value)
+            else -> value
+        }
+    }
+
+    return map
+}
+
+private fun jsonArrayToList(jsonArray: org.json.JSONArray): List<Any> {
+    val list = mutableListOf<Any>()
+
+    for (i in 0 until jsonArray.length()) {
+        val value = jsonArray.get(i)
+
+        list.add(when (value) {
+            is org.json.JSONObject -> jsonObjectToMap(value)
+            is org.json.JSONArray -> jsonArrayToList(value)
+            else -> value
+        })
+    }
+
+    return list
+}

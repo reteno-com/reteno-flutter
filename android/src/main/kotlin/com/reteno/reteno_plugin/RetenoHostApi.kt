@@ -1260,6 +1260,7 @@ interface RetenoHostApi {
   fun pauseInAppMessages(isPaused: Boolean)
   fun getInitialNotification(): Map<String, Any>?
   fun getRecommendations(recomVariantId: String, productIds: List<String>, categoryId: String?, filters: List<NativeRecomFilter>?, fields: List<String>?, callback: (Result<List<NativeRecommendation>>) -> Unit)
+  fun getRecommendationsJson(recomVariantId: String, productIds: List<String>, categoryId: String?, filters: List<NativeRecomFilter>?, fields: List<String>?, callback: (Result<Map<String, Any>>) -> Unit)
   fun logRecommendationsEvent(events: NativeRecomEvents)
   fun getAppInboxMessages(page: Long?, pageSize: Long?, callback: (Result<NativeAppInboxMessages>) -> Unit)
   fun getAppInboxMessagesCount(callback: (Result<Long>) -> Unit)
@@ -1423,6 +1424,30 @@ interface RetenoHostApi {
             val filtersArg = args[3] as List<NativeRecomFilter>?
             val fieldsArg = args[4] as List<String>?
             api.getRecommendations(recomVariantIdArg, productIdsArg, categoryIdArg, filtersArg, fieldsArg) { result: Result<List<NativeRecommendation>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(RetenoHostApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(RetenoHostApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.getRecommendationsJson$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val recomVariantIdArg = args[0] as String
+            val productIdsArg = args[1] as List<String>
+            val categoryIdArg = args[2] as String?
+            val filtersArg = args[3] as List<NativeRecomFilter>?
+            val fieldsArg = args[4] as List<String>?
+            api.getRecommendationsJson(recomVariantIdArg, productIdsArg, categoryIdArg, filtersArg, fieldsArg) { result: Result<Map<String, Any>> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(RetenoHostApiPigeonUtils.wrapError(error))

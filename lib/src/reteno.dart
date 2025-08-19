@@ -257,6 +257,29 @@ class Reteno {
     );
   }
 
+  /// Get recommendations as JSON
+  /// - Parameter `recomenedationVariantId`: recommendation variant ID
+  /// - Parameter `productIds`: product IDs for product-based algorithms
+  /// - Parameter `categoryId`: product category ID for category-based algorithms
+  /// - Parameter `filters`: list of `RetenoRecomendationFilter` filters - additional algorithm filters array
+  ///  - Note: filters not supported on Android SDK yet
+  /// - Parameter `fields`: response model fields keys
+  ///
+  Future<Map<String, dynamic>> getRecommendationsJson(
+      {required String recomenedationVariantId,
+      required List<String> productIds,
+      String? categoryId,
+      List<RetenoRecomendationFilter>? filters,
+      List<String>? fields}) {
+    return _platform.getRecommendationsJson(
+      recomenedationVariantId: recomenedationVariantId,
+      productIds: productIds,
+      categoryId: categoryId,
+      filters: filters,
+      fields: fields,
+    );
+  }
+
   /// Log recommendations events
   /// `RetenoRecomEvents` - recommendation event to be logged
   ///  - `recomVariantId` - recommendation variant ID

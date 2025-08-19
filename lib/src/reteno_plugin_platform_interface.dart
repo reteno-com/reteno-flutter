@@ -66,6 +66,16 @@ abstract class RetenoPluginPlatform {
     throw UnimplementedError('getRecommendations() has not been implemented.');
   }
 
+  Future<Map<String, dynamic>> getRecommendationsJson({
+    required String recomenedationVariantId,
+    required List<String> productIds,
+    String? categoryId,
+    List<RetenoRecomendationFilter>? filters,
+    List<String>? fields,
+  }) {
+    throw UnimplementedError('getRecommendationsJson() has not been implemented.');
+  }
+
   Future<void> logRecommendationsEvent(RetenoRecomEvents events) {
     throw UnimplementedError('logRecommendationsEvent() has not been implemented.');
   }

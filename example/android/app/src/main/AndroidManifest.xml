@@ -15,7 +15,7 @@
     android:name="io.flutter.embedding.android.EnableImpeller"
     android:value="false" />
         <service android:name=".reteno_plugin_example.CustomMessagingService" android:exported="false">
-            <intent-filter>
+             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>

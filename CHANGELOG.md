@@ -1,3 +1,8 @@
+## 1.8.2
+* Bump Android sdk to 2.8.1
+* Bump iOS sdk to 2.5.11
+* Add `getRecommendationsJson` method.
+
 ## 1.8.1
 * `Reteno.initWith` method now accepts `isDebug` parameter to enable debug mode (Android only).
 

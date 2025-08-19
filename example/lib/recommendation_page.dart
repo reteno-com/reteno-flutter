@@ -33,6 +33,17 @@ class _RecommendationPageState extends State<RecommendationPage> {
     );
   }
 
+  Future<void> getRecommendationsJson(RecommendationSettings settings) async {
+    final result = await Reteno().getRecommendationsJson(
+      recomenedationVariantId: settings.recomenedationVariantId,
+      productIds: settings.productIds,
+      categoryId: settings.categoryId,
+      filters: settings.filters,
+      fields: settings.fields,
+    );
+    print(result);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,6 +51,12 @@ class _RecommendationPageState extends State<RecommendationPage> {
         title: const Text('Recommendations'),
         centerTitle: false,
         actions: [
+          IconButton(
+            onPressed: () {
+              getRecommendationsJson(_settingsNotifier.value);
+            },
+            icon: const Icon(Icons.download),
+          ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () async {

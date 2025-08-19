@@ -1283,6 +1283,7 @@ protocol RetenoHostApi {
   func pauseInAppMessages(isPaused: Bool) throws
   func getInitialNotification() throws -> [String: Any]?
   func getRecommendations(recomVariantId: String, productIds: [String], categoryId: String?, filters: [NativeRecomFilter]?, fields: [String]?, completion: @escaping (Result<[NativeRecommendation], Error>) -> Void)
+  func getRecommendationsJson(recomVariantId: String, productIds: [String], categoryId: String?, filters: [NativeRecomFilter]?, fields: [String]?, completion: @escaping (Result<[String: Any], Error>) -> Void)
   func logRecommendationsEvent(events: NativeRecomEvents) throws
   func getAppInboxMessages(page: Int64?, pageSize: Int64?, completion: @escaping (Result<NativeAppInboxMessages, Error>) -> Void)
   func getAppInboxMessagesCount(completion: @escaping (Result<Int64, Error>) -> Void)
@@ -1433,6 +1434,27 @@ class RetenoHostApiSetup {
       }
     } else {
       getRecommendationsChannel.setMessageHandler(nil)
+    }
+    let getRecommendationsJsonChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.getRecommendationsJson\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getRecommendationsJsonChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let recomVariantIdArg = args[0] as! String
+        let productIdsArg = args[1] as! [String]
+        let categoryIdArg: String? = nilOrValue(args[2])
+        let filtersArg: [NativeRecomFilter]? = nilOrValue(args[3])
+        let fieldsArg: [String]? = nilOrValue(args[4])
+        api.getRecommendationsJson(recomVariantId: recomVariantIdArg, productIds: productIdsArg, categoryId: categoryIdArg, filters: filtersArg, fields: fieldsArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getRecommendationsJsonChannel.setMessageHandler(nil)
     }
     let logRecommendationsEventChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logRecommendationsEvent\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
