@@ -33,6 +33,14 @@ abstract class RetenoHostApi {
     List<NativeRecomFilter>? filters,
     List<String>? fields,
   });
+  @async
+  Map<String, Object> getRecommendationsJson({
+    required String recomVariantId,
+    required List<String> productIds,
+    String? categoryId,
+    List<NativeRecomFilter>? filters,
+    List<String>? fields,
+  });
   void logRecommendationsEvent(NativeRecomEvents events);
   @async
   NativeAppInboxMessages getAppInboxMessages({int? page, int? pageSize});

@@ -146,6 +146,22 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
   }
 
   @override
+  Future<Map<String, dynamic>> getRecommendationsJson(
+      {required String recomenedationVariantId,
+      required List<String> productIds,
+      String? categoryId,
+      List<RetenoRecomendationFilter>? filters,
+      List<String>? fields}) {
+    return _api.getRecommendationsJson(
+      recomVariantId: recomenedationVariantId,
+      productIds: productIds,
+      categoryId: categoryId,
+      filters: filters?.map((e) => e.toNativeRecomFilter()).toList(),
+      fields: fields,
+    );
+  }
+
+  @override
   Future<void> logRecommendationsEvent(RetenoRecomEvents events) {
     return _api.logRecommendationsEvent(events.toNativeRecomEvents());
   }

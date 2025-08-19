@@ -223,6 +223,27 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
            }
        }
     }
+    
+    func getRecommendationsJson(recomVariantId: String, productIds: [String], categoryId: String?, filters: [NativeRecomFilter]?, fields: [String]?, completion: @escaping (Result<[String : Any], any Error>) -> Void) {
+        
+        Reteno.recommendations().getRecomJSONs(
+            recomVariantId: recomVariantId,
+            productIds: productIds,
+            categoryId: categoryId,
+            filters: [],
+            fields: fields
+        ) { (result: Result<[[String : Any]], Error>)  in
+            switch result {
+            case .success(let recoms):
+                let combinedResult: [String: Any] = ["recoms": recoms]
+                completion(.success(combinedResult))
+                break
+            case .failure(let error):
+                completion(.failure(error))
+                break
+            }
+        }
+    }
 
     func logRecommendationsEvent(events: NativeRecomEvents) throws {
         let recomEventContainer = events.toRecomEventContainer()
