@@ -29,7 +29,7 @@ flutter_ios_podfile_setup
 
 target 'Runner' do
   use_frameworks!
-  pod 'Reteno', '2.5.11'
+  pod 'Reteno', '2.5.12'
   pod 'FirebaseCore'
   pod 'FirebaseMessaging'
 
@@ -38,7 +38,7 @@ end
 
 target 'NotificationServiceExtension' do
   use_frameworks!
-  pod 'Reteno', '2.5.11'
+  pod 'Reteno', '2.5.12'
 end
 
 post_install do |installer|
