@@ -1,3 +1,6 @@
+## 1.8.5
+* Bump iOS sdk to 2.5.13
+
 ## 1.8.4
 * Bump iOS sdk to 2.5.12
 
