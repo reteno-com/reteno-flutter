@@ -1,3 +1,7 @@
+## 1.8.7
+* Bump Android sdk to 2.8.7
+* Bump iOS sdk to 2.5.14
+
 ## 1.8.6
 * Bump Android sdk to 2.8.6
 
