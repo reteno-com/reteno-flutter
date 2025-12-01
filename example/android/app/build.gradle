@@ -96,7 +96,7 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
     implementation "com.google.firebase:firebase-messaging:23.1.0"
     implementation "com.google.firebase:firebase-messaging-ktx:23.1.0"
-    implementation 'com.reteno:fcm:2.8.7'
+    implementation 'com.reteno:fcm:2.8.9'
     implementation 'androidx.window:window:1.0.0'
     implementation 'androidx.window:window-java:1.0.0'
 }
