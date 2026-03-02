@@ -14,7 +14,7 @@ class RetenoPushReceiver : BroadcastReceiver() {
             return
         }
 
-        val extras = intent.extras!!
+        val extras = intent.extras ?: return
         val map = HashMap<String, Any?>()
 
         for (key in extras.keySet()) {
@@ -32,14 +32,10 @@ class RetenoPushReceiver : BroadcastReceiver() {
 
         Log.d("RetenoPushReceiver", "Extras: $map")
 
-        for (key in extras?.keySet() ?: emptySet()) {
-            val value = intent.extras?.getString(key)
-            map[key] = value
-        }
-        println(map)
+        Log.d("RetenoPushReceiver", "Extras: $map")
         try {
             if (Utils.isApplicationForeground(context)) {
-                var pushMap = map!!.toMap()
+                val pushMap = map.toMap()
                 RetenoPlugin.flutterApi?.onNotificationReceived(pushMap) {
                     Log.i("RetenoPushReceiver", "onNotificationReceived sent")
                 }

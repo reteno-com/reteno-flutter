@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:reteno_plugin/src/extensions.dart';
@@ -7,7 +8,10 @@ import 'package:reteno_plugin/src/models/app_inbox_messages.dart';
 import 'package:reteno_plugin/src/models/in_app_message_status.dart';
 import 'package:reteno_plugin/src/models/lifecycle_tracking_options.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
+import 'package:reteno_plugin/src/models/reteno_default_notification_channel_config.dart';
+import 'package:reteno_plugin/src/models/reteno_device_token_handling_mode.dart';
 import 'package:reteno_plugin/src/models/reteno_ecommerce_event.dart';
+import 'package:reteno_plugin/src/models/reteno_in_app_custom_data.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
 import 'package:reteno_plugin/src/models/reteno_user.dart';
@@ -21,11 +25,14 @@ typedef OnInAppMessageStatusChanged = void Function(
   InAppMessageStatus status,
 );
 typedef OnMessagesCountChangedCallback = void Function(int count);
-typedef OnNotificationActionHandler = void Function(RetenoUserNotificationAction action);
+typedef OnNotificationActionHandler = void Function(
+    RetenoUserNotificationAction action);
+typedef OnInAppCustomDataReceived = void Function(RetenoInAppCustomData data);
 
 class RetenoPigeonChannel extends RetenoPluginPlatform {
   static RetenoPigeonChannel? _instance;
-  static RetenoPigeonChannel get instance => _instance ??= RetenoPigeonChannel._();
+  static RetenoPigeonChannel get instance =>
+      _instance ??= RetenoPigeonChannel._();
 
   factory RetenoPigeonChannel.instanceWithApi(RetenoHostApi api) {
     return RetenoPigeonChannel._(api: api);
@@ -52,8 +59,18 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
         onRetenoNotificationClicked: (payload) {
           onRetenoNotificationClicked.add(Map<String, dynamic>.from(payload));
         },
+        onRetenoNotificationDeleted: (payload) {
+          onRetenoNotificationDeleted.add(Map<String, dynamic>.from(payload));
+        },
+        onRetenoCustomNotificationReceived: (payload) {
+          onRetenoCustomNotificationReceived
+              .add(Map<String, dynamic>.from(payload));
+        },
         onInAppMessageStatusChangedCallback: (status) {
           onInAppMessageStatusChanged.add(status);
+        },
+        onInAppCustomDataReceivedCallback: (data) {
+          onRetenoInAppCustomDataReceived.add(data);
         },
         onMessagesCountChangedCallback: (count) {
           if (appInbox._messagesCountController != null) {
@@ -74,26 +91,52 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
     bool isDebug = false,
     LifecycleTrackingOptions? lifecycleTrackingOptions,
     Future<String?> Function()? customDeviceId,
+    RetenoDeviceTokenHandlingMode deviceTokenHandlingMode =
+        RetenoDeviceTokenHandlingMode.automatic,
+    RetenoDefaultNotificationChannelConfig? defaultNotificationChannelConfig,
   }) {
+    if (Platform.isAndroid &&
+        deviceTokenHandlingMode != RetenoDeviceTokenHandlingMode.automatic) {
+      developer.log(
+        '[Reteno] `deviceTokenHandlingMode` is currently ignored on Android. '
+        'Android uses native automatic token handling.',
+        name: 'Reteno',
+      );
+    }
+    if (Platform.isIOS && defaultNotificationChannelConfig != null) {
+      developer.log(
+        '[Reteno] `defaultNotificationChannelConfig` is Android-only and is ignored on iOS.',
+        name: 'Reteno',
+      );
+    }
+
     _getCustomDeviceId = customDeviceId;
     return _api.initWith(
       accessKey: accessKey,
       isPausedInAppMessages: isPausedInAppMessages,
       isDebug: isDebug,
-      lifecycleTrackingOptions: lifecycleTrackingOptions?.toNativeLifecycleTrackingOptions(),
+      lifecycleTrackingOptions:
+          lifecycleTrackingOptions?.toNativeLifecycleTrackingOptions(),
       useCustomDeviceIdProvider: customDeviceId != null,
+      deviceTokenHandlingMode:
+          deviceTokenHandlingMode.toNativeDeviceTokenHandlingMode(),
+      defaultNotificationChannelConfig: defaultNotificationChannelConfig
+          ?.toNativeDefaultNotificationChannelConfig(),
     );
   }
 
   @override
-  Future<bool> setUserAttributes(String externalUserId, RetenoUser? user) async {
+  Future<bool> setUserAttributes(
+      String externalUserId, RetenoUser? user) async {
     _api.setUserAttributes(externalUserId, user?.toNativeRetenoUser());
     return true;
   }
 
   @override
-  Future<bool> setAnonymousUserAttributes(AnonymousUserAttributes anonymousUserAttributes) async {
-    _api.setAnonymousUserAttributes(anonymousUserAttributes.toNativeAnonymousUserAttributes());
+  Future<bool> setAnonymousUserAttributes(
+      AnonymousUserAttributes anonymousUserAttributes) async {
+    _api.setAnonymousUserAttributes(
+        anonymousUserAttributes.toNativeAnonymousUserAttributes());
     return true;
   }
 
@@ -115,11 +158,23 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
   }
 
   @override
+  Future<bool> requestPushPermission({bool provisional = false}) async {
+    final granted = await _api.requestPushPermission(provisional: provisional);
+    await updatePushPermissionStatus();
+    return granted;
+  }
+
+  @override
   Future<bool> updatePushPermissionStatus() async {
     if (Platform.isAndroid) {
       _api.updatePushPermissionStatus();
     }
     return true;
+  }
+
+  @override
+  Future<List<String>> diagnose() {
+    return _api.diagnose();
   }
 
   @override
@@ -177,7 +232,9 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
           product.toNativeEcommerceProduct(),
           currency,
         ),
-      RetenoEcommerceProductCategoryViewed(category: RetenoEcommerceCategory category) =>
+      RetenoEcommerceProductCategoryViewed(
+        category: RetenoEcommerceCategory category
+      ) =>
         _api.logEcommerceProductCategoryViewed(
           category.toNativeEcommerceCategory(),
         ),
@@ -240,22 +297,57 @@ class _RetenoFlutterApi extends RetenoFlutterApi {
   _RetenoFlutterApi({
     required this.onNotificationCallback,
     required this.onRetenoNotificationClicked,
+    required this.onRetenoNotificationDeleted,
+    required this.onRetenoCustomNotificationReceived,
     required this.onInAppMessageStatusChangedCallback,
+    required this.onInAppCustomDataReceivedCallback,
     required this.onMessagesCountChangedCallback,
     required this.onNotificationActionCallback,
   });
 
   OnNotificationCallback onNotificationCallback;
   OnNotificationCallback onRetenoNotificationClicked;
+  OnNotificationCallback onRetenoNotificationDeleted;
+  OnNotificationCallback onRetenoCustomNotificationReceived;
   OnInAppMessageStatusChanged onInAppMessageStatusChangedCallback;
+  OnInAppCustomDataReceived onInAppCustomDataReceivedCallback;
   OnMessagesCountChangedCallback onMessagesCountChangedCallback;
   OnNotificationActionHandler onNotificationActionCallback;
 
   @override
-  void onNotificationClicked(Map<String?, Object?> payload) => onRetenoNotificationClicked(payload);
+  void onNotificationClicked(Map<String?, Object?> payload) =>
+      onRetenoNotificationClicked(payload);
 
   @override
-  void onNotificationReceived(Map<String?, Object?> payload) => onNotificationCallback(payload);
+  void onNotificationDeleted(Map<String?, Object?> payload) =>
+      onRetenoNotificationDeleted(payload);
+
+  @override
+  void onCustomNotificationReceived(Map<String?, Object?> payload) =>
+      onRetenoCustomNotificationReceived(payload);
+
+  @override
+  void onNotificationReceived(Map<String?, Object?> payload) =>
+      onNotificationCallback(payload);
+
+  @override
+  void onInAppCustomDataReceived(NativeInAppCustomData payload) {
+    onInAppCustomDataReceivedCallback(
+      RetenoInAppCustomData(
+        url: payload.url,
+        source: payload.source,
+        inAppId: payload.inAppId,
+        data: Map<String, String>.from(
+          payload.data.map(
+            (key, value) => MapEntry(
+              key ?? '',
+              value ?? '',
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   void onNotificationActionHandler(NativeUserNotificationAction action) {
@@ -268,7 +360,8 @@ class _RetenoFlutterApi extends RetenoFlutterApi {
     NativeInAppMessageAction? action,
     String? error,
   ) =>
-      onInAppMessageStatusChangedCallback(status.toInAppMessageStatus(action, error));
+      onInAppMessageStatusChangedCallback(
+          status.toInAppMessageStatus(action, error));
 
   @override
   void onMessagesCountChanged(int count) {
@@ -299,8 +392,10 @@ class AppInbox {
   /// Get AppInbox messages.
   /// - `page` - page - order number of requested page. If null will be returned all messages.
   /// - `pageSize` - pageSize - number of messages in one page. If null will be returned all messages.
-  Future<AppInboxMessages> getAppInboxMessages({int? page, int? pageSize}) async {
-    final nativeMessages = await _api.getAppInboxMessages(page: page, pageSize: pageSize);
+  Future<AppInboxMessages> getAppInboxMessages(
+      {int? page, int? pageSize}) async {
+    final nativeMessages =
+        await _api.getAppInboxMessages(page: page, pageSize: pageSize);
     return nativeMessages.toAppInboxMessages();
   }
 

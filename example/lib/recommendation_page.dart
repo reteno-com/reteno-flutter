@@ -41,7 +41,7 @@ class _RecommendationPageState extends State<RecommendationPage> {
       filters: settings.filters,
       fields: settings.fields,
     );
-    print(result);
+    debugPrint(result.toString());
   }
 
   @override
@@ -134,7 +134,7 @@ class _RecommendationPageState extends State<RecommendationPage> {
                           );
                         }
                       } catch (e) {
-                        print(e);
+                        debugPrint(e.toString());
                       }
                     },
                   );

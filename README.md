@@ -16,13 +16,13 @@ Reteno Flutter SDK
 ```
 
 target 'NotificationServiceExtension' do
-  pod 'Reteno', '2.5.14'
+  pod 'Reteno', '2.6.0'
 
 end
 
 target 'RetenoSdkExample' do
   ...
-  pod 'Reteno', '2.5.14'
+  pod 'Reteno', '2.6.0'
 end
 
 ```

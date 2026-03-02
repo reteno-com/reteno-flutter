@@ -4,6 +4,8 @@ import 'package:reteno_plugin/src/models/in_app_message_status.dart';
 import 'package:reteno_plugin/src/models/lifecycle_tracking_options.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event_parameter.dart';
+import 'package:reteno_plugin/src/models/reteno_default_notification_channel_config.dart';
+import 'package:reteno_plugin/src/models/reteno_device_token_handling_mode.dart';
 import 'package:reteno_plugin/src/models/reteno_ecommerce_event.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
@@ -91,7 +93,8 @@ extension RetenoCustomEventParameterExt on RetenoCustomEventParameter {
 }
 
 extension NativeInAppMessageStatusExt on NativeInAppMessageStatus {
-  InAppMessageStatus toInAppMessageStatus(NativeInAppMessageAction? action, String? error) {
+  InAppMessageStatus toInAppMessageStatus(
+      NativeInAppMessageAction? action, String? error) {
     switch (this) {
       case NativeInAppMessageStatus.inAppShouldBeDisplayed:
         return InAppShouldBeDisplayed();
@@ -209,6 +212,31 @@ extension LifecycleTrackingOptionsExt on LifecycleTrackingOptions {
       appLifecycleEnabled: appLifecycleEnabled,
       pushSubscriptionEnabled: pushSubscriptionEnabled,
       sessionEventsEnabled: sessionEventsEnabled,
+    );
+  }
+}
+
+extension RetenoDeviceTokenHandlingModeExt on RetenoDeviceTokenHandlingMode {
+  NativeDeviceTokenHandlingMode toNativeDeviceTokenHandlingMode() {
+    switch (this) {
+      case RetenoDeviceTokenHandlingMode.automatic:
+        return NativeDeviceTokenHandlingMode.automatic;
+      case RetenoDeviceTokenHandlingMode.manual:
+        return NativeDeviceTokenHandlingMode.manual;
+    }
+  }
+}
+
+extension RetenoDefaultNotificationChannelConfigExt
+    on RetenoDefaultNotificationChannelConfig {
+  NativeDefaultNotificationChannelConfig
+      toNativeDefaultNotificationChannelConfig() {
+    return NativeDefaultNotificationChannelConfig(
+      name: name,
+      description: description,
+      showBadge: showBadge,
+      lightsEnabled: lightsEnabled,
+      vibrationEnabled: vibrationEnabled,
     );
   }
 }

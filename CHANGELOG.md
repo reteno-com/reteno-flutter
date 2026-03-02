@@ -1,5 +1,18 @@
-## 1.8.8
-* Bump Android sdk to 2.8.9
+## 1.9.0
+* Bump iOS sdk to 2.6.0
+* Bump Android sdk to 2.9.0
+* Android: migrate push callbacks to `RetenoNotifications` listeners (SDK 2.9.0 API)
+* Android: add Flutter streams for new push events:
+  * `Reteno.onRetenoNotificationDeleted`
+  * `Reteno.onRetenoCustomNotificationReceived`
+  * `Reteno.onRetenoInAppCustomDataReceived`
+* Add canonical `Reteno.initialize(accessKey, options)` API
+* Add `deviceTokenHandlingMode` to `Reteno.initWith` (`automatic` by default, `manual` optional)
+* iOS: use `RetenoConfiguration` on init and forward selected device token handling mode to native SDK
+* Add `Reteno.diagnose()` with native diagnostics codes
+* Android: expose `defaultNotificationChannelConfig` via Flutter init options
+* Mark push event streams as core/platform-specific in Flutter API docs
+* Add runtime warnings for ignored platform-specific init options
 
 ## 1.8.7
 * Bump Android sdk to 2.8.7

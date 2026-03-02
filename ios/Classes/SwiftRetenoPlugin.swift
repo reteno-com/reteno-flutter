@@ -1,10 +1,21 @@
 import Flutter
 import Reteno
 import UIKit
+import UserNotifications
 
-public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
+#if canImport(FirebaseMessaging)
+import FirebaseMessaging
+typealias RetenoMessagingDelegate = MessagingDelegate
+#else
+protocol RetenoMessagingDelegate: AnyObject {}
+#endif
+
+public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplicationDelegate, RetenoMessagingDelegate {
     static var _initialNotification : [String: Any]?
     private static var _flutterApi: RetenoFlutterApi?
+    private var didStart: Bool = false
+    private var currentDeviceTokenHandlingMode: NativeDeviceTokenHandlingMode = .automatic
+    private var pendingDeviceToken: String?
 
     public static func register(with registrar: FlutterPluginRegistrar) {
 
@@ -12,11 +23,11 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
 
         let instance = SwiftRetenoPlugin()
 
-        let api : RetenoHostApi & NSObjectProtocol = SwiftRetenoPlugin.init()
-
-        RetenoHostApiSetup.setUp(binaryMessenger: messenger, api: api)
+        RetenoHostApiSetup.setUp(binaryMessenger: messenger, api: instance)
 
         _flutterApi = RetenoFlutterApi(binaryMessenger: messenger)
+
+        registrar.addApplicationDelegate(instance)
 
         NotificationCenter.default.addObserver(instance, selector: #selector(application_onDidFinishLaunchingNotification), name: UIApplication.didFinishLaunchingNotification, object: nil)
         Reteno.userNotificationService.didReceiveNotificationResponseHandler = { response in
@@ -126,9 +137,32 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
         lifecycleTrackingOptions: NativeLifecycleTrackingOptions?,
         isPausedInAppMessages: Bool,
         useCustomDeviceIdProvider: Bool,
-        isDebug: Bool
+        isDebug: Bool,
+        deviceTokenHandlingMode: NativeDeviceTokenHandlingMode,
+        defaultNotificationChannelConfig: NativeDefaultNotificationChannelConfig?
     ) throws {
-        // No op
+        currentDeviceTokenHandlingMode = deviceTokenHandlingMode
+        if !didStart {
+            let configuration = RetenoConfiguration(
+                isPausedInAppMessages: isPausedInAppMessages,
+                isDebugMode: isDebug,
+                useCustomDeviceId: useCustomDeviceIdProvider,
+                deviceTokenHandlingMode: deviceTokenHandlingMode.toDeviceTokenHandlingMode()
+            )
+            Reteno.start(apiKey: accessKey, configuration: configuration)
+            didStart = true
+        }
+
+#if canImport(FirebaseMessaging)
+        if currentDeviceTokenHandlingMode == .manual {
+            Messaging.messaging().delegate = self
+        }
+#endif
+        Reteno.pauseInAppMessages(isPaused: isPausedInAppMessages)
+        if currentDeviceTokenHandlingMode == .manual, let token = pendingDeviceToken {
+            Reteno.userNotificationService.processRemoteNotificationsToken(token)
+            pendingDeviceToken = nil
+        }
     }
 
     func setUserAttributes(externalUserId: String, user: NativeRetenoUser?) throws {
@@ -182,6 +216,61 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
 
     func updatePushPermissionStatus() throws {
 
+    }
+
+    func diagnose(completion: @escaping (Result<[String], Error>) -> Void) {
+        var issues = [String]()
+        if !didStart {
+            issues.append("SDK_NOT_INITIALIZED")
+        }
+
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .denied:
+                issues.append("PUSH_PERMISSION_DENIED")
+            case .notDetermined:
+                issues.append("PUSH_PERMISSION_NOT_DETERMINED")
+            default:
+                break
+            }
+            completion(.success(issues))
+        }
+    }
+
+    func requestPushPermission(provisional: Bool, completion: @escaping (Result<Bool, Error>) -> Void) {
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .authorized, .provisional, .ephemeral:
+                DispatchQueue.main.async {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
+                completion(.success(true))
+                return
+            default:
+                break
+            }
+
+            var options: UNAuthorizationOptions = [.alert, .badge, .sound]
+            if provisional {
+                if #available(iOS 12.0, *) {
+                    options.insert(.provisional)
+                }
+            }
+
+            center.requestAuthorization(options: options) { granted, error in
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                if granted {
+                    DispatchQueue.main.async {
+                        UIApplication.shared.registerForRemoteNotifications()
+                    }
+                }
+                completion(.success(granted))
+            }
+        }
     }
 
     func getInitialNotification() throws -> [String : Any]? {
@@ -266,6 +355,24 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi {
             SwiftRetenoPlugin._initialNotification = remoteNotification as? [String: Any]
         }
     }
+
+    public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        guard currentDeviceTokenHandlingMode == .manual else { return }
+        let tokenString = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+        if didStart {
+            Reteno.userNotificationService.processRemoteNotificationsToken(tokenString)
+        } else {
+            pendingDeviceToken = tokenString
+        }
+    }
+
+#if canImport(FirebaseMessaging)
+    public func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        guard currentDeviceTokenHandlingMode == .manual else { return }
+        guard let token = fcmToken else { return }
+        Reteno.userNotificationService.processRemoteNotificationsToken(token)
+    }
+#endif
 
     func getAppInboxMessages(page: Int64?, pageSize: Int64?, completion: @escaping (Result<NativeAppInboxMessages, Error>) -> Void) {
         let pageInt = page.flatMap { Int($0) }
@@ -432,6 +539,17 @@ extension InAppMessageAction {
             isButtonClicked: self.isButtonClicked,
             isOpenUrlClicked: self.isOpenUrlClicked
         );
+    }
+}
+
+extension NativeDeviceTokenHandlingMode {
+    func toDeviceTokenHandlingMode() -> DeviceTokenHandlingMode {
+        switch self {
+        case .automatic:
+            return .automatic
+        case .manual:
+            return .manual
+        }
     }
 }
 

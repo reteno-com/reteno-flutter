@@ -4,7 +4,10 @@ import 'package:reteno_plugin/src/models/anonymous_user_attributes.dart';
 import 'package:reteno_plugin/src/models/in_app_message_status.dart';
 import 'package:reteno_plugin/src/models/lifecycle_tracking_options.dart';
 import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
+import 'package:reteno_plugin/src/models/reteno_default_notification_channel_config.dart';
+import 'package:reteno_plugin/src/models/reteno_device_token_handling_mode.dart';
 import 'package:reteno_plugin/src/models/reteno_ecommerce_event.dart';
+import 'package:reteno_plugin/src/models/reteno_in_app_custom_data.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
 import 'package:reteno_plugin/src/models/reteno_user.dart';
@@ -17,6 +20,9 @@ abstract class RetenoPluginPlatform {
     bool isDebug = false,
     LifecycleTrackingOptions? lifecycleTrackingOptions,
     Future<String?> Function()? customDeviceId,
+    RetenoDeviceTokenHandlingMode deviceTokenHandlingMode =
+        RetenoDeviceTokenHandlingMode.automatic,
+    RetenoDefaultNotificationChannelConfig? defaultNotificationChannelConfig,
   }) {
     throw UnimplementedError('initWith() has not been implemented.');
   }
@@ -25,8 +31,10 @@ abstract class RetenoPluginPlatform {
     throw UnimplementedError('setUserAtrributes() has not been implemented.');
   }
 
-  Future<bool> setAnonymousUserAttributes(AnonymousUserAttributes anonymousUserAttributes) {
-    throw UnimplementedError('setAnonymousUserAttributes() has not been implemented.');
+  Future<bool> setAnonymousUserAttributes(
+      AnonymousUserAttributes anonymousUserAttributes) {
+    throw UnimplementedError(
+        'setAnonymousUserAttributes() has not been implemented.');
   }
 
   StreamController<Map<String, dynamic>> onRetenoNotificationReceived =
@@ -35,21 +43,42 @@ abstract class RetenoPluginPlatform {
   StreamController<Map<String, dynamic>> onRetenoNotificationClicked =
       StreamController<Map<String, dynamic>>.broadcast();
 
-  StreamController<InAppMessageStatus> onInAppMessageStatusChanged = StreamController<InAppMessageStatus>.broadcast();
+  StreamController<Map<String, dynamic>> onRetenoNotificationDeleted =
+      StreamController<Map<String, dynamic>>.broadcast();
+
+  StreamController<Map<String, dynamic>> onRetenoCustomNotificationReceived =
+      StreamController<Map<String, dynamic>>.broadcast();
+
+  StreamController<InAppMessageStatus> onInAppMessageStatusChanged =
+      StreamController<InAppMessageStatus>.broadcast();
 
   StreamController<RetenoUserNotificationAction> onUserNotificationAction =
       StreamController<RetenoUserNotificationAction>.broadcast();
 
+  StreamController<RetenoInAppCustomData> onRetenoInAppCustomDataReceived =
+      StreamController<RetenoInAppCustomData>.broadcast();
+
   Future<Map<dynamic, dynamic>?> getInitialNotification() {
-    throw UnimplementedError('getInitialNotification() has not been implemented.');
+    throw UnimplementedError(
+        'getInitialNotification() has not been implemented.');
   }
 
   Future<bool> logEvent({required RetenoCustomEvent event}) {
     throw UnimplementedError('logEvent() has not been implemented.');
   }
 
+  Future<bool> requestPushPermission({bool provisional = false}) {
+    throw UnimplementedError(
+        'requestPushPermission() has not been implemented.');
+  }
+
   Future<bool> updatePushPermissionStatus() {
-    throw UnimplementedError('updatePushPermissionStatus() has not been implemented.');
+    throw UnimplementedError(
+        'updatePushPermissionStatus() has not been implemented.');
+  }
+
+  Future<List<String>> diagnose() {
+    throw UnimplementedError('diagnose() has not been implemented.');
   }
 
   Future<void> pauseInAppMessages(bool isPaused) {
@@ -73,11 +102,13 @@ abstract class RetenoPluginPlatform {
     List<RetenoRecomendationFilter>? filters,
     List<String>? fields,
   }) {
-    throw UnimplementedError('getRecommendationsJson() has not been implemented.');
+    throw UnimplementedError(
+        'getRecommendationsJson() has not been implemented.');
   }
 
   Future<void> logRecommendationsEvent(RetenoRecomEvents events) {
-    throw UnimplementedError('logRecommendationsEvent() has not been implemented.');
+    throw UnimplementedError(
+        'logRecommendationsEvent() has not been implemented.');
   }
 
   Future<void> logEcommerceEvent(RetenoEcommerceEvent event) {

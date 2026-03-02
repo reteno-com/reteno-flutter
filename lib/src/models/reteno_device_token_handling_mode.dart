@@ -1,0 +1,4 @@
+enum RetenoDeviceTokenHandlingMode {
+  automatic,
+  manual,
+}

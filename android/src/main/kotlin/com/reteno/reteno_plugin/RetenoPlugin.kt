@@ -1,11 +1,19 @@
 package com.reteno.reteno_plugin
 
 import UserUtils
+import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationChannelCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.reteno.core.Reteno
 import com.reteno.core.RetenoConfig
 import com.reteno.core.data.remote.model.recommendation.get.Recoms
@@ -26,11 +34,14 @@ import com.reteno.core.domain.model.recommendation.post.RecomEvents
 import com.reteno.core.features.recommendation.GetRecommendationResponseCallback
 import com.reteno.core.features.recommendation.GetRecommendationResponseJsonCallback
 import com.reteno.core.identification.DeviceIdProvider
+import com.reteno.core.util.Procedure
 import com.reteno.core.view.iam.callback.InAppCloseAction
 import com.reteno.core.view.iam.callback.InAppCloseData
 import com.reteno.core.view.iam.callback.InAppData
 import com.reteno.core.view.iam.callback.InAppErrorData
 import com.reteno.core.view.iam.callback.InAppLifecycleCallback
+import com.reteno.push.RetenoNotifications
+import com.reteno.push.events.InAppCustomData
 import com.reteno.reteno_plugin.RetenoEvent.buildEventFromCustomEvent
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -43,6 +54,8 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
+import org.json.JSONArray
+import org.json.JSONObject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import android.util.Pair as AndroidPair
@@ -74,6 +87,11 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
         // Store both types of pending notifications
         private var pendingNotificationAction: NativeUserNotificationAction? = null
         private var pendingNotificationClick: Map<String, Any?>? = null
+        private var pendingNotificationReceived: Map<String, Any?>? = null
+        private var pendingNotificationDeleted: Map<String, Any?>? = null
+        private var pendingNotificationCustom: Map<String, Any?>? = null
+        private var pendingInAppCustomData: NativeInAppCustomData? = null
+        private const val REQUEST_POST_NOTIFICATIONS = 9412
 
         fun handleNotificationAction(action: NativeUserNotificationAction) {
             if (flutterApiInstance != null) {
@@ -91,12 +109,83 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
                 pendingNotificationClick = payload
             }
         }
+
+        fun handleNotificationReceived(payload: Map<String, Any?>) {
+            if (flutterApiInstance != null) {
+                flutterApiInstance?.onNotificationReceived(payload) {}
+            } else {
+                pendingNotificationReceived = payload
+            }
+        }
+
+        fun handleNotificationDeleted(payload: Map<String, Any?>) {
+            if (flutterApiInstance != null) {
+                flutterApiInstance?.onNotificationDeleted(payload) {}
+            } else {
+                pendingNotificationDeleted = payload
+            }
+        }
+
+        fun handleCustomNotificationReceived(payload: Map<String, Any?>) {
+            if (flutterApiInstance != null) {
+                flutterApiInstance?.onCustomNotificationReceived(payload) {}
+            } else {
+                pendingNotificationCustom = payload
+            }
+        }
+
+        fun handleInAppCustomDataReceived(payload: NativeInAppCustomData) {
+            if (flutterApiInstance != null) {
+                flutterApiInstance?.onInAppCustomDataReceived(payload) {}
+            } else {
+                pendingInAppCustomData = payload
+            }
+        }
     }
 
     private var initialNotification: HashMap<String, Any>? = null
     private var mainActivity: Activity? = null
     private val uiThreadHandler: Handler = Handler(Looper.getMainLooper())
     private lateinit var applicationContext: Context
+    private var pendingPushPermissionResult: ((Result<Boolean>) -> Unit)? = null
+    private var isPushListenersSubscribed = false
+    private var isRetenoInitialized = false
+
+    private val clickListener = Procedure<Bundle> { data ->
+        uiThreadHandler.post {
+            val payload = bundleToMap(data)
+            val action = parseNotificationAction(payload)
+            if (action != null) {
+                handleNotificationAction(action)
+            } else {
+                handleNotificationClick(payload)
+            }
+        }
+    }
+
+    private val closeListener = Procedure<Bundle> { data ->
+        uiThreadHandler.post {
+            handleNotificationDeleted(bundleToMap(data))
+        }
+    }
+
+    private val receivedListener = Procedure<Bundle> { data ->
+        uiThreadHandler.post {
+            handleNotificationReceived(bundleToMap(data))
+        }
+    }
+
+    private val customListener = Procedure<Bundle> { data ->
+        uiThreadHandler.post {
+            handleCustomNotificationReceived(bundleToMap(data))
+        }
+    }
+
+    private val inAppCustomDataListener = Procedure<InAppCustomData> { data ->
+        uiThreadHandler.post {
+            handleInAppCustomDataReceived(data.toNativeInAppCustomData())
+        }
+    }
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         Log.i(TAG, "onAttachedToEngine")
@@ -105,10 +194,12 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
 
         applicationContext = flutterPluginBinding.applicationContext
         createInAppLifecycleListener()
+        subscribePushListeners()
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         Log.i(TAG, "onDetachedFromEngine")
+        unsubscribePushListeners()
         // Don't clean up flutterApi here anymore
         pluginBinding = null
     }
@@ -181,13 +272,13 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
                 isOpenUrlClicked = false,
             )
             InAppCloseAction.OPEN_URL -> NativeInAppMessageAction(
-                isCloseButtonClicked = true,
+                isCloseButtonClicked = false,
                 isButtonClicked = false,
-                isOpenUrlClicked = false,
+                isOpenUrlClicked = true,
             )
             InAppCloseAction.BUTTON -> NativeInAppMessageAction(
-                isCloseButtonClicked = true,
-                isButtonClicked = false,
+                isCloseButtonClicked = false,
+                isButtonClicked = true,
                 isOpenUrlClicked = false,
             )
 
@@ -221,6 +312,39 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
             pendingNotificationClick = null
         }
 
+        pendingNotificationReceived?.let { payload ->
+            Log.i(TAG, "Delivering pending notification received")
+            flutterApiInstance?.onNotificationReceived(payload) {}
+            pendingNotificationReceived = null
+        }
+
+        pendingNotificationDeleted?.let { payload ->
+            Log.i(TAG, "Delivering pending notification deleted")
+            flutterApiInstance?.onNotificationDeleted(payload) {}
+            pendingNotificationDeleted = null
+        }
+
+        pendingNotificationCustom?.let { payload ->
+            Log.i(TAG, "Delivering pending custom notification")
+            flutterApiInstance?.onCustomNotificationReceived(payload) {}
+            pendingNotificationCustom = null
+        }
+
+        pendingInAppCustomData?.let { payload ->
+            Log.i(TAG, "Delivering pending in-app custom data")
+            flutterApiInstance?.onInAppCustomDataReceived(payload) {}
+            pendingInAppCustomData = null
+        }
+
+        binding.addRequestPermissionsResultListener { requestCode, _, grantResults ->
+            if (requestCode != REQUEST_POST_NOTIFICATIONS) return@addRequestPermissionsResultListener false
+            val granted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+            updatePushPermissionStatus()
+            pendingPushPermissionResult?.invoke(Result.success(granted))
+            pendingPushPermissionResult = null
+            true
+        }
+
         // Handle initial notification
         val extras = mainActivity?.intent?.extras
         if (extras != null && extras.containsKey(ES_INTERACTION_ID_KEY)) {
@@ -249,12 +373,81 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
         mainActivity = binding.activity
     }
 
+    private fun subscribePushListeners() {
+        if (isPushListenersSubscribed) {
+            return
+        }
+        RetenoNotifications.click.addListener(clickListener)
+        RetenoNotifications.close.addListener(closeListener)
+        RetenoNotifications.received.addListener(receivedListener)
+        RetenoNotifications.custom.addListener(customListener)
+        RetenoNotifications.inAppCustomDataReceived.addListener(inAppCustomDataListener)
+        isPushListenersSubscribed = true
+    }
+
+    private fun unsubscribePushListeners() {
+        if (!isPushListenersSubscribed) {
+            return
+        }
+        RetenoNotifications.click.removeListener(clickListener)
+        RetenoNotifications.close.removeListener(closeListener)
+        RetenoNotifications.received.removeListener(receivedListener)
+        RetenoNotifications.custom.removeListener(customListener)
+        RetenoNotifications.inAppCustomDataReceived.removeListener(inAppCustomDataListener)
+        isPushListenersSubscribed = false
+    }
+
+    private fun bundleToMap(bundle: Bundle): Map<String, Any?> {
+        return bundle.keySet().associateWith { key ->
+            when (val value = bundle.get(key)) {
+                is Bundle -> bundleToMap(value)
+                is Array<*> -> value.joinToString(",")
+                else -> value
+            }
+        }
+    }
+
+    private fun parseNotificationAction(payload: Map<String, Any?>): NativeUserNotificationAction? {
+        val buttonsJson = payload["es_buttons"] as? String ?: return null
+        val actionLabel = payload["es_btn_action_label"] as? String ?: return null
+        return try {
+            val buttonsArray = JSONArray(buttonsJson)
+            for (i in 0 until buttonsArray.length()) {
+                val button = buttonsArray.getJSONObject(i)
+                if (button.getString("label") == actionLabel) {
+                    return NativeUserNotificationAction(
+                        actionId = button.optString("action_id"),
+                        customData = parseCustomData(button.optJSONObject("custom_data")),
+                        link = button.optString("link"),
+                    )
+                }
+            }
+            null
+        } catch (e: Exception) {
+            Log.e(TAG, "Error parsing notification action", e)
+            null
+        }
+    }
+
+    private fun parseCustomData(customData: JSONObject?): Map<String?, Any?>? {
+        if (customData == null) return null
+        return customData.keys().asSequence().associateWith { key ->
+            when (val value = key?.let { customData.get(it) }) {
+                is JSONObject -> parseCustomData(value)
+                is JSONArray -> value.toString()
+                else -> value
+            }
+        }
+    }
+
     override fun initWith(
         accessKey: String,
         lifecycleTrackingOptions: NativeLifecycleTrackingOptions?,
         isPausedInAppMessages: Boolean,
         useCustomDeviceIdProvider: Boolean,
-        isDebug: Boolean
+        isDebug: Boolean,
+        deviceTokenHandlingMode: NativeDeviceTokenHandlingMode,
+        defaultNotificationChannelConfig: NativeDefaultNotificationChannelConfig?
     ) {
 
         val configBuilder = RetenoConfig.Builder()
@@ -267,7 +460,20 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
             configBuilder.customDeviceIdProvider(CustomDeviceIdProvider())
         }
 
+        defaultNotificationChannelConfig?.let { config ->
+            configBuilder.defaultNotificationChannelConfig(
+                Procedure<NotificationChannelCompat.Builder> { builder ->
+                    config.name?.let { builder.setName(it) }
+                    config.description?.let { builder.setDescription(it) }
+                    config.showBadge?.let { builder.setShowBadge(it) }
+                    config.lightsEnabled?.let { builder.setLightsEnabled(it) }
+                    config.vibrationEnabled?.let { builder.setVibrationEnabled(it) }
+                }
+            )
+        }
+
         Reteno.initWithConfig(configBuilder.build())
+        isRetenoInitialized = true
     }
 
     override fun setUserAttributes(externalUserId: String, user: NativeRetenoUser?) {
@@ -292,6 +498,71 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     override fun updatePushPermissionStatus() {
         Log.i(TAG, "updatePushPermissionStatus")
         return Reteno.instance.updatePushPermissionStatus()
+    }
+
+    override fun diagnose(callback: (Result<List<String>>) -> Unit) {
+        val issues = mutableListOf<String>()
+        if (!isRetenoInitialized) {
+            issues.add("SDK_NOT_INITIALIZED")
+        }
+
+        val notificationsEnabled = NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()
+        if (!notificationsEnabled) {
+            issues.add("NOTIFICATIONS_DISABLED")
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val permissionGranted = ContextCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!permissionGranted) {
+                issues.add("PUSH_PERMISSION_DENIED")
+            }
+        }
+
+        callback(Result.success(issues))
+    }
+
+    override fun requestPushPermission(
+        provisional: Boolean,
+        callback: (Result<Boolean>) -> Unit
+    ) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            val enabled = NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()
+            callback(Result.success(enabled))
+            return
+        }
+
+        val activity = mainActivity
+        if (activity == null) {
+            callback(Result.failure(IllegalStateException("No Activity attached")))
+            return
+        }
+
+        val granted = ContextCompat.checkSelfPermission(
+            activity,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (granted) {
+            updatePushPermissionStatus()
+            callback(Result.success(true))
+            return
+        }
+
+        if (pendingPushPermissionResult != null) {
+            callback(Result.failure(IllegalStateException("Permission request already in progress")))
+            return
+        }
+
+        pendingPushPermissionResult = callback
+        ActivityCompat.requestPermissions(
+            activity,
+            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+            REQUEST_POST_NOTIFICATIONS
+        )
     }
 
     override fun getInitialNotification(): Map<String, Any>? {
@@ -674,6 +945,16 @@ fun NativeEcommerceOrder.toOrder(): Order = Order(
     items               = items.toOrderItems(),
     attributes          = attributes?.toPairsList()
 )
+
+private fun InAppCustomData.toNativeInAppCustomData(): NativeInAppCustomData {
+    val normalizedData: Map<String?, String?> = data.mapKeys { it.key }.mapValues { it.value }
+    return NativeInAppCustomData(
+        url = url,
+        source = source,
+        inAppId = inAppId,
+        data = normalizedData,
+    )
+}
 
 private fun parseJsonToMap(jsonString: String): Map<String, Any> {
     val jsonObject = org.json.JSONObject(jsonString)

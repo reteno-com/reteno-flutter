@@ -1,5 +1,18 @@
-import 'package:reteno_plugin/reteno.dart';
 import 'package:reteno_plugin/src/reteno_plugin_pigeon_channel.dart';
+import 'package:reteno_plugin/src/models/anonymous_user_attributes.dart';
+import 'package:reteno_plugin/src/models/in_app_message_status.dart';
+import 'package:reteno_plugin/src/models/lifecycle_tracking_options.dart';
+import 'package:reteno_plugin/src/models/reteno_custom_event.dart';
+import 'package:reteno_plugin/src/models/reteno_custom_event_parameter.dart';
+import 'package:reteno_plugin/src/models/reteno_default_notification_channel_config.dart';
+import 'package:reteno_plugin/src/models/reteno_device_token_handling_mode.dart';
+import 'package:reteno_plugin/src/models/reteno_ecommerce_event.dart';
+import 'package:reteno_plugin/src/models/reteno_in_app_custom_data.dart';
+import 'package:reteno_plugin/src/models/reteno_init_options.dart';
+import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
+import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
+import 'package:reteno_plugin/src/models/reteno_user.dart';
+import 'package:reteno_plugin/src/models/reteno_user_notification_action.dart';
 
 import 'reteno_plugin_platform_interface.dart';
 
@@ -9,44 +22,45 @@ class Reteno {
   /// Reteno `AppInbox` instance.
   static AppInbox get appInbox => RetenoPigeonChannel.instance.appInbox;
 
-  /// NOTE: Android SDK only
-  /// Method for finishing delayed initialization of RetenoSDK,
-  /// - Parameter `accessKey`: Reteno Access Key
-  /// - Parameter `isDebug`: enables debug mode for Reteno SDK (Android only)
-  /// - Parameter `isPausedInAppMessages`: indicates paused/resumed state for in-app messages
-  ///   Reteno SDK will wait till id is going to be non-null then will initialize itself
-  /// - Parameter `lifecycleTrackingOptions`: behavior of automatic app lifecycle event tracking
-  /// - Parameter `customDeviceId`: custom device id provider
-  ///   Reteno SDK will wait till id is going to be non-null
-  /// example:
-  /// ```dart
-  /// await Reteno.initWith(
-  ///   accessKey: 'access_key',
-  ///   isPausedInAppMessages: true,
-  ///   lifecycleTrackingOptions: LifecycleTrackingOptions(
-  ///     appLifecycleEnabled: true,
-  ///     pushSubscriptionEnabled: true,
-  ///     sessionEventsEnabled: true,
-  ///   ),
-  ///   customDeviceId: () async {
-  ///     return await Amplitude.getInstance().getDeviceId();
-  ///   },
-  /// );
-  /// ```
+  /// Canonical initialization entrypoint.
+  Future<void> initialize({
+    required String accessKey,
+    RetenoInitOptions options = const RetenoInitOptions(),
+    Future<String?> Function()? customDeviceId,
+  }) {
+    return _platform.initWith(
+      accessKey: accessKey,
+      isPausedInAppMessages: options.isPausedInAppMessages,
+      lifecycleTrackingOptions: options.lifecycleTrackingOptions,
+      customDeviceId: customDeviceId,
+      isDebug: options.isDebug,
+      deviceTokenHandlingMode: options.deviceTokenHandlingMode,
+      defaultNotificationChannelConfig:
+          options.defaultNotificationChannelConfig,
+    );
+  }
 
+  /// Backward-compatible alias for [initialize].
   Future<void> initWith({
     required String accessKey,
     bool isPausedInAppMessages = false,
     bool isDebug = false,
     LifecycleTrackingOptions? lifecycleTrackingOptions,
     Future<String?> Function()? customDeviceId,
+    RetenoDeviceTokenHandlingMode deviceTokenHandlingMode =
+        RetenoDeviceTokenHandlingMode.automatic,
+    RetenoDefaultNotificationChannelConfig? defaultNotificationChannelConfig,
   }) {
-    return _platform.initWith(
+    return initialize(
       accessKey: accessKey,
-      isPausedInAppMessages: isPausedInAppMessages,
-      lifecycleTrackingOptions: lifecycleTrackingOptions,
       customDeviceId: customDeviceId,
-      isDebug: isDebug,
+      options: RetenoInitOptions(
+        isPausedInAppMessages: isPausedInAppMessages,
+        isDebug: isDebug,
+        lifecycleTrackingOptions: lifecycleTrackingOptions,
+        deviceTokenHandlingMode: deviceTokenHandlingMode,
+        defaultNotificationChannelConfig: defaultNotificationChannelConfig,
+      ),
     );
   }
 
@@ -89,7 +103,12 @@ class Reteno {
   ///   print("Received notification: $notification");
   /// });
   /// ```
-  static Stream<Map<String, dynamic>> get onRetenoNotificationReceived => _platform.onRetenoNotificationReceived.stream;
+  static Stream<Map<String, dynamic>> get onRetenoNotificationReceived =>
+      _platform.onRetenoNotificationReceived.stream;
+
+  /// Cross-platform core stream alias for push received events.
+  static Stream<Map<String, dynamic>> get onCorePushReceived =>
+      onRetenoNotificationReceived;
 
   /// A static getter that provides a [Stream] of user notification actions.
   /// This [Stream] emits [RetenoUserNotificationAction] object
@@ -105,7 +124,12 @@ class Reteno {
   ///   print("User notification action: $action");
   /// });
   /// ```
-  static Stream<RetenoUserNotificationAction> get onUserNotificationAction => _platform.onUserNotificationAction.stream;
+  static Stream<RetenoUserNotificationAction> get onUserNotificationAction =>
+      _platform.onUserNotificationAction.stream;
+
+  /// Cross-platform core stream alias for push action events.
+  static Stream<RetenoUserNotificationAction> get onCorePushAction =>
+      onUserNotificationAction;
 
   /// A static getter that provides a [Stream] of notifications clicked by the user
   /// in foreground and background states.
@@ -123,7 +147,24 @@ class Reteno {
   ///   print("Clicked notification: $notification");
   /// });
   /// ```
-  static Stream<Map<String, dynamic>> get onRetenoNotificationClicked => _platform.onRetenoNotificationClicked.stream;
+  static Stream<Map<String, dynamic>> get onRetenoNotificationClicked =>
+      _platform.onRetenoNotificationClicked.stream;
+
+  /// Cross-platform core stream alias for push clicked events.
+  static Stream<Map<String, dynamic>> get onCorePushClicked =>
+      onRetenoNotificationClicked;
+
+  /// Platform-specific stream for push dismissed (currently Android SDK event source).
+  static Stream<Map<String, dynamic>> get onRetenoNotificationDeleted =>
+      _platform.onRetenoNotificationDeleted.stream;
+
+  /// Platform-specific stream for custom push payload callbacks (currently Android SDK event source).
+  static Stream<Map<String, dynamic>> get onRetenoCustomNotificationReceived =>
+      _platform.onRetenoCustomNotificationReceived.stream;
+
+  /// Platform-specific stream for in-app custom data callbacks (currently Android SDK event source).
+  static Stream<RetenoInAppCustomData> get onRetenoInAppCustomDataReceived =>
+      _platform.onRetenoInAppCustomDataReceived.stream;
 
   /// A static getter that provides a [Stream] of in-app message status changes.
   /// You can detect In-App presenting status where needed.
@@ -151,7 +192,8 @@ class Reteno {
   ///   });
   /// ```
   ///
-  static Stream<InAppMessageStatus> get onInAppMessageStatusChanged => _platform.onInAppMessageStatusChanged.stream;
+  static Stream<InAppMessageStatus> get onInAppMessageStatusChanged =>
+      _platform.onInAppMessageStatusChanged.stream;
 
   /// Retrieves the initial notification when app is opened from terminated state by notification.
   ///
@@ -209,11 +251,41 @@ class Reteno {
     return _platform.logEvent(event: event);
   }
 
+  /// Convenience helper to log event with JSON parameters map.
+  Future<bool> logEventJson({
+    required String eventTypeKey,
+    required Map<String, String> jsonParameters,
+    DateTime? dateOccurred,
+    bool forcePush = false,
+  }) {
+    return logEvent(
+      event: RetenoCustomEvent(
+        eventTypeKey: eventTypeKey,
+        dateOccurred: dateOccurred ?? DateTime.now(),
+        forcePush: forcePush,
+        parameters: jsonParameters.entries
+            .map((entry) => RetenoCustomEventParameter(entry.key, entry.value))
+            .toList(),
+      ),
+    );
+  }
+
+  /// Requests push permission on iOS and Android 13+ and syncs status to backend.
+  /// - Parameter `provisional`: iOS provisional authorization (iOS 12+).
+  Future<bool> requestPushPermission({bool provisional = false}) {
+    return _platform.requestPushPermission(provisional: provisional);
+  }
+
   /// Updates status of POST_NOTIFICATIONS permission and pushes it to backend if status was changed.
   ///
   /// For example you can call this function after acquiring result from runtime permission on Android 13 and above
   Future<bool> updatePushPermissionStatus() {
     return _platform.updatePushPermissionStatus();
+  }
+
+  /// Returns integration diagnostics codes from native SDK/plugin.
+  Future<List<String>> diagnose() {
+    return _platform.diagnose();
   }
 
   /// Pause or resume in-app messages
@@ -244,7 +316,7 @@ class Reteno {
   Future<List<RetenoRecommendation>> getRecommendations({
     required String recomenedationVariantId,
     required List<String> productIds,
-    required String categoryId,
+    String? categoryId,
     List<RetenoRecomendationFilter>? filters,
     List<String>? fields,
   }) {

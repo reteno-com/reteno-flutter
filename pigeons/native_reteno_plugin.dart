@@ -7,7 +7,8 @@ import 'package:pigeon/pigeon.dart';
     kotlinOptions: KotlinOptions(
       package: 'com.reteno.reteno_plugin',
     ),
-    kotlinOut: 'android/src/main/kotlin/com/reteno/reteno_plugin/RetenoHostApi.kt',
+    kotlinOut:
+        'android/src/main/kotlin/com/reteno/reteno_plugin/RetenoHostApi.kt',
   ),
 )
 @HostApi()
@@ -18,11 +19,19 @@ abstract class RetenoHostApi {
     bool isPausedInAppMessages = false,
     bool useCustomDeviceIdProvider = false,
     bool isDebug = false,
+    NativeDeviceTokenHandlingMode deviceTokenHandlingMode =
+        NativeDeviceTokenHandlingMode.automatic,
+    NativeDefaultNotificationChannelConfig? defaultNotificationChannelConfig,
   });
   void setUserAttributes(String externalUserId, NativeRetenoUser? user);
-  void setAnonymousUserAttributes(NativeAnonymousUserAttributes anonymousUserAttributes);
+  void setAnonymousUserAttributes(
+      NativeAnonymousUserAttributes anonymousUserAttributes);
   void logEvent(NativeCustomEvent event);
+  @async
+  bool requestPushPermission({bool provisional = false});
   void updatePushPermissionStatus();
+  @async
+  List<String> diagnose();
   void pauseInAppMessages(bool isPaused);
   Map<String, Object>? getInitialNotification();
   @async
@@ -52,10 +61,13 @@ abstract class RetenoHostApi {
   void subscribeOnMessagesCountChanged();
   void unsubscribeAllMessagesCountChanged();
   // Ecommerce
-  void logEcommerceProductViewed(NativeEcommerceProduct product, String? currency);
+  void logEcommerceProductViewed(
+      NativeEcommerceProduct product, String? currency);
   void logEcommerceProductCategoryViewed(NativeEcommerceCategory category);
-  void logEcommerceProductAddedToWishlist(NativeEcommerceProduct product, String? currency);
-  void logEcommerceCartUpdated(String cartId, List<NativeEcommerceProductInCart> products, String? currency);
+  void logEcommerceProductAddedToWishlist(
+      NativeEcommerceProduct product, String? currency);
+  void logEcommerceCartUpdated(String cartId,
+      List<NativeEcommerceProductInCart> products, String? currency);
   void logEcommerceOrderCreated(NativeEcommerceOrder order, String? currency);
   void logEcommerceOrderUpdated(NativeEcommerceOrder order, String? currency);
   void logEcommerceOrderDelivered(String externalOrderId);
@@ -67,6 +79,9 @@ abstract class RetenoHostApi {
 abstract class RetenoFlutterApi {
   void onNotificationReceived(Map<String, Object?> payload);
   void onNotificationClicked(Map<String, Object?> payload);
+  void onNotificationDeleted(Map<String, Object?> payload);
+  void onCustomNotificationReceived(Map<String, Object?> payload);
+  void onInAppCustomDataReceived(NativeInAppCustomData payload);
   void onNotificationActionHandler(NativeUserNotificationAction action);
 
   void onInAppMessageStatusChanged(
@@ -77,6 +92,20 @@ abstract class RetenoFlutterApi {
   void onMessagesCountChanged(int count);
   @async
   String? getDeviceId();
+}
+
+class NativeInAppCustomData {
+  NativeInAppCustomData({
+    this.url,
+    required this.source,
+    required this.inAppId,
+    required this.data,
+  });
+
+  final String? url;
+  final String source;
+  final String inAppId;
+  final Map<String?, String?> data;
 }
 
 class NativeRetenoUser {
@@ -182,6 +211,11 @@ enum NativeInAppMessageStatus {
   inAppReceivedError
 }
 
+enum NativeDeviceTokenHandlingMode {
+  automatic,
+  manual,
+}
+
 class NativeInAppMessageAction {
   NativeInAppMessageAction({
     required this.isCloseButtonClicked,
@@ -192,6 +226,22 @@ class NativeInAppMessageAction {
   final bool isCloseButtonClicked;
   final bool isButtonClicked;
   final bool isOpenUrlClicked;
+}
+
+class NativeDefaultNotificationChannelConfig {
+  const NativeDefaultNotificationChannelConfig({
+    this.name,
+    this.description,
+    this.showBadge,
+    this.lightsEnabled,
+    this.vibrationEnabled,
+  });
+
+  final String? name;
+  final String? description;
+  final bool? showBadge;
+  final bool? lightsEnabled;
+  final bool? vibrationEnabled;
 }
 
 class NativeRecomFilter {

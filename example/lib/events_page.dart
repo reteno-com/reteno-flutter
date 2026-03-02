@@ -162,7 +162,7 @@ class _EventsPageState extends State<EventsPage> {
 
                   await _reteno.logEvent(event: event);
                 },
-                child: const Padding(
+                child: const Padding( 
                   padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 32),
                   child: Text(
                     'Send custom event',
