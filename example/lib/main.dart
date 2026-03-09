@@ -108,7 +108,7 @@ void main() async {
     options: RetenoInitOptions(
       lifecycleTrackingOptions: LifecycleTrackingOptions.all(),
       isDebug: true,
-      deviceTokenHandlingMode: RetenoDeviceTokenHandlingMode.manual,
+      deviceTokenHandlingMode: RetenoDeviceTokenHandlingMode.automatic,
       defaultNotificationChannelConfig: Platform.isAndroid
           ? const RetenoDefaultNotificationChannelConfig(
               name: 'General notifications',

@@ -233,7 +233,17 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
             default:
                 break
             }
-            completion(.success(issues))
+
+            DispatchQueue.main.async {
+                let authorized = settings.authorizationStatus == .authorized
+                    || settings.authorizationStatus == .provisional
+                    || settings.authorizationStatus == .ephemeral
+
+                if authorized && !UIApplication.shared.isRegisteredForRemoteNotifications {
+                    issues.append("REMOTE_NOTIFICATIONS_NOT_REGISTERED")
+                }
+                completion(.success(issues))
+            }
         }
     }
 

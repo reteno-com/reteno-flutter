@@ -4,114 +4,136 @@ Reteno Flutter SDK
 
 ## Documentation
 [Official documentation](https://docs.reteno.com/reference/flutter-sdk)
+[Migration guide](./MIGRATION.md)
 ## Installation
 
-### iOS
-#### Installation
-
-1. Follow `Step 1` described in iOS SDK setup guide: [link](https://docs.reteno.com/reference/ios#step-1-add-the-notification-service-extension)
-
-
-2. Modify your cocoapod file to contain next dependencies:
-```
-
-target 'NotificationServiceExtension' do
-  pod 'Reteno', '2.6.0'
-
-end
-
-target 'RetenoSdkExample' do
-  ...
-  pod 'Reteno', '2.6.0'
-end
-
-```
-
-3. Run next command from root of your project:
+### 1. Add package
 
 ```sh
 flutter pub add reteno_plugin
 ```
-4. Next step for iOS is to call `Reteno.start` inside of your `AppDelegate` file. If you have migrated to `AppDelegate.swift`, follow `Step 3` in iOS SDK setup guide: [link](https://docs.reteno.com/reference/ios#step-3-import-reteno-into-your-app-delegate)
 
-### Android
-#### Installation
-
-
-1. Run next command from root of your project:
-
-```sh
-flutter pub add reteno_plugin
-```
-2. Add mavenCentral repository in your project level `build.gradle`:
-```groovy
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-...
-}
-```
-3. Also you may need to increase `minSdkVersion` in project level `build.gradle` to `21`, since `Reteno` uses this version as minimal;
-
-#### Setting up SDK
-
-1. Follow `Step 1` described in Android SDK setup guide: [link](https://docs.reteno.com/reference/android-sdk-setup#step-1-make-sure-to-enable-androidx-in-your-gradleproperties-file);
-
-2. Follow `Step 2` described in Android SDK setup guide: [link](https://docs.reteno.com/reference/android-sdk-setup#step-2-make-sure-to-add-comretenofcm-and-firebase-dependencies-in-buildgradle);
-
-3. Edit your MainApplication class and provider API Access-Key at SDK initialization.
-
-Below is sample code you can add to your application class which gets you started with `RetenoSDK`.
-
-```kotlin
-package [com.YOUR_PACKAGE];
-
-import com.reteno.core.Reteno
-import com.reteno.core.RetenoApplication
-import com.reteno.core.RetenoImpl
-import io.flutter.app.FlutterApplication
-
-class CustomApplication : FlutterApplication(), RetenoApplication {
-    override fun onCreate() {
-        super.onCreate()
-        retenoInstance = RetenoImpl(this, "<your_access_key>")
-    }
-
-    private lateinit var retenoInstance: Reteno
-    override fun getRetenoInstance(): Reteno {
-        return retenoInstance
-    }
-}
-```
-
-3. Optionally (Android Only), you can make late initialization with config
-
-```kotlin
-class CustomApplication : FlutterApplication(), RetenoApplication {
-    override fun onCreate() {
-        super.onCreate()
-        retenoInstance = RetenoImpl(this, "<your_access_key>")
-    }
-
-    private lateinit var retenoInstance: Reteno
-    override fun getRetenoInstance(): Reteno {
-        return retenoInstance
-    }
-}
-```
-in Flutter project
+### 2. Initialize SDK in Flutter
 
 ```dart
-await Reteno().initWith(
-      accessKey: '<your_access_key>',
-      userId: '<your_user_id>',
-      isPausedInAppMessages: true,
-      lifecycleTrackingOptions: LifecycleTrackingOptions.all(),
-    );
+import 'package:reteno_plugin/reteno.dart';
+
+await Reteno().initialize(
+  accessKey: '<your_access_key>',
+  options: RetenoInitOptions(
+    lifecycleTrackingOptions: LifecycleTrackingOptions.all(),
+    isDebug: false,
+    deviceTokenHandlingMode: RetenoDeviceTokenHandlingMode.automatic,
+  ),
+);
 ```
 
-4. Follow `Step 5` described in Android SDK setup guide: [link](https://docs.reteno.com/reference/android-sdk-setup#step-5-make-sure-to-set-up-your-firebase-application-for-firebase-cloud-messaging);
+### 3. Request push permission
+
+```dart
+final granted = await Reteno().requestPushPermission();
+```
+
+### 4. Verify integration diagnostics
+
+```dart
+final issues = await Reteno().diagnose();
+// [] means integration checks passed
+```
+
+### iOS requirements
+
+1. Add `NotificationServiceExtension` and follow iOS guide Step 1:
+[https://docs.reteno.com/reference/ios#step-1-add-the-notification-service-extension](https://docs.reteno.com/reference/ios#step-1-add-the-notification-service-extension)
+2. Add `pod 'Reteno', '2.6.0'` to both app target and Notification Service Extension.
+3. Configure App Group for app + extension.
+4. Do not initialize Reteno manually from `AppDelegate` when using this Flutter plugin. Initialization should be done via `Reteno().initialize(...)`.
+
+`NotificationServiceExtension` + App Group are required for full iOS Reteno push functionality.
+
+### Android requirements
+
+1. Enable AndroidX and complete Firebase setup from Android guide:
+[https://docs.reteno.com/reference/android-sdk-setup](https://docs.reteno.com/reference/android-sdk-setup)
+2. `minSdkVersion` must be at least `21`.
+3. Do not add custom `FirebaseMessagingService` only for Reteno. The plugin handles Reteno push service wiring internally.
+
+### Android advanced setup (if your app already has custom `FirebaseMessagingService`)
+
+Use this only when you already have app-specific FCM logic and need to keep it.
+
+Rules:
+
+1. Your app must have exactly one app-level `MESSAGING_EVENT` service.
+2. That service should inherit from `RetenoFirebaseMessagingService`.
+3. `onNewToken` and `onMessageReceived` must call `super`.
+4. Remove plugin bridge service from manifest merge in the app module.
+
+Manifest example:
+
+```xml
+<application xmlns:tools="http://schemas.android.com/tools">
+    <service
+        android:name="com.reteno.reteno_plugin.RetenoFirebaseMessagingServiceBridge"
+        tools:node="remove" />
+
+    <service
+        android:name=".MyMessagingService"
+        android:exported="false">
+        <intent-filter>
+            <action android:name="com.google.firebase.MESSAGING_EVENT" />
+        </intent-filter>
+    </service>
+</application>
+```
+
+Service example:
+
+```kotlin
+import com.google.firebase.messaging.RemoteMessage
+import com.reteno.fcm.RetenoFirebaseMessagingService
+
+class MyMessagingService : RetenoFirebaseMessagingService() {
+    override fun onNewToken(token: String) {
+        super.onNewToken(token)
+        // your token logic
+    }
+
+    override fun onMessageReceived(message: RemoteMessage) {
+        super.onMessageReceived(message)
+        if (!isRetenoMessage(message)) {
+            // your non-Reteno message logic
+        }
+    }
+}
+```
+
+### Diagnose codes
+
+`Reteno().diagnose()` may return:
+
+| Code | Meaning |
+| --- | --- |
+| `SDK_NOT_INITIALIZED` | Reteno SDK has not been initialized yet |
+| `NOTIFICATIONS_DISABLED` | Notifications are disabled in OS settings |
+| `PUSH_PERMISSION_DENIED` | Notification runtime permission denied |
+| `PUSH_PERMISSION_NOT_DETERMINED` | iOS permission dialog not shown yet |
+| `REMOTE_NOTIFICATIONS_NOT_REGISTERED` | iOS permission granted but APNs registration not completed |
+| `FCM_MESSAGING_SERVICE_MISSING` | Android has no active `MESSAGING_EVENT` handler |
+| `RETENO_MESSAGING_SERVICE_MISSING` | Android has no Reteno push handler among `MESSAGING_EVENT` services |
+| `FCM_MESSAGING_SERVICE_CONFLICT` | Multiple app-level `MESSAGING_EVENT` services detected on Android |
+| `FCM_TOKEN_MISSING` | Android SDK cannot get current FCM token |
+| `FCM_TOKEN_FETCH_FAILED` | Android failed to fetch FCM token from Firebase SDK |
+
+### Push troubleshooting (Android)
+
+If Reteno Console says contact has no app token:
+
+1. Ensure `Reteno().initialize(...)` is called on app startup before user update calls.
+2. Request push permission (`Reteno().requestPushPermission()`).
+3. Call `Reteno().setUserAttributes(userExternalId: ...)` for the same contact you target in Console.
+4. Run `Reteno().diagnose()` and resolve all returned codes.
+5. Verify app has only one effective app-level `MESSAGING_EVENT` service (or bridge + proper merge setup).
 
 
 ## Push notifications
@@ -179,7 +201,7 @@ import 'package:reteno_plugin/reteno.dart';
 `Reteno SDK` provides ability to track custom events.
 
 ```dart
-RetenoPlugin().logEvent({required RetenoCustomEvent event});
+Reteno().logEvent({required RetenoCustomEvent event});
 ```
 
 ###### Custom Event model:
@@ -230,7 +252,7 @@ final event = RetenoCustomEvent(
   forcePush: true|false,
 );
 
-await RetenoPlugin().logEvent(event: event);
+await Reteno().logEvent(event: event);
 ```
 
 

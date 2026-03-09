@@ -3,7 +3,9 @@ package com.reteno.reteno_plugin
 import UserUtils
 import android.Manifest
 import android.app.Activity
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -14,6 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.google.firebase.messaging.FirebaseMessaging
 import com.reteno.core.Reteno
 import com.reteno.core.RetenoConfig
 import com.reteno.core.data.remote.model.recommendation.get.Recoms
@@ -40,6 +43,7 @@ import com.reteno.core.view.iam.callback.InAppCloseData
 import com.reteno.core.view.iam.callback.InAppData
 import com.reteno.core.view.iam.callback.InAppErrorData
 import com.reteno.core.view.iam.callback.InAppLifecycleCallback
+import com.reteno.push.RetenoNotificationService
 import com.reteno.push.RetenoNotifications
 import com.reteno.push.events.InAppCustomData
 import com.reteno.reteno_plugin.RetenoEvent.buildEventFromCustomEvent
@@ -62,6 +66,11 @@ import android.util.Pair as AndroidPair
 
 private const val TAG = "RetenoPlugin"
 private const val ES_INTERACTION_ID_KEY: String = "es_interaction_id"
+private const val FCM_MESSAGING_EVENT_ACTION: String = "com.google.firebase.MESSAGING_EVENT"
+private const val FIREBASE_BASE_MESSAGING_SERVICE: String = "com.google.firebase.messaging.FirebaseMessagingService"
+private const val RETENO_BRIDGE_MESSAGING_SERVICE: String = "com.reteno.reteno_plugin.RetenoFirebaseMessagingServiceBridge"
+private const val ISSUE_FCM_TOKEN_MISSING: String = "FCM_TOKEN_MISSING"
+private const val ISSUE_FCM_TOKEN_FETCH_FAILED: String = "FCM_TOKEN_FETCH_FAILED"
 
 class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     companion object {
@@ -474,6 +483,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
 
         Reteno.initWithConfig(configBuilder.build())
         isRetenoInitialized = true
+        syncCurrentFcmToken()
     }
 
     override fun setUserAttributes(externalUserId: String, user: NativeRetenoUser?) {
@@ -522,7 +532,94 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
             }
         }
 
-        callback(Result.success(issues))
+        val fcmServices = getMessagingEventHandlers().filter {
+            it != FIREBASE_BASE_MESSAGING_SERVICE
+        }
+        val isRetenoBridgeDeclared = isServiceDeclared(RETENO_BRIDGE_MESSAGING_SERVICE)
+        if (fcmServices.isEmpty()) {
+            if (!isRetenoBridgeDeclared) {
+                issues.add("FCM_MESSAGING_SERVICE_MISSING")
+            }
+        } else {
+            val hasRetenoService = fcmServices.any { it.contains("reteno", ignoreCase = true) }
+            if (!hasRetenoService) {
+                issues.add("RETENO_MESSAGING_SERVICE_MISSING")
+            }
+            if (fcmServices.size > 1) {
+                issues.add("FCM_MESSAGING_SERVICE_CONFLICT")
+            }
+        }
+
+        finalizeDiagnoseWithTokenCheck(issues, callback)
+    }
+
+    private fun isServiceDeclared(serviceName: String): Boolean {
+        val componentName = ComponentName(applicationContext.packageName, serviceName)
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                applicationContext.packageManager.getServiceInfo(
+                    componentName,
+                    PackageManager.ComponentInfoFlags.of(0L)
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                applicationContext.packageManager.getServiceInfo(componentName, 0)
+            }
+            true
+        } catch (_: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
+    private fun syncCurrentFcmToken() {
+        FirebaseMessaging.getInstance().token
+            .addOnSuccessListener { token ->
+                if (token.isNullOrBlank()) {
+                    Log.d(TAG, "syncCurrentFcmToken: FCM token is empty")
+                    return@addOnSuccessListener
+                }
+                try {
+                    RetenoNotificationService(applicationContext).onNewToken(token)
+                    Log.d(TAG, "syncCurrentFcmToken: token synced")
+                } catch (t: Throwable) {
+                    Log.d(TAG, "syncCurrentFcmToken: failed to sync token", t)
+                }
+            }
+            .addOnFailureListener { error ->
+                Log.d(TAG, "syncCurrentFcmToken: failed to fetch FCM token", error)
+            }
+    }
+
+    private fun finalizeDiagnoseWithTokenCheck(
+        issues: MutableList<String>,
+        callback: (Result<List<String>>) -> Unit
+    ) {
+        FirebaseMessaging.getInstance().token
+            .addOnSuccessListener { token ->
+                if (token.isNullOrBlank()) {
+                    issues.add(ISSUE_FCM_TOKEN_MISSING)
+                }
+                callback(Result.success(issues.distinct()))
+            }
+            .addOnFailureListener { error ->
+                Log.d(TAG, "diagnose: failed to fetch FCM token", error)
+                issues.add(ISSUE_FCM_TOKEN_FETCH_FAILED)
+                callback(Result.success(issues.distinct()))
+            }
+    }
+
+    private fun getMessagingEventHandlers(): List<String> {
+        val intent = Intent(FCM_MESSAGING_EVENT_ACTION).setPackage(applicationContext.packageName)
+        val resolvedServices = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            applicationContext.packageManager.queryIntentServices(
+                intent,
+                PackageManager.ResolveInfoFlags.of(0L)
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            applicationContext.packageManager.queryIntentServices(intent, 0)
+        }
+        return resolvedServices.mapNotNull { it.serviceInfo?.name }
     }
 
     override fun requestPushPermission(
