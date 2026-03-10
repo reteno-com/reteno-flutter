@@ -1,0 +1,226 @@
+default_platform(:ios)
+
+require "fileutils"
+require "shellwords"
+require "tmpdir"
+
+def env_bool(name, default: false)
+  value = ENV[name]
+  return default if value.nil? || value.strip.empty?
+
+  %w[1 true yes y on].include?(value.strip.downcase)
+end
+
+def csv_env(name)
+  ENV.fetch(name, "")
+    .split(",")
+    .map(&:strip)
+    .reject(&:empty?)
+end
+
+def ensure_required_env!(keys)
+  missing = keys.select { |key| ENV[key].to_s.strip.empty? }
+  return if missing.empty?
+
+  UI.user_error!("Missing required env vars: #{missing.join(", ")}")
+end
+
+def find_existing_path(path)
+  return nil if path.to_s.strip.empty?
+
+  monorepo_root = File.expand_path("../../..", __dir__)
+  normalized_path = path.sub(%r{\A\./}, "")
+
+  candidates = [
+    path,
+    File.expand_path(path, Dir.pwd),
+    File.expand_path(path, __dir__),
+    File.expand_path(path, File.expand_path("..", __dir__)),
+    File.expand_path(path, File.expand_path("../..", __dir__)),
+    File.expand_path(path, monorepo_root),
+    File.expand_path(File.join("ios", normalized_path), monorepo_root)
+  ]
+
+  if File.basename(path).match?(/\AAuthKey_.*\.p8\z/)
+    candidates.concat(Dir.glob(File.join(monorepo_root, "**", File.basename(path))))
+  end
+
+  candidates = candidates.uniq
+
+  candidates.find { |candidate| File.exist?(candidate) }
+end
+
+def resolve_api_key_path!
+  direct_path = ENV["APP_STORE_CONNECT_API_KEY_PATH"].to_s.strip
+  unless direct_path.empty?
+    resolved_path = find_existing_path(direct_path)
+    UI.user_error!(
+      "API key file not found: #{direct_path}. " \
+      "Place AuthKey_*.p8 in ios/fastlane or set an absolute path."
+    ) if resolved_path.nil?
+
+    return [resolved_path, nil]
+  end
+
+  repo_url = ENV["APP_STORE_CONNECT_API_KEY_GIT_REPO_URL"].to_s.strip
+  repo_branch = ENV["APP_STORE_CONNECT_API_KEY_GIT_REPO_BRANCH"].to_s.strip
+  key_id = ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"].to_s.strip
+  return [nil, nil] if repo_url.empty? || key_id.empty?
+
+  tmp_dir = Dir.mktmpdir("asc-api-key")
+  clone_parts = ["git", "clone", "--depth", "1"]
+  clone_parts += ["--branch", repo_branch] unless repo_branch.empty?
+  clone_parts += [repo_url, tmp_dir]
+  begin
+    sh(clone_parts.map { |part| Shellwords.escape(part) }.join(" "))
+  rescue StandardError => e
+    UI.user_error!(
+      "Failed to clone API key repo (#{repo_url}). " \
+      "Either configure SSH access or set APP_STORE_CONNECT_API_KEY_PATH " \
+      "to a local AuthKey_#{key_id}.p8 file. Original error: #{e.message}"
+    )
+  end
+
+  key_path = Dir.glob(File.join(tmp_dir, "**", "AuthKey_#{key_id}.p8")).first
+  UI.user_error!("AuthKey_#{key_id}.p8 was not found in #{repo_url}") if key_path.nil?
+
+  [key_path, tmp_dir]
+end
+
+platform :ios do
+  desc "Build Runner and upload to TestFlight"
+  lane :testflight do
+    ensure_required_env!(%w[
+      APP_IDENTIFIER
+      FASTLANE_TEAM_ID
+      MATCH_GIT_URL
+      APP_STORE_CONNECT_API_KEY_ISSUER_ID
+      APP_STORE_CONNECT_API_KEY_KEY_ID
+    ])
+
+    main_bundle_id = ENV["APP_IDENTIFIER"].strip
+    extension_bundle_id = ENV.fetch("NOTIFICATION_SERVICE_EXTENSION_IDENTIFIER", "").strip
+
+    match_app_identifiers = csv_env("MATCH_APP_IDENTIFIER")
+    app_identifiers =
+      if match_app_identifiers.empty?
+        [main_bundle_id, extension_bundle_id].reject(&:empty?)
+      else
+        match_app_identifiers
+      end
+    app_identifiers << main_bundle_id unless app_identifiers.include?(main_bundle_id)
+    unless extension_bundle_id.empty?
+      app_identifiers << extension_bundle_id unless app_identifiers.include?(extension_bundle_id)
+    end
+
+    api_key_path = nil
+    api_key_tmp_dir = nil
+
+    begin
+      api_key_path, api_key_tmp_dir = resolve_api_key_path!
+      UI.user_error!(
+        "Set APP_STORE_CONNECT_API_KEY_PATH or APP_STORE_CONNECT_API_KEY_GIT_REPO_URL"
+      ) if api_key_path.to_s.strip.empty?
+
+      api_key = app_store_connect_api_key(
+        issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+        key_id: ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"],
+        key_filepath: api_key_path,
+        in_house: env_bool("APP_STORE_CONNECT_API_KEY_IN_HOUSE", default: false),
+        duration: 1200
+      )
+
+      match_readonly = env_bool("MATCH_READONLY", default: true)
+      unless match_readonly
+        UI.important("MATCH_READONLY=false: this lane may create/update signing assets in certificates repo")
+      end
+
+      sync_code_signing(
+        type: ENV.fetch("MATCH_TYPE", "appstore"),
+        app_identifier: app_identifiers,
+        git_url: ENV["MATCH_GIT_URL"],
+        git_branch: ENV["MATCH_GIT_BRANCH"],
+        username: ENV["MATCH_USERNAME"],
+        team_id: ENV["FASTLANE_TEAM_ID"],
+        readonly: match_readonly,
+        force_legacy_encryption: env_bool("MATCH_FORCE_LEGACY_ENCRYPTION", default: false),
+        clone_branch_directly: env_bool("MATCH_CLONE_BRANCH_DIRECTLY", default: false),
+        api_key: api_key
+      )
+
+      build_configurations = %w[Release Profile]
+      matched_profiles_raw =
+        Actions.lane_context[SharedValues::MATCH_PROVISIONING_PROFILE_MAPPING] || {}
+      matched_profiles = matched_profiles_raw.each_with_object({}) do |(bundle_id, profile), acc|
+        acc[bundle_id.to_s] = profile.to_s
+      end
+
+      main_profile_name =
+        matched_profiles[main_bundle_id] || "match AppStore #{main_bundle_id}"
+      extension_profile_name =
+        matched_profiles[extension_bundle_id] || "match AppStore #{extension_bundle_id}"
+
+      update_code_signing_settings(
+        use_automatic_signing: false,
+        path: "Runner.xcodeproj",
+        targets: ["Runner"],
+        build_configurations: build_configurations,
+        team_id: ENV["FASTLANE_TEAM_ID"],
+        code_sign_identity: "Apple Distribution",
+        profile_name: main_profile_name
+      )
+
+      unless extension_bundle_id.empty?
+        update_code_signing_settings(
+          use_automatic_signing: false,
+          path: "Runner.xcodeproj",
+          targets: ["NotificationServiceExtension"],
+          build_configurations: build_configurations,
+          team_id: ENV["FASTLANE_TEAM_ID"],
+          code_sign_identity: "Apple Distribution",
+          profile_name: extension_profile_name
+        )
+      end
+
+      app_version = ENV["APP_VERSION"].to_s.strip
+      build_number = ENV["BUILD_NUMBER"].to_s.strip
+      build_number = Time.now.utc.strftime("%Y%m%d%H%M") if build_number.empty?
+      UI.message("Using build number: #{build_number}")
+
+      xcargs_parts = ["CURRENT_PROJECT_VERSION=#{build_number}"]
+      xcargs_parts << "MARKETING_VERSION=#{app_version}" unless app_version.empty?
+
+      provisioning_profiles = {
+        main_bundle_id => main_profile_name
+      }
+      unless extension_bundle_id.empty?
+        provisioning_profiles[extension_bundle_id] = extension_profile_name
+      end
+
+      export_method = ENV.fetch("GYM_EXPORT_METHOD", "app-store")
+      build_app(
+        workspace: ENV.fetch("GYM_WORKSPACE", "Runner.xcworkspace"),
+        scheme: ENV.fetch("GYM_SCHEME", "Runner"),
+        configuration: ENV.fetch("GYM_CONFIGURATION", "Release"),
+        export_method: export_method,
+        clean: true,
+        output_directory: ENV.fetch("CI_OUTPUT_DIRECTORY", "./build"),
+        derived_data_path: ENV["CI_DERIVED_DATA_PATH"],
+        xcargs: xcargs_parts.join(" "),
+        output_name: "Runner.ipa",
+        export_options: {
+          method: export_method,
+          signingStyle: "manual",
+          provisioningProfiles: provisioning_profiles
+        }
+      )
+
+      upload_to_testflight(
+        api_key: api_key,
+        skip_waiting_for_build_processing: true
+      )
+    ensure
+      FileUtils.rm_rf(api_key_tmp_dir) unless api_key_tmp_dir.nil?
+    end
+  end
+end

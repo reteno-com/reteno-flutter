@@ -48,7 +48,8 @@ app.*.map.json
 # FVM Version Cache
 .fvm/
 
-# Fastlane secrets (iOS TestFlight)
+# Fastlane secrets/artifacts
 ios/fastlane/.env*
 !ios/fastlane/.env*.example
 ios/fastlane/AuthKey_*.p8
+ios/fastlane/report.xml
