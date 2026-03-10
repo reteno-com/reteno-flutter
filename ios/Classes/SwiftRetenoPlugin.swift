@@ -146,8 +146,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
             let configuration = RetenoConfiguration(
                 isPausedInAppMessages: isPausedInAppMessages,
                 isDebugMode: isDebug,
-                useCustomDeviceId: useCustomDeviceIdProvider,
-                deviceTokenHandlingMode: deviceTokenHandlingMode.toDeviceTokenHandlingMode()
+                useCustomDeviceId: useCustomDeviceIdProvider
             )
             Reteno.start(apiKey: accessKey, configuration: configuration)
             didStart = true
@@ -235,9 +234,15 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
             }
 
             DispatchQueue.main.async {
+                let isEphemeralAuthorized: Bool
+                if #available(iOS 14.0, *) {
+                    isEphemeralAuthorized = settings.authorizationStatus == .ephemeral
+                } else {
+                    isEphemeralAuthorized = false
+                }
                 let authorized = settings.authorizationStatus == .authorized
                     || settings.authorizationStatus == .provisional
-                    || settings.authorizationStatus == .ephemeral
+                    || isEphemeralAuthorized
 
                 if authorized && !UIApplication.shared.isRegisteredForRemoteNotifications {
                     issues.append("REMOTE_NOTIFICATIONS_NOT_REGISTERED")
@@ -250,15 +255,22 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     func requestPushPermission(provisional: Bool, completion: @escaping (Result<Bool, Error>) -> Void) {
         let center = UNUserNotificationCenter.current()
         center.getNotificationSettings { settings in
-            switch settings.authorizationStatus {
-            case .authorized, .provisional, .ephemeral:
+            let isAlreadyAuthorized: Bool
+            if #available(iOS 14.0, *) {
+                isAlreadyAuthorized = settings.authorizationStatus == .authorized
+                    || settings.authorizationStatus == .provisional
+                    || settings.authorizationStatus == .ephemeral
+            } else {
+                isAlreadyAuthorized = settings.authorizationStatus == .authorized
+                    || settings.authorizationStatus == .provisional
+            }
+
+            if isAlreadyAuthorized {
                 DispatchQueue.main.async {
                     UIApplication.shared.registerForRemoteNotifications()
                 }
                 completion(.success(true))
                 return
-            default:
-                break
             }
 
             var options: UNAuthorizationOptions = [.alert, .badge, .sound]
@@ -549,17 +561,6 @@ extension InAppMessageAction {
             isButtonClicked: self.isButtonClicked,
             isOpenUrlClicked: self.isOpenUrlClicked
         );
-    }
-}
-
-extension NativeDeviceTokenHandlingMode {
-    func toDeviceTokenHandlingMode() -> DeviceTokenHandlingMode {
-        switch self {
-        case .automatic:
-            return .automatic
-        case .manual:
-            return .manual
-        }
     }
 }
 
