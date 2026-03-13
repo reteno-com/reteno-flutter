@@ -1,5 +1,5 @@
 ## 1.9.0
-* Bump native SDKs: iOS `2.6.0`, Android `2.9.2`.
+* Bump native SDKs: iOS `2.6.2`, Android `2.9.2`.
 * Add Flutter-first initialization flow via `Reteno.initialize(accessKey, options)`.
 * Android: add plugin-owned FCM bridge service (no Reteno-only custom app `FirebaseMessagingService` required).
 * Android: improve `firebase_messaging` coexistence by forwarding non-Reteno messages from bridge service.
