@@ -15,6 +15,7 @@ A new Flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
+  s.dependency 'FirebaseMessaging'
   s.dependency 'Reteno', '2.6.2'
   s.platform = :ios, '12.0'
 

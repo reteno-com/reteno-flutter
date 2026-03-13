@@ -297,6 +297,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _requestPermissionForAndroid();
+      await _requestPermissionForIos();
       _initForegroundTask();
       await _runRetenoDiagnose();
 
@@ -969,6 +970,14 @@ class _MyHomePageState extends State<MyHomePage> {
     if (notificationPermissionStatus != NotificationPermission.granted) {
       await FlutterForegroundTask.requestNotificationPermission();
     }
+  }
+
+  Future<void> _requestPermissionForIos() async {
+    if (!Platform.isIOS) {
+      return;
+    }
+    final granted = await _reteno.requestPushPermission();
+    print('$_retenoPluginLogTag: iOS push permission granted: $granted');
   }
 
   void _initForegroundTask() {

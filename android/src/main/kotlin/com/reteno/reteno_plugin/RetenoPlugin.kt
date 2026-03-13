@@ -71,6 +71,8 @@ private const val FIREBASE_BASE_MESSAGING_SERVICE: String = "com.google.firebase
 private const val RETENO_BRIDGE_MESSAGING_SERVICE: String = "com.reteno.reteno_plugin.RetenoFirebaseMessagingServiceBridge"
 private const val ISSUE_FCM_TOKEN_MISSING: String = "FCM_TOKEN_MISSING"
 private const val ISSUE_FCM_TOKEN_FETCH_FAILED: String = "FCM_TOKEN_FETCH_FAILED"
+private const val MAX_FCM_SYNC_RETRIES: Int = 5
+private const val FCM_SYNC_RETRY_DELAY_MS: Long = 2_000L
 
 class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     companion object {
@@ -349,6 +351,9 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
             if (requestCode != REQUEST_POST_NOTIFICATIONS) return@addRequestPermissionsResultListener false
             val granted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
             updatePushPermissionStatus()
+            if (granted) {
+                syncCurrentFcmToken()
+            }
             pendingPushPermissionResult?.invoke(Result.success(granted))
             pendingPushPermissionResult = null
             true
@@ -483,21 +488,24 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
 
         Reteno.initWithConfig(configBuilder.build())
         isRetenoInitialized = true
+        updatePushPermissionStatus()
         syncCurrentFcmToken()
     }
 
     override fun setUserAttributes(externalUserId: String, user: NativeRetenoUser?) {
         Log.i(TAG, "setUserAttributes")
-        return Reteno.instance.setUserAttributes(externalUserId, UserUtils.fromRetenoUser(user))
+        Reteno.instance.setUserAttributes(externalUserId, UserUtils.fromRetenoUser(user))
+        syncCurrentFcmToken()
     }
 
     override fun setAnonymousUserAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes) {
         Log.i(TAG, "setAnonymousUserAttributes")
-        return Reteno.instance.setAnonymousUserAttributes(
+        Reteno.instance.setAnonymousUserAttributes(
             UserUtils.parseAnonymousAttributes(
                 anonymousUserAttributes
             )
         )
+        syncCurrentFcmToken()
     }
 
     override fun logEvent(event: NativeCustomEvent) {
@@ -571,11 +579,12 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
         }
     }
 
-    private fun syncCurrentFcmToken() {
+    private fun syncCurrentFcmToken(attempt: Int = 0) {
         FirebaseMessaging.getInstance().token
             .addOnSuccessListener { token ->
                 if (token.isNullOrBlank()) {
-                    Log.d(TAG, "syncCurrentFcmToken: FCM token is empty")
+                    Log.d(TAG, "syncCurrentFcmToken: FCM token is empty, attempt=$attempt")
+                    scheduleFcmTokenSyncRetry(attempt)
                     return@addOnSuccessListener
                 }
                 try {
@@ -583,11 +592,25 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
                     Log.d(TAG, "syncCurrentFcmToken: token synced")
                 } catch (t: Throwable) {
                     Log.d(TAG, "syncCurrentFcmToken: failed to sync token", t)
+                    scheduleFcmTokenSyncRetry(attempt)
                 }
             }
             .addOnFailureListener { error ->
                 Log.d(TAG, "syncCurrentFcmToken: failed to fetch FCM token", error)
+                scheduleFcmTokenSyncRetry(attempt)
             }
+    }
+
+    private fun scheduleFcmTokenSyncRetry(currentAttempt: Int) {
+        if (currentAttempt >= MAX_FCM_SYNC_RETRIES) {
+            return
+        }
+        val nextAttempt = currentAttempt + 1
+        val delay = nextAttempt * FCM_SYNC_RETRY_DELAY_MS
+        uiThreadHandler.postDelayed(
+            { syncCurrentFcmToken(nextAttempt) },
+            delay
+        )
     }
 
     private fun finalizeDiagnoseWithTokenCheck(
@@ -645,6 +668,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
 
         if (granted) {
             updatePushPermissionStatus()
+            syncCurrentFcmToken()
             callback(Result.success(true))
             return
         }

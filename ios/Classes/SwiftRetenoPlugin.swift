@@ -17,6 +17,32 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     private var currentDeviceTokenHandlingMode: NativeDeviceTokenHandlingMode = .automatic
     private var pendingDeviceToken: String?
 
+    private func processPushToken(_ token: String) {
+        if didStart {
+            Reteno.userNotificationService.processRemoteNotificationsToken(token)
+        } else {
+            pendingDeviceToken = token
+        }
+    }
+
+#if canImport(FirebaseMessaging)
+    private func forwardFirebaseTokenIfAvailable() {
+        Messaging.messaging().token { [weak self] token, _ in
+            guard let token = token else { return }
+            self?.processPushToken(token)
+        }
+    }
+#endif
+
+    private func toRetenoDeviceTokenHandlingMode(_ mode: NativeDeviceTokenHandlingMode) -> DeviceTokenHandlingMode {
+        switch mode {
+        case .automatic:
+            return .automatic
+        case .manual:
+            return .manual
+        }
+    }
+
     public static func register(with registrar: FlutterPluginRegistrar) {
 
         let messenger : FlutterBinaryMessenger = registrar.messenger()
@@ -146,20 +172,24 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
             let configuration = RetenoConfiguration(
                 isPausedInAppMessages: isPausedInAppMessages,
                 isDebugMode: isDebug,
-                useCustomDeviceId: useCustomDeviceIdProvider
+                useCustomDeviceId: useCustomDeviceIdProvider,
+                deviceTokenHandlingMode: toRetenoDeviceTokenHandlingMode(deviceTokenHandlingMode)
             )
             Reteno.start(apiKey: accessKey, configuration: configuration)
             didStart = true
         }
 
 #if canImport(FirebaseMessaging)
-        if currentDeviceTokenHandlingMode == .manual {
+        if currentDeviceTokenHandlingMode == .manual
+            || Messaging.messaging().delegate == nil
+            || Messaging.messaging().delegate === self {
             Messaging.messaging().delegate = self
         }
+        forwardFirebaseTokenIfAvailable()
 #endif
         Reteno.pauseInAppMessages(isPaused: isPausedInAppMessages)
-        if currentDeviceTokenHandlingMode == .manual, let token = pendingDeviceToken {
-            Reteno.userNotificationService.processRemoteNotificationsToken(token)
+        if let token = pendingDeviceToken {
+            processPushToken(token)
             pendingDeviceToken = nil
         }
     }
@@ -253,6 +283,30 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     }
 
     func requestPushPermission(provisional: Bool, completion: @escaping (Result<Bool, Error>) -> Void) {
+        let options: UNAuthorizationOptions = {
+            var options: UNAuthorizationOptions = [.alert, .badge, .sound]
+            if provisional, #available(iOS 12.0, *) {
+                options.insert(.provisional)
+            }
+            return options
+        }()
+
+        if currentDeviceTokenHandlingMode == .automatic {
+            Reteno.userNotificationService.registerForRemoteNotifications(
+                with: options,
+                application: UIApplication.shared,
+                userResponse: { granted in
+#if canImport(FirebaseMessaging)
+                    if granted {
+                        self.forwardFirebaseTokenIfAvailable()
+                    }
+#endif
+                    completion(.success(granted))
+                }
+            )
+            return
+        }
+
         let center = UNUserNotificationCenter.current()
         center.getNotificationSettings { settings in
             let isAlreadyAuthorized: Bool
@@ -269,15 +323,11 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
                 DispatchQueue.main.async {
                     UIApplication.shared.registerForRemoteNotifications()
                 }
+#if canImport(FirebaseMessaging)
+                self.forwardFirebaseTokenIfAvailable()
+#endif
                 completion(.success(true))
                 return
-            }
-
-            var options: UNAuthorizationOptions = [.alert, .badge, .sound]
-            if provisional {
-                if #available(iOS 12.0, *) {
-                    options.insert(.provisional)
-                }
             }
 
             center.requestAuthorization(options: options) { granted, error in
@@ -289,6 +339,9 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
                     DispatchQueue.main.async {
                         UIApplication.shared.registerForRemoteNotifications()
                     }
+#if canImport(FirebaseMessaging)
+                    self.forwardFirebaseTokenIfAvailable()
+#endif
                 }
                 completion(.success(granted))
             }
@@ -379,20 +432,18 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     }
 
     public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        guard currentDeviceTokenHandlingMode == .manual else { return }
+#if canImport(FirebaseMessaging)
+        Messaging.messaging().setAPNSToken(deviceToken, type: .unknown)
+        forwardFirebaseTokenIfAvailable()
+#endif
         let tokenString = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-        if didStart {
-            Reteno.userNotificationService.processRemoteNotificationsToken(tokenString)
-        } else {
-            pendingDeviceToken = tokenString
-        }
+        processPushToken(tokenString)
     }
 
 #if canImport(FirebaseMessaging)
     public func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        guard currentDeviceTokenHandlingMode == .manual else { return }
         guard let token = fcmToken else { return }
-        Reteno.userNotificationService.processRemoteNotificationsToken(token)
+        processPushToken(token)
     }
 #endif
 
@@ -506,8 +557,6 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     }
     
     func logEcommerceOrderCreated(order: NativeEcommerceOrder, currency: String?) throws {
-        let dateFormatter = ISO8601DateFormatter();
-
         Reteno.ecommerce().logEvent(
             type: .orderCreated(
                 order: order.toEcommerceOrder(),
@@ -517,8 +566,6 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     }
     
     func logEcommerceOrderUpdated(order: NativeEcommerceOrder, currency: String?) throws {
-        let dateFormatter = ISO8601DateFormatter();
-
         Reteno.ecommerce().logEvent(
             type: .orderUpdated(
                 order: order.toEcommerceOrder(),
