@@ -100,17 +100,21 @@ platform :ios do
 
     main_bundle_id = ENV["APP_IDENTIFIER"].strip
     extension_bundle_id = ENV.fetch("NOTIFICATION_SERVICE_EXTENSION_IDENTIFIER", "").strip
+    content_extension_bundle_id = ENV.fetch("NOTIFICATION_CONTENT_EXTENSION_IDENTIFIER", "").strip
 
     match_app_identifiers = csv_env("MATCH_APP_IDENTIFIER")
     app_identifiers =
       if match_app_identifiers.empty?
-        [main_bundle_id, extension_bundle_id].reject(&:empty?)
+        [main_bundle_id, extension_bundle_id, content_extension_bundle_id].reject(&:empty?)
       else
         match_app_identifiers
       end
     app_identifiers << main_bundle_id unless app_identifiers.include?(main_bundle_id)
     unless extension_bundle_id.empty?
       app_identifiers << extension_bundle_id unless app_identifiers.include?(extension_bundle_id)
+    end
+    unless content_extension_bundle_id.empty?
+      app_identifiers << content_extension_bundle_id unless app_identifiers.include?(content_extension_bundle_id)
     end
 
     api_key_path = nil
@@ -159,6 +163,8 @@ platform :ios do
         matched_profiles[main_bundle_id] || "match AppStore #{main_bundle_id}"
       extension_profile_name =
         matched_profiles[extension_bundle_id] || "match AppStore #{extension_bundle_id}"
+      content_extension_profile_name =
+        matched_profiles[content_extension_bundle_id] || "match AppStore #{content_extension_bundle_id}"
 
       update_code_signing_settings(
         use_automatic_signing: false,
@@ -182,6 +188,18 @@ platform :ios do
         )
       end
 
+      unless content_extension_bundle_id.empty?
+        update_code_signing_settings(
+          use_automatic_signing: false,
+          path: "Runner.xcodeproj",
+          targets: ["NotificationContentExtension"],
+          build_configurations: build_configurations,
+          team_id: ENV["FASTLANE_TEAM_ID"],
+          code_sign_identity: "Apple Distribution",
+          profile_name: content_extension_profile_name
+        )
+      end
+
       app_version = ENV["APP_VERSION"].to_s.strip
       build_number = ENV["BUILD_NUMBER"].to_s.strip
       build_number = Time.now.utc.strftime("%Y%m%d%H%M") if build_number.empty?
@@ -195,6 +213,9 @@ platform :ios do
       }
       unless extension_bundle_id.empty?
         provisioning_profiles[extension_bundle_id] = extension_profile_name
+      end
+      unless content_extension_bundle_id.empty?
+        provisioning_profiles[content_extension_bundle_id] = content_extension_profile_name
       end
 
       export_method = ENV.fetch("GYM_EXPORT_METHOD", "app-store")

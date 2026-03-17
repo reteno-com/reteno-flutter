@@ -23,9 +23,21 @@
 	<key>NSExtension</key>
 	<dict>
 		<key>NSExtensionPointIdentifier</key>
-		<string>com.apple.usernotifications.service</string>
-		<key>NSExtensionPrincipalClass</key>
-		<string>$(PRODUCT_MODULE_NAME).NotificationService</string>
+		<string>com.apple.usernotifications.content-extension</string>
+		<key>NSExtensionMainStoryboard</key>
+		<string>MainInterface</string>
+		<key>NSExtensionAttributes</key>
+		<dict>
+			<key>UNNotificationExtensionCategory</key>
+			<array>
+				<string>ImageCarousel</string>
+				<string>ImageGif</string>
+			</array>
+			<key>UNNotificationExtensionInitialContentSizeRatio</key>
+			<real>0.5</real>
+			<key>UNNotificationExtensionUserInteractionEnabled</key>
+			<true/>
+		</dict>
 	</dict>
 </dict>
 </plist>
