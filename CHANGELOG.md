@@ -6,7 +6,7 @@
 * Update docs and example for the new integration flow.
 
 
-## 1.8.7і
+## 1.8.7
 * Bump Android sdk to 2.8.7
 * Bump iOS sdk to 2.5.14
 
