@@ -1,13 +1,12 @@
 ## 1.9.0
 * Bump native SDKs: iOS `2.6.2`, Android `2.9.2`.
-* Add Flutter-first initialization flow via `Reteno.initialize(accessKey, options)`.
-* Android: add plugin-owned FCM bridge service (no Reteno-only custom app `FirebaseMessagingService` required).
-* Android: improve `firebase_messaging` coexistence by forwarding non-Reteno messages from bridge service.
-* Android: improve push reliability by syncing current FCM token during SDK initialization.
-* Expand diagnostics (`Reteno.diagnose()`): Android service/token checks and iOS APNs registration check.
-* Update integration docs and add migration guide for new setup.
+* Add `Reteno.initialize(accessKey, options)`.
+* Add `Reteno.requestPushPermission()` and expand `Reteno.diagnose()`.
+* Android: simplify push integration with plugin-managed FCM service and better `firebase_messaging` interoperability.
+* Update docs and example for the new integration flow.
 
-## 1.8.7
+
+## 1.8.7і
 * Bump Android sdk to 2.8.7
 * Bump iOS sdk to 2.5.14
 
