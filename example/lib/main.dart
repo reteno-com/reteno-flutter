@@ -103,8 +103,18 @@ void main() async {
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
+  final initStopwatch = Stopwatch()..start();
+
   await Reteno().initialize(
     accessKey: '630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05',
+    customDeviceId: Platform.isAndroid
+        ? () async {
+            debugPrint('Reteno customDeviceId test: start');
+            await Future.delayed(const Duration(seconds: 3));
+            debugPrint('Reteno customDeviceId test: finish');
+            return 'test-custom-device-id-123';
+          }
+        : null,
     options: RetenoInitOptions(
       lifecycleTrackingOptions: LifecycleTrackingOptions.all(),
       isDebug: true,
@@ -120,6 +130,7 @@ void main() async {
           : null,
     ),
   );
+  debugPrint('Reteno init finished in ${initStopwatch.elapsed}');
 
   runApp(const MyApp());
 }

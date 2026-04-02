@@ -18,6 +18,7 @@ abstract class RetenoHostApi {
     NativeLifecycleTrackingOptions? lifecycleTrackingOptions,
     bool isPausedInAppMessages = false,
     bool useCustomDeviceIdProvider = false,
+    String? customDeviceIdValue,
     bool isDebug = false,
     NativeDeviceTokenHandlingMode deviceTokenHandlingMode =
         NativeDeviceTokenHandlingMode.automatic,

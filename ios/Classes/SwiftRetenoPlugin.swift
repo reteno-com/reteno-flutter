@@ -163,6 +163,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         lifecycleTrackingOptions: NativeLifecycleTrackingOptions?,
         isPausedInAppMessages: Bool,
         useCustomDeviceIdProvider: Bool,
+        customDeviceIdValue: String?,
         isDebug: Bool,
         deviceTokenHandlingMode: NativeDeviceTokenHandlingMode,
         defaultNotificationChannelConfig: NativeDefaultNotificationChannelConfig?

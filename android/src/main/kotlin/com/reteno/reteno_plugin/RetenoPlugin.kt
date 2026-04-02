@@ -51,17 +51,12 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.BinaryMessenger
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
 import org.json.JSONArray
 import org.json.JSONObject
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import android.util.Pair as AndroidPair
 
 private const val TAG = "RetenoPlugin"
@@ -459,6 +454,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
         lifecycleTrackingOptions: NativeLifecycleTrackingOptions?,
         isPausedInAppMessages: Boolean,
         useCustomDeviceIdProvider: Boolean,
+        customDeviceIdValue: String?,
         isDebug: Boolean,
         deviceTokenHandlingMode: NativeDeviceTokenHandlingMode,
         defaultNotificationChannelConfig: NativeDefaultNotificationChannelConfig?
@@ -471,7 +467,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
             .setDebug(isDebug)
 
         if (useCustomDeviceIdProvider) {
-            configBuilder.customDeviceIdProvider(CustomDeviceIdProvider())
+            configBuilder.customDeviceIdProvider(CustomDeviceIdProvider(customDeviceIdValue))
         }
 
         defaultNotificationChannelConfig?.let { config ->
@@ -944,19 +940,10 @@ fun NativeLifecycleTrackingOptions?.toLifecycleTrackingOptions(): LifecycleTrack
     } ?: LifecycleTrackingOptions.ALL
 }
 
-class CustomDeviceIdProvider : DeviceIdProvider {
-    override fun getDeviceId(): String? {
-        return runBlocking {
-            withContext(Dispatchers.Main) {
-                suspendCoroutine { continuation ->
-                    RetenoPlugin.flutterApi?.getDeviceId { result ->
-                        val deviceId = result.getOrNull()
-                        continuation.resume(deviceId)
-                    }
-                }
-            }
-        }
-    }
+class CustomDeviceIdProvider(
+    private val deviceId: String?
+) : DeviceIdProvider {
+    override fun getDeviceId(): String? = deviceId
 }
 
 fun AppInboxMessages.toNativeAppInboxMessages(): NativeAppInboxMessages {

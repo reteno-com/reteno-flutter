@@ -94,7 +94,7 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
     RetenoDeviceTokenHandlingMode deviceTokenHandlingMode =
         RetenoDeviceTokenHandlingMode.automatic,
     RetenoDefaultNotificationChannelConfig? defaultNotificationChannelConfig,
-  }) {
+  }) async {
     if (Platform.isAndroid &&
         deviceTokenHandlingMode != RetenoDeviceTokenHandlingMode.automatic) {
       developer.log(
@@ -110,7 +110,11 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
       );
     }
 
-    _getCustomDeviceId = customDeviceId;
+    final resolvedCustomDeviceId = Platform.isAndroid && customDeviceId != null
+        ? await customDeviceId()
+        : null;
+
+    _getCustomDeviceId = Platform.isAndroid ? null : customDeviceId;
     return _api.initWith(
       accessKey: accessKey,
       isPausedInAppMessages: isPausedInAppMessages,
@@ -118,6 +122,7 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
       lifecycleTrackingOptions:
           lifecycleTrackingOptions?.toNativeLifecycleTrackingOptions(),
       useCustomDeviceIdProvider: customDeviceId != null,
+      customDeviceIdValue: resolvedCustomDeviceId,
       deviceTokenHandlingMode:
           deviceTokenHandlingMode.toNativeDeviceTokenHandlingMode(),
       defaultNotificationChannelConfig: defaultNotificationChannelConfig

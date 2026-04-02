@@ -1,10 +1,12 @@
+## 1.9.1
+* Android: fix initialization hang when `customDeviceId` is provided.
+
 ## 1.9.0
 * Bump native SDKs: iOS `2.6.2`, Android `2.9.2`.
 * Add `Reteno.initialize(accessKey, options)`.
 * Add `Reteno.requestPushPermission()` and expand `Reteno.diagnose()`.
 * Android: simplify push integration with plugin-managed FCM service and better `firebase_messaging` interoperability.
 * Update docs and example for the new integration flow.
-
 
 ## 1.8.7
 * Bump Android sdk to 2.8.7
