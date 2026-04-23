@@ -1,3 +1,6 @@
+## 1.9.2
+* iOS: fix cold-start push tap crash and restore push-to-in-app flow.
+
 ## 1.9.1
 * Android: fix initialization hang when `customDeviceId` is provided.
 

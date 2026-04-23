@@ -13,16 +13,63 @@ protocol RetenoMessagingDelegate: AnyObject {}
 public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplicationDelegate, RetenoMessagingDelegate {
     static var _initialNotification : [String: Any]?
     private static var _flutterApi: RetenoFlutterApi?
+    private static let retenoDidBecomeActiveNotification = Notification.Name(
+        "com.reteno.didBecomeActive.after.delayed.initialization"
+    )
+    private typealias PendingFlutterEvent = (RetenoFlutterApi) -> Void
     private var didStart: Bool = false
+    private var isFlutterReady: Bool = false
+    private var isRetenoReady: Bool = false
+    private var isApplicationActive: Bool = false
     private var currentDeviceTokenHandlingMode: NativeDeviceTokenHandlingMode = .automatic
     private var pendingDeviceToken: String?
+    private var pendingFlutterEvents: [PendingFlutterEvent] = []
 
     private func processPushToken(_ token: String) {
-        if didStart {
+        if isRetenoReady {
             Reteno.userNotificationService.processRemoteNotificationsToken(token)
         } else {
             pendingDeviceToken = token
         }
+    }
+
+    private func emitFlutterEvent(_ event: @escaping PendingFlutterEvent) {
+        guard let flutterApi = SwiftRetenoPlugin._flutterApi else {
+            return
+        }
+
+        guard isFlutterReady, isApplicationActive else {
+            pendingFlutterEvents.append(event)
+            return
+        }
+
+        DispatchQueue.main.async {
+            event(flutterApi)
+        }
+    }
+
+    private func flushPendingFlutterEvents() {
+        guard isFlutterReady,
+              isApplicationActive,
+              let flutterApi = SwiftRetenoPlugin._flutterApi,
+              !pendingFlutterEvents.isEmpty else {
+            return
+        }
+
+        let events = pendingFlutterEvents
+        pendingFlutterEvents.removeAll()
+        DispatchQueue.main.async {
+            events.forEach { $0(flutterApi) }
+        }
+    }
+
+    private func flushPendingDeviceTokenIfNeeded() {
+        guard isRetenoReady, let token = pendingDeviceToken else {
+            return
+        }
+
+        pendingDeviceToken = nil
+        Reteno.userNotificationService.processRemoteNotificationsToken(token)
     }
 
 #if canImport(FirebaseMessaging)
@@ -56,6 +103,10 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         registrar.addApplicationDelegate(instance)
 
         NotificationCenter.default.addObserver(instance, selector: #selector(application_onDidFinishLaunchingNotification), name: UIApplication.didFinishLaunchingNotification, object: nil)
+        NotificationCenter.default.addObserver(instance, selector: #selector(applicationDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(instance, selector: #selector(applicationWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(instance, selector: #selector(retenoDidBecomeActive), name: SwiftRetenoPlugin.retenoDidBecomeActiveNotification, object: nil)
+        Reteno.delayedStart()
         Reteno.userNotificationService.didReceiveNotificationResponseHandler = { response in
             let userInfo = response.notification.request.content.userInfo
             if userInfo.keys.contains("es_interaction_id") == false{
@@ -73,7 +124,9 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
                     }
                 }
 
-                _flutterApi?.onNotificationClicked(payload: convertedUserInfo) { _ in }
+                instance.emitFlutterEvent { flutterApi in
+                    flutterApi.onNotificationClicked(payload: convertedUserInfo) { _ in }
+                }
             }
         }
         
@@ -90,7 +143,9 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
                 }
             }
             
-            _flutterApi?.onNotificationActionHandler(action: action.toNativeUserNotificationAction()) {_ in }
+            instance.emitFlutterEvent { flutterApi in
+                flutterApi.onNotificationActionHandler(action: action.toNativeUserNotificationAction()) {_ in }
+            }
         }
         
         //TODO: change to didReceiveNotificationUserInfo
@@ -112,7 +167,9 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
                         fatalError("Key is not a String")
                     }
                 }
-                _flutterApi?.onNotificationReceived(payload: convertedUserInfo) {_ in}
+                instance.emitFlutterEvent { flutterApi in
+                    flutterApi.onNotificationReceived(payload: convertedUserInfo) {_ in}
+                }
             }
 
             return presentationOptions
@@ -121,39 +178,49 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         Reteno.addInAppStatusHandler { inAppMessageStatus in
            switch inAppMessageStatus {
                case .inAppShouldBeDisplayed:
-               _flutterApi?.onInAppMessageStatusChanged(
-                        status: NativeInAppMessageStatus.inAppShouldBeDisplayed,
-                        action: nil,
-                        error: nil
+               instance.emitFlutterEvent { flutterApi in
+                   flutterApi.onInAppMessageStatusChanged(
+                       status: NativeInAppMessageStatus.inAppShouldBeDisplayed,
+                       action: nil,
+                       error: nil
                    ){_ in}
+               }
 
                case .inAppIsDisplayed:
-               _flutterApi?.onInAppMessageStatusChanged(
-                        status: NativeInAppMessageStatus.inAppIsDisplayed,
-                        action: nil,
-                        error: nil
+               instance.emitFlutterEvent { flutterApi in
+                   flutterApi.onInAppMessageStatusChanged(
+                       status: NativeInAppMessageStatus.inAppIsDisplayed,
+                       action: nil,
+                       error: nil
                    ){_ in}
+               }
 
                case .inAppShouldBeClosed(let action):
-               _flutterApi?.onInAppMessageStatusChanged(
-                        status: NativeInAppMessageStatus.inAppShouldBeClosed,
-                        action: action.toNativeInAppMessageAction(),
-                        error: nil
+               instance.emitFlutterEvent { flutterApi in
+                   flutterApi.onInAppMessageStatusChanged(
+                       status: NativeInAppMessageStatus.inAppShouldBeClosed,
+                       action: action.toNativeInAppMessageAction(),
+                       error: nil
                    ){_ in}
+               }
 
                case .inAppIsClosed(let action):
-               _flutterApi?.onInAppMessageStatusChanged(
-                        status: NativeInAppMessageStatus.inAppIsClosed,
-                        action: action.toNativeInAppMessageAction(),
-                        error: nil
+               instance.emitFlutterEvent { flutterApi in
+                   flutterApi.onInAppMessageStatusChanged(
+                       status: NativeInAppMessageStatus.inAppIsClosed,
+                       action: action.toNativeInAppMessageAction(),
+                       error: nil
                    ){_ in}
+               }
 
                case .inAppReceivedError(let error):
-               _flutterApi?.onInAppMessageStatusChanged(
-                        status: NativeInAppMessageStatus.inAppReceivedError,
-                        action: nil,
-                        error: error
+               instance.emitFlutterEvent { flutterApi in
+                   flutterApi.onInAppMessageStatusChanged(
+                       status: NativeInAppMessageStatus.inAppReceivedError,
+                       action: nil,
+                       error: error
                    ){_ in}
+               }
            }
        }
     }
@@ -176,9 +243,10 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
                 useCustomDeviceId: useCustomDeviceIdProvider,
                 deviceTokenHandlingMode: toRetenoDeviceTokenHandlingMode(deviceTokenHandlingMode)
             )
-            Reteno.start(apiKey: accessKey, configuration: configuration)
+            Reteno.delayedSetup(apiKey: accessKey, configuration: configuration)
             didStart = true
         }
+        isFlutterReady = true
 
 #if canImport(FirebaseMessaging)
         if currentDeviceTokenHandlingMode == .manual
@@ -188,11 +256,11 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         }
         forwardFirebaseTokenIfAvailable()
 #endif
-        Reteno.pauseInAppMessages(isPaused: isPausedInAppMessages)
-        if let token = pendingDeviceToken {
-            processPushToken(token)
-            pendingDeviceToken = nil
+        if isRetenoReady {
+            Reteno.pauseInAppMessages(isPaused: isPausedInAppMessages)
         }
+        flushPendingFlutterEvents()
+        flushPendingDeviceTokenIfNeeded()
     }
 
     func setUserAttributes(externalUserId: String, user: NativeRetenoUser?) throws {
@@ -432,6 +500,21 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         }
     }
 
+    @objc private func retenoDidBecomeActive() {
+        isRetenoReady = true
+        flushPendingDeviceTokenIfNeeded()
+        flushPendingFlutterEvents()
+    }
+
+    @objc private func applicationDidBecomeActive() {
+        isApplicationActive = true
+        flushPendingFlutterEvents()
+    }
+
+    @objc private func applicationWillResignActive() {
+        isApplicationActive = false
+    }
+
     public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
 #if canImport(FirebaseMessaging)
         Messaging.messaging().setAPNSToken(deviceToken, type: .unknown)
@@ -495,7 +578,9 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
 
     func subscribeOnMessagesCountChanged() throws {
         Reteno.inbox().onUnreadMessagesCountChanged = { count in
-            SwiftRetenoPlugin._flutterApi?.onMessagesCountChanged(count: Int64(count)) {_ in }
+            self.emitFlutterEvent { flutterApi in
+                flutterApi.onMessagesCountChanged(count: Int64(count)) {_ in }
+            }
         }
     }
 
