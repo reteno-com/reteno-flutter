@@ -37,6 +37,8 @@ import com.reteno.core.domain.model.recommendation.post.RecomEvents
 import com.reteno.core.features.recommendation.GetRecommendationResponseCallback
 import com.reteno.core.features.recommendation.GetRecommendationResponseJsonCallback
 import com.reteno.core.identification.DeviceIdProvider
+import com.reteno.core.lifecycle.RetenoActivityHelper
+import com.reteno.core.lifecycle.RetenoLifecycleCallbacks
 import com.reteno.core.util.Procedure
 import com.reteno.core.view.iam.callback.InAppCloseAction
 import com.reteno.core.view.iam.callback.InAppCloseData
@@ -68,6 +70,7 @@ private const val ISSUE_FCM_TOKEN_MISSING: String = "FCM_TOKEN_MISSING"
 private const val ISSUE_FCM_TOKEN_FETCH_FAILED: String = "FCM_TOKEN_FETCH_FAILED"
 private const val MAX_FCM_SYNC_RETRIES: Int = 5
 private const val FCM_SYNC_RETRY_DELAY_MS: Long = 2_000L
+private const val RETENO_IAM_VIEW_LIFECYCLE_KEY: String = "IamView"
 
 class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     companion object {
@@ -156,6 +159,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     private var pendingPushPermissionResult: ((Result<Boolean>) -> Unit)? = null
     private var isPushListenersSubscribed = false
     private var isRetenoInitialized = false
+    private var isRetenoInAppLifecycleGuardRegistered = false
 
     private val clickListener = Procedure<Bundle> { data ->
         uiThreadHandler.post {
@@ -270,6 +274,41 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
             }
         })
     }
+
+    private fun installRetenoInAppLifecycleGuard() {
+        if (!isRetenoInitialized || isRetenoInAppLifecycleGuardRegistered) {
+            return
+        }
+
+        try {
+            val activityHelper = getRetenoActivityHelper()
+            activityHelper.registerActivityLifecycleCallbacks(
+                RETENO_IAM_VIEW_LIFECYCLE_KEY,
+                object : RetenoLifecycleCallbacks {
+                    override fun pause(activity: Activity) = Unit
+
+                    override fun resume(activity: Activity) {
+                        // Reteno restarts IAM collectors on app start; manual show here races with SDK show.
+                    }
+
+                    override fun start(activity: Activity) = Unit
+
+                    override fun stop(activity: Activity) {
+                        if (activityHelper.currentActivity !== activity) {
+                            return
+                        }
+                        // Detach the stopped window; the SDK recreates the same logical in-app on resume.
+                        dismissVisibleInAppContainer("activity stop")
+                    }
+                },
+            )
+            isRetenoInAppLifecycleGuardRegistered = true
+            Log.i(TAG, "Installed Reteno in-app lifecycle guard")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to install Reteno in-app lifecycle guard", e)
+        }
+    }
+
     private fun inAppCloseActionToNativeInAppMessageAction(closeAction: InAppCloseAction): NativeInAppMessageAction {
         return when(closeAction) {
             InAppCloseAction.CLOSE_BUTTON -> NativeInAppMessageAction(
@@ -299,6 +338,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         Log.i(TAG, "onAttachedToActivity")
         mainActivity = binding.activity
+        installRetenoInAppLifecycleGuard()
 
         // Reinitialize channels if necessary
         pluginBinding?.binaryMessenger?.let {
@@ -380,6 +420,55 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         Log.i(TAG, "onReattachedToActivityForConfigChanges")
         mainActivity = binding.activity
+        installRetenoInAppLifecycleGuard()
+    }
+
+    private fun getIamView(): Any {
+        val retenoInternal = Reteno.instance
+        val getIamViewMethod = retenoInternal.javaClass.getDeclaredMethod("getIamView").apply {
+            isAccessible = true
+        }
+        return getIamViewMethod.invoke(retenoInternal)
+            ?: throw IllegalStateException("Reteno IAM view is not available")
+    }
+
+    private fun getRetenoActivityHelper(iamView: Any = getIamView()): RetenoActivityHelper {
+        val activityHelperField = iamView.javaClass.getDeclaredField("activityHelper").apply {
+            isAccessible = true
+        }
+        return activityHelperField.get(iamView) as RetenoActivityHelper
+    }
+
+    private fun isIamViewShown(iamView: Any): Boolean {
+        val isViewShownMethod = iamView.javaClass.getMethod("isViewShown")
+        return isViewShownMethod.invoke(iamView) as? Boolean ?: false
+    }
+
+    private fun getIamContainer(iamView: Any): Any? {
+        return iamView.javaClass.getDeclaredField("iamContainer").apply {
+            isAccessible = true
+        }.get(iamView)
+    }
+
+    private fun dismissVisibleInAppContainer(reason: String) {
+        if (!isRetenoInitialized) {
+            return
+        }
+
+        try {
+            val iamView = getIamView()
+            if (!isIamViewShown(iamView)) {
+                return
+            }
+
+            val iamContainer = getIamContainer(iamView) ?: return
+            val dismissMethod = iamContainer.javaClass.getMethod("dismiss")
+
+            Log.i(TAG, "Dismissing visible Reteno in-app container on $reason")
+            dismissMethod.invoke(iamContainer)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to dismiss visible Reteno in-app container on $reason", e)
+        }
     }
 
     private fun subscribePushListeners() {
@@ -484,6 +573,7 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
 
         Reteno.initWithConfig(configBuilder.build())
         isRetenoInitialized = true
+        installRetenoInAppLifecycleGuard()
         updatePushPermissionStatus()
         syncCurrentFcmToken()
     }
