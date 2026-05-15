@@ -934,8 +934,10 @@ fun NativeLifecycleTrackingOptions?.toLifecycleTrackingOptions(): LifecycleTrack
     return this?.let {
         LifecycleTrackingOptions(
             appLifecycleEnabled = it.appLifecycleEnabled,
+            foregroundLifecycleEnabled = it.appLifecycleEnabled,
             pushSubscriptionEnabled = it.pushSubscriptionEnabled,
-            sessionEventsEnabled = it.sessionEventsEnabled
+            sessionStartEventsEnabled = it.sessionEventsEnabled,
+            sessionEndEventsEnabled = it.sessionEventsEnabled
         )
     } ?: LifecycleTrackingOptions.ALL
 }

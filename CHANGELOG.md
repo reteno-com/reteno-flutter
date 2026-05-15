@@ -1,3 +1,7 @@
+## 1.9.3
+* Bump native SDKs: iOS `2.7.0`, Android `2.9.4`.
+* iOS: apply `LifecycleTrackingOptions` during Reteno initialization.
+
 ## 1.9.2
 * iOS: fix cold-start push tap crash and restore push-to-in-app flow.
 

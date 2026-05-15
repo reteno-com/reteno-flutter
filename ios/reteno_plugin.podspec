@@ -16,7 +16,7 @@ A new Flutter plugin project.
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
   s.dependency 'FirebaseMessaging'
-  s.dependency 'Reteno', '2.6.2'
+  s.dependency 'Reteno', '2.7.0'
   s.platform = :ios, '12.0'
 
   # Flutter.framework does not contain a i386 slice.

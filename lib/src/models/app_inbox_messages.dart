@@ -53,7 +53,7 @@ class AppInboxMessage {
       imageUrl: imageUrl ?? this.imageUrl,
       linkUrl: linkUrl ?? this.linkUrl,
       category: category ?? this.category,
-      customData: customData,
+      customData: customData ?? this.customData,
     );
   }
 }

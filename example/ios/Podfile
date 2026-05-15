@@ -34,12 +34,12 @@ end
 
 target 'NotificationServiceExtension' do
   use_frameworks!
-  pod 'Reteno', '2.6.2'
+  pod 'Reteno', '2.7.0'
 end
 
 target 'NotificationContentExtension' do
   use_frameworks!
-  pod 'Reteno', '2.6.2'
+  pod 'Reteno', '2.7.0'
 end
 
 post_install do |installer|

@@ -90,6 +90,15 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         }
     }
 
+    private func toRetenoSessionConfiguration(_ options: NativeLifecycleTrackingOptions) -> RetenoSessionConfiguration {
+        guard options.sessionEventsEnabled else { return .disabled }
+        return RetenoSessionConfiguration(
+            sessionDuration: RetenoSessionConfiguration.default.sessionDuration,
+            isSessionStartReportingEnabled: true,
+            isSessionEndReportingEnabled: true
+        )
+    }
+
     public static func register(with registrar: FlutterPluginRegistrar) {
 
         let messenger : FlutterBinaryMessenger = registrar.messenger()
@@ -237,7 +246,16 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     ) throws {
         currentDeviceTokenHandlingMode = deviceTokenHandlingMode
         if !didStart {
+            let trackingOptions = lifecycleTrackingOptions ?? NativeLifecycleTrackingOptions(
+                appLifecycleEnabled: true,
+                pushSubscriptionEnabled: true,
+                sessionEventsEnabled: true
+            )
             let configuration = RetenoConfiguration(
+                isAutomaticAppLifecycleReportingEnabled: trackingOptions.appLifecycleEnabled,
+                isApplicationForegroundLifecycleReportingEnabled: trackingOptions.appLifecycleEnabled,
+                isAutomaticPushSubsriptionReportingEnabled: trackingOptions.pushSubscriptionEnabled,
+                sessionConfiguration: toRetenoSessionConfiguration(trackingOptions),
                 isPausedInAppMessages: isPausedInAppMessages,
                 isDebugMode: isDebug,
                 useCustomDeviceId: useCustomDeviceIdProvider,
