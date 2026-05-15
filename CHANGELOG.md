@@ -1,4 +1,4 @@
-## 1.9.3
+## 1.9.4
 * Bump native SDKs: iOS `2.7.0`, Android `2.9.4`.
 * iOS: apply `LifecycleTrackingOptions` during Reteno initialization.
 
