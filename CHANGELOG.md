@@ -1,3 +1,8 @@
+## 1.9.5
+* Bump native SDKs: iOS `2.7.1`, Android `2.9.5`.
+* Add `marketId` support for user and anonymous user attributes.
+* iOS: support FCM-only token handling with `RetenoDeviceTokenHandlingMode.manual`.
+
 ## 1.9.4
 * Bump native SDKs: iOS `2.7.0`, Android `2.9.4`.
 * iOS: apply `LifecycleTrackingOptions` during Reteno initialization.

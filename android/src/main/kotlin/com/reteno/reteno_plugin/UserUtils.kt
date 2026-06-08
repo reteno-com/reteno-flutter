@@ -20,6 +20,7 @@ class UserUtils {
             val firstName = getStringOrNull(userAttributesMap?.get("firstName") as String?)
             val lastName = getStringOrNull(userAttributesMap?.get("lastName") as String?)
             val languageCode = getStringOrNull(userAttributesMap?.get("languageCode") as String?)
+            val marketId = userAttributesMap?.get("marketId") as String?
             val timeZone = getStringOrNull(userAttributesMap?.get("timeZone") as String?)
 
             val addressMap = userAttributesMap?.get("address") as HashMap<*, *>?
@@ -47,6 +48,7 @@ class UserUtils {
                     phone, email, firstName, lastName, languageCode, timeZone,
                     userAddress,
                     userFields,
+                    marketId,
                 ), subscriptionKeys, groupNamesInclude, groupNamesExclude
             )
         }
@@ -95,7 +97,8 @@ class UserUtils {
                     userAttributes?.languageCode,
                     userAttributes?.timeZone,
                     userAddress,
-                    userFields
+                    userFields,
+                    userAttributes?.marketId
                 ),
                 subscriptionKeys?.filterNotNull()?.mapNotNull { it },
                 groupNamesInclude?.filterNotNull()?.mapNotNull { it },
@@ -137,7 +140,8 @@ class UserUtils {
                 anonymousUserAttributes.languageCode,
                 anonymousUserAttributes.timeZone,
                 userAddress,
-                userFields
+                userFields,
+                anonymousUserAttributes.marketId
             )
         }
     }

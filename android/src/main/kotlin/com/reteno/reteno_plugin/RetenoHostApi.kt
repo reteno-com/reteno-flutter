@@ -198,6 +198,7 @@ data class NativeUserAttributes (
   val firstName: String? = null,
   val lastName: String? = null,
   val languageCode: String? = null,
+  val marketId: String? = null,
   val timeZone: String? = null,
   val address: NativeAddress? = null,
   val fields: List<NativeUserCustomField?>? = null
@@ -210,10 +211,11 @@ data class NativeUserAttributes (
       val firstName = pigeonVar_list[2] as String?
       val lastName = pigeonVar_list[3] as String?
       val languageCode = pigeonVar_list[4] as String?
-      val timeZone = pigeonVar_list[5] as String?
-      val address = pigeonVar_list[6] as NativeAddress?
-      val fields = pigeonVar_list[7] as List<NativeUserCustomField?>?
-      return NativeUserAttributes(phone, email, firstName, lastName, languageCode, timeZone, address, fields)
+      val marketId = pigeonVar_list[5] as String?
+      val timeZone = pigeonVar_list[6] as String?
+      val address = pigeonVar_list[7] as NativeAddress?
+      val fields = pigeonVar_list[8] as List<NativeUserCustomField?>?
+      return NativeUserAttributes(phone, email, firstName, lastName, languageCode, marketId, timeZone, address, fields)
     }
   }
   fun toList(): List<Any?> {
@@ -223,6 +225,7 @@ data class NativeUserAttributes (
       firstName,
       lastName,
       languageCode,
+      marketId,
       timeZone,
       address,
       fields,
@@ -313,6 +316,7 @@ data class NativeAnonymousUserAttributes (
   val firstName: String? = null,
   val lastName: String? = null,
   val languageCode: String? = null,
+  val marketId: String? = null,
   val timeZone: String? = null,
   val address: NativeAddress? = null,
   val fields: List<NativeUserCustomField?>? = null
@@ -323,10 +327,11 @@ data class NativeAnonymousUserAttributes (
       val firstName = pigeonVar_list[0] as String?
       val lastName = pigeonVar_list[1] as String?
       val languageCode = pigeonVar_list[2] as String?
-      val timeZone = pigeonVar_list[3] as String?
-      val address = pigeonVar_list[4] as NativeAddress?
-      val fields = pigeonVar_list[5] as List<NativeUserCustomField?>?
-      return NativeAnonymousUserAttributes(firstName, lastName, languageCode, timeZone, address, fields)
+      val marketId = pigeonVar_list[3] as String?
+      val timeZone = pigeonVar_list[4] as String?
+      val address = pigeonVar_list[5] as NativeAddress?
+      val fields = pigeonVar_list[6] as List<NativeUserCustomField?>?
+      return NativeAnonymousUserAttributes(firstName, lastName, languageCode, marketId, timeZone, address, fields)
     }
   }
   fun toList(): List<Any?> {
@@ -334,6 +339,7 @@ data class NativeAnonymousUserAttributes (
       firstName,
       lastName,
       languageCode,
+      marketId,
       timeZone,
       address,
       fields,

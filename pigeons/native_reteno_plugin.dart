@@ -131,6 +131,7 @@ class NativeUserAttributes {
     this.email,
     this.fields,
     this.languageCode,
+    this.marketId,
     this.phone,
     this.timeZone,
   });
@@ -139,6 +140,7 @@ class NativeUserAttributes {
   final String? firstName;
   final String? lastName;
   final String? languageCode;
+  final String? marketId;
   final String? timeZone;
   final NativeAddress? address;
   final List<NativeUserCustomField?>? fields;
@@ -173,11 +175,13 @@ class NativeAnonymousUserAttributes {
     this.address,
     this.fields,
     this.languageCode,
+    this.marketId,
     this.timeZone,
   });
   final String? firstName;
   final String? lastName;
   final String? languageCode;
+  final String? marketId;
   final String? timeZone;
   final NativeAddress? address;
   final List<NativeUserCustomField?>? fields;

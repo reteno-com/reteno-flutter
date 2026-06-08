@@ -31,6 +31,7 @@ class UserAttributes {
     this.email,
     this.fields,
     this.languageCode,
+    this.marketId,
     this.phone,
     this.timeZone,
   });
@@ -39,6 +40,7 @@ class UserAttributes {
   final String? firstName;
   final String? lastName;
   final String? languageCode;
+  final String? marketId;
   final String? timeZone;
   final Address? address;
   final List<UserCustomField>? fields;
@@ -50,6 +52,7 @@ class UserAttributes {
       'firstName': firstName,
       'lastName': lastName,
       'languageCode': languageCode,
+      'marketId': marketId,
       'timeZone': timeZone,
       'address': address?.toMap(),
       'fields': fields?.map((e) => e.toMap()).toList(),

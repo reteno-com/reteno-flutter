@@ -7,7 +7,8 @@ void main() {
     test('toNativeRetenoUser returns correct NativeRetenoUser', () {
       var retenoUser = RetenoUser(
         subscriptionKeys: ['key1', 'key2'],
-        userAttributes: UserAttributes(phone: '1234567890'),
+        userAttributes:
+            UserAttributes(phone: '1234567890', marketId: 'market_1'),
         groupNamesExclude: ['group1'],
         groupNamesInclude: ['group2'],
       );
@@ -16,6 +17,7 @@ void main() {
 
       expect(nativeRetenoUser.subscriptionKeys, ['key1', 'key2']);
       expect(nativeRetenoUser.userAttributes!.phone, '1234567890');
+      expect(nativeRetenoUser.userAttributes!.marketId, 'market_1');
       expect(nativeRetenoUser.groupNamesExclude, ['group1']);
       expect(nativeRetenoUser.groupNamesInclude, ['group2']);
     });
@@ -23,11 +25,13 @@ void main() {
 
   group('UserAttributesExt', () {
     test('toNativeUserAttributes returns correct NativeUserAttributes', () {
-      var userAttributes = UserAttributes(phone: '1234567890');
+      var userAttributes =
+          UserAttributes(phone: '1234567890', marketId: 'market_1');
 
       var nativeUserAttributes = userAttributes.toNativeUserAttributes();
 
       expect(nativeUserAttributes.phone, '1234567890');
+      expect(nativeUserAttributes.marketId, 'market_1');
     });
   });
 
@@ -39,6 +43,7 @@ void main() {
         firstName: 'John',
         lastName: 'Doe',
         languageCode: 'en',
+        marketId: 'market_1',
         timeZone: 'GMT',
         // Add other fields as necessary
       );
@@ -49,6 +54,7 @@ void main() {
       expect(nativeAnonymousUserAttributes.firstName, 'John');
       expect(nativeAnonymousUserAttributes.lastName, 'Doe');
       expect(nativeAnonymousUserAttributes.languageCode, 'en');
+      expect(nativeAnonymousUserAttributes.marketId, 'market_1');
       expect(nativeAnonymousUserAttributes.timeZone, 'GMT');
       // Add other assertions as necessary
     });

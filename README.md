@@ -45,12 +45,24 @@ final issues = await Reteno().diagnose();
 
 1. Add `NotificationServiceExtension` and follow iOS guide Step 1:
 [https://docs.reteno.com/reference/ios#step-1-add-the-notification-service-extension](https://docs.reteno.com/reference/ios#step-1-add-the-notification-service-extension)
-2. Add `pod 'Reteno', '2.7.0'` to app target and all Reteno notification extensions.
+2. Add `pod 'Reteno', '2.7.1'` to app target and all Reteno notification extensions.
 3. Configure App Group for app + extension.
 4. Do not initialize Reteno manually from `AppDelegate` when using this Flutter plugin. Initialization should be done via `Reteno().initialize(...)`.
 5. For push image carousel/GIF UI on iOS, add `NotificationContentExtension` with `RetenoCarouselNotificationViewController` and categories `ImageCarousel`/`ImageGif`.
 
 `NotificationServiceExtension` + App Group are required for full iOS Reteno push functionality.
+
+### iOS token handling mode
+
+Choose the mode based on the notification service configured for the Reteno mobile app:
+
+| Reteno mobile app configuration | iOS mode |
+| --- | --- |
+| APN for iOS, or FCM for Android + APN for iOS | `RetenoDeviceTokenHandlingMode.automatic` |
+| FCM for all platforms / FCM-only | `RetenoDeviceTokenHandlingMode.manual` |
+
+In `automatic` mode the plugin reports the APNs device token through the native Reteno iOS SDK.
+In `manual` mode the plugin keeps APNs registration for Firebase Messaging, but reports only the FCM registration token to Reteno.
 
 ### Android requirements
 
@@ -319,6 +331,7 @@ class UserAttributes {
     this.email,
     this.fields,
     this.languageCode,
+    this.marketId,
     this.phone,
     this.timeZone,
   });
@@ -327,6 +340,7 @@ class UserAttributes {
   final String? firstName;
   final String? lastName;
   final String? languageCode;
+  final String? marketId;
   final String? timeZone;
   final Address? address;
   final List<UserCustomField>? fields;
@@ -372,11 +386,13 @@ class AnonymousUserAttributes {
     this.address,
     this.fields,
     this.languageCode,
+    this.marketId,
     this.timeZone,
   });
   final String? firstName;
   final String? lastName;
   final String? languageCode;
+  final String? marketId;
   final String? timeZone;
   final Address? address;
   final List<UserCustomField>? fields;
@@ -396,6 +412,10 @@ The tags for identifying language must be in compliance with [RFC 5646](https://
 `TimeZone`
 
 The time zone format must comply with [TZ database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). Example: `Europe/Kyiv`.
+
+`MarketId`
+
+Max length is 64 characters. Allowed characters are latin letters, digits, `-`, and `_`. Pass an empty string to clear the value; `null` values are ignored by the native SDK.
 
 
 **Note**

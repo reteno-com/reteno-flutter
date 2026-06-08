@@ -178,6 +178,7 @@ class NativeUserAttributes {
     this.firstName,
     this.lastName,
     this.languageCode,
+    this.marketId,
     this.timeZone,
     this.address,
     this.fields,
@@ -193,6 +194,8 @@ class NativeUserAttributes {
 
   String? languageCode;
 
+  String? marketId;
+
   String? timeZone;
 
   NativeAddress? address;
@@ -206,6 +209,7 @@ class NativeUserAttributes {
       firstName,
       lastName,
       languageCode,
+      marketId,
       timeZone,
       address,
       fields,
@@ -224,9 +228,10 @@ class NativeUserAttributes {
       firstName: result[2] as String?,
       lastName: result[3] as String?,
       languageCode: result[4] as String?,
-      timeZone: result[5] as String?,
-      address: result[6] as NativeAddress?,
-      fields: (result[7] as List<Object?>?)?.cast<NativeUserCustomField?>(),
+      marketId: result[5] as String?,
+      timeZone: result[6] as String?,
+      address: result[7] as NativeAddress?,
+      fields: (result[8] as List<Object?>?)?.cast<NativeUserCustomField?>(),
     );
   }
 
@@ -354,6 +359,7 @@ class NativeAnonymousUserAttributes {
     this.firstName,
     this.lastName,
     this.languageCode,
+    this.marketId,
     this.timeZone,
     this.address,
     this.fields,
@@ -364,6 +370,8 @@ class NativeAnonymousUserAttributes {
   String? lastName;
 
   String? languageCode;
+
+  String? marketId;
 
   String? timeZone;
 
@@ -376,6 +384,7 @@ class NativeAnonymousUserAttributes {
       firstName,
       lastName,
       languageCode,
+      marketId,
       timeZone,
       address,
       fields,
@@ -392,9 +401,10 @@ class NativeAnonymousUserAttributes {
       firstName: result[0] as String?,
       lastName: result[1] as String?,
       languageCode: result[2] as String?,
-      timeZone: result[3] as String?,
-      address: result[4] as NativeAddress?,
-      fields: (result[5] as List<Object?>?)?.cast<NativeUserCustomField?>(),
+      marketId: result[3] as String?,
+      timeZone: result[4] as String?,
+      address: result[5] as NativeAddress?,
+      fields: (result[6] as List<Object?>?)?.cast<NativeUserCustomField?>(),
     );
   }
 

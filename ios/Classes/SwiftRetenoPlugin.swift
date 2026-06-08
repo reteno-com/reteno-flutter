@@ -33,6 +33,18 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         }
     }
 
+#if canImport(FirebaseMessaging)
+    private func processFirebaseToken(_ token: String) {
+        guard currentDeviceTokenHandlingMode == .manual else { return }
+        processPushToken(token)
+    }
+#endif
+
+    private func processAPNsToken(_ token: String) {
+        guard currentDeviceTokenHandlingMode == .automatic else { return }
+        processPushToken(token)
+    }
+
     private func emitFlutterEvent(_ event: @escaping PendingFlutterEvent) {
         guard let flutterApi = SwiftRetenoPlugin._flutterApi else {
             return
@@ -76,7 +88,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     private func forwardFirebaseTokenIfAvailable() {
         Messaging.messaging().token { [weak self] token, _ in
             guard let token = token else { return }
-            self?.processPushToken(token)
+            self?.processFirebaseToken(token)
         }
     }
 #endif
@@ -258,10 +270,13 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
                 sessionConfiguration: toRetenoSessionConfiguration(trackingOptions),
                 isPausedInAppMessages: isPausedInAppMessages,
                 isDebugMode: isDebug,
-                useCustomDeviceId: useCustomDeviceIdProvider,
-                deviceTokenHandlingMode: toRetenoDeviceTokenHandlingMode(deviceTokenHandlingMode)
+                useCustomDeviceId: useCustomDeviceIdProvider
             )
-            Reteno.delayedSetup(apiKey: accessKey, configuration: configuration)
+            Reteno.delayedSetup(
+                apiKey: accessKey,
+                deviceTokenHandlingMode: toRetenoDeviceTokenHandlingMode(deviceTokenHandlingMode),
+                configuration: configuration
+            )
             didStart = true
         }
         isFlutterReady = true
@@ -291,6 +306,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
                 lastName: user?.userAttributes?.lastName,
                 languageCode: user?.userAttributes?.languageCode,
                 timeZone: user?.userAttributes?.timeZone,
+                marketId: user?.userAttributes?.marketId,
                 address: user?.userAttributes?.address?.convertToAddress(),
                 fields: user?.userAttributes?.fields?.compactMap({ nativeField in
                     UserCustomField(key: nativeField?.key ?? "", value: nativeField?.value ?? "")
@@ -309,6 +325,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
                 lastName: anonymousUserAttributes.lastName,
                 languageCode: anonymousUserAttributes.languageCode,
                 timeZone: anonymousUserAttributes.timeZone,
+                marketId: anonymousUserAttributes.marketId,
                 address: anonymousUserAttributes.address?.convertToAddress(),
                 fields: anonymousUserAttributes.fields?.compactMap({ nativeField in
                     UserCustomField(key: nativeField?.key ?? "", value: nativeField?.value ?? "")
@@ -539,13 +556,13 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         forwardFirebaseTokenIfAvailable()
 #endif
         let tokenString = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-        processPushToken(tokenString)
+        processAPNsToken(tokenString)
     }
 
 #if canImport(FirebaseMessaging)
     public func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         guard let token = fcmToken else { return }
-        processPushToken(token)
+        processFirebaseToken(token)
     }
 #endif
 

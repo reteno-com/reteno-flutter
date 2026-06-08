@@ -231,6 +231,7 @@ struct NativeUserAttributes: Hashable {
   var firstName: String? = nil
   var lastName: String? = nil
   var languageCode: String? = nil
+  var marketId: String? = nil
   var timeZone: String? = nil
   var address: NativeAddress? = nil
   var fields: [NativeUserCustomField?]? = nil
@@ -243,9 +244,10 @@ struct NativeUserAttributes: Hashable {
     let firstName: String? = nilOrValue(pigeonVar_list[2])
     let lastName: String? = nilOrValue(pigeonVar_list[3])
     let languageCode: String? = nilOrValue(pigeonVar_list[4])
-    let timeZone: String? = nilOrValue(pigeonVar_list[5])
-    let address: NativeAddress? = nilOrValue(pigeonVar_list[6])
-    let fields: [NativeUserCustomField?]? = nilOrValue(pigeonVar_list[7])
+    let marketId: String? = nilOrValue(pigeonVar_list[5])
+    let timeZone: String? = nilOrValue(pigeonVar_list[6])
+    let address: NativeAddress? = nilOrValue(pigeonVar_list[7])
+    let fields: [NativeUserCustomField?]? = nilOrValue(pigeonVar_list[8])
 
     return NativeUserAttributes(
       phone: phone,
@@ -253,6 +255,7 @@ struct NativeUserAttributes: Hashable {
       firstName: firstName,
       lastName: lastName,
       languageCode: languageCode,
+      marketId: marketId,
       timeZone: timeZone,
       address: address,
       fields: fields
@@ -265,6 +268,7 @@ struct NativeUserAttributes: Hashable {
       firstName,
       lastName,
       languageCode,
+      marketId,
       timeZone,
       address,
       fields,
@@ -348,6 +352,7 @@ struct NativeAnonymousUserAttributes: Hashable {
   var firstName: String? = nil
   var lastName: String? = nil
   var languageCode: String? = nil
+  var marketId: String? = nil
   var timeZone: String? = nil
   var address: NativeAddress? = nil
   var fields: [NativeUserCustomField?]? = nil
@@ -358,14 +363,16 @@ struct NativeAnonymousUserAttributes: Hashable {
     let firstName: String? = nilOrValue(pigeonVar_list[0])
     let lastName: String? = nilOrValue(pigeonVar_list[1])
     let languageCode: String? = nilOrValue(pigeonVar_list[2])
-    let timeZone: String? = nilOrValue(pigeonVar_list[3])
-    let address: NativeAddress? = nilOrValue(pigeonVar_list[4])
-    let fields: [NativeUserCustomField?]? = nilOrValue(pigeonVar_list[5])
+    let marketId: String? = nilOrValue(pigeonVar_list[3])
+    let timeZone: String? = nilOrValue(pigeonVar_list[4])
+    let address: NativeAddress? = nilOrValue(pigeonVar_list[5])
+    let fields: [NativeUserCustomField?]? = nilOrValue(pigeonVar_list[6])
 
     return NativeAnonymousUserAttributes(
       firstName: firstName,
       lastName: lastName,
       languageCode: languageCode,
+      marketId: marketId,
       timeZone: timeZone,
       address: address,
       fields: fields
@@ -376,6 +383,7 @@ struct NativeAnonymousUserAttributes: Hashable {
       firstName,
       lastName,
       languageCode,
+      marketId,
       timeZone,
       address,
       fields,
