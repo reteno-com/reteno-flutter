@@ -1,3 +1,6 @@
+## 1.9.6
+* Bump native SDKs: iOS `2.7.2`, Android `2.9.6`.
+
 ## 1.9.5
 * Bump native SDKs: iOS `2.7.1`, Android `2.9.5`.
 * Add `marketId` support for user and anonymous user attributes.

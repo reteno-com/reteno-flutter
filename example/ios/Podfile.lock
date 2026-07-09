@@ -69,11 +69,11 @@ PODS:
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
   - PromisesObjC (2.4.0)
-  - Reteno (2.7.1)
+  - Reteno (2.7.2)
   - reteno_plugin (0.0.1):
     - FirebaseMessaging
     - Flutter
-    - Reteno (= 2.7.1)
+    - Reteno (= 2.7.2)
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -84,7 +84,7 @@ DEPENDENCIES:
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
   - flutter_foreground_task (from `.symlinks/plugins/flutter_foreground_task/ios`)
-  - Reteno (= 2.7.1)
+  - Reteno (= 2.7.2)
   - reteno_plugin (from `.symlinks/plugins/reteno_plugin/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
 
@@ -132,10 +132,10 @@ SPEC CHECKSUMS:
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  Reteno: ca8ef4a5ffdbb91aeae78e97d47b447ff319b00a
-  reteno_plugin: b69e8df9501bed379094d985002f1ca534bf02e3
+  Reteno: 2634f80dcaa740a31558444e2623901a88a5585a
+  reteno_plugin: d5e6bf35cc524d7a396085d62c65926257c5d9f3
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
 
-PODFILE CHECKSUM: 8e6dfd118a20350cc90bada516d3932d07c779b1
+PODFILE CHECKSUM: 174f719cbad42a4d3502a66ea9dc0eb4a30f49dd
 
 COCOAPODS: 1.16.2
