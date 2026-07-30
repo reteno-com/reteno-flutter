@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reteno_plugin/reteno.dart';
 import 'package:reteno_plugin/src/extensions.dart';
+import 'package:reteno_plugin/src/native_reteno_plugin.g.dart';
 
 void main() {
   group('RetenoUserExt', () {
@@ -57,6 +58,16 @@ void main() {
       expect(nativeAnonymousUserAttributes.marketId, 'market_1');
       expect(nativeAnonymousUserAttributes.timeZone, 'GMT');
       // Add other assertions as necessary
+    });
+  });
+
+  group('RetenoDeviceTokenHandlingModeExt', () {
+    test('maps external token ownership to native external mode', () {
+      expect(
+        RetenoDeviceTokenHandlingMode.external
+            .toNativeDeviceTokenHandlingMode(),
+        NativeDeviceTokenHandlingMode.external,
+      );
     });
   });
 }

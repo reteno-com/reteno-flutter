@@ -1,3 +1,8 @@
+## 1.10.0
+* Add explicit push-token synchronization and an externally managed iOS FCM token mode.
+* Bump native SDKs: iOS `2.7.3`, Android `2.10.1`.
+* Add background-safe Android push notification grouping through `setNotificationGroupingRule`.
+
 ## 1.9.6
 * Bump native SDKs: iOS `2.7.2`, Android `2.9.6`.
 

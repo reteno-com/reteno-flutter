@@ -119,7 +119,7 @@ void main() async {
       lifecycleTrackingOptions: LifecycleTrackingOptions.all(),
       isDebug: true,
       deviceTokenHandlingMode: Platform.isIOS
-          ? RetenoDeviceTokenHandlingMode.manual
+          ? RetenoDeviceTokenHandlingMode.external
           : RetenoDeviceTokenHandlingMode.automatic,
       defaultNotificationChannelConfig: Platform.isAndroid
           ? const RetenoDefaultNotificationChannelConfig(
@@ -132,6 +132,11 @@ void main() async {
           : null,
     ),
   );
+  if (Platform.isAndroid) {
+    await Reteno().setNotificationGroupingRule(
+      const RetenoNotificationGroupingRule.constant('reteno_notifications'),
+    );
+  }
   debugPrint('Reteno init finished in ${initStopwatch.elapsed}');
 
   runApp(const MyApp());
@@ -311,6 +316,7 @@ class _MyHomePageState extends State<MyHomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _requestPermissionForAndroid();
       await _requestPermissionForIos();
+      await _syncCurrentFirebaseToken();
       _initForegroundTask();
       await _runRetenoDiagnose();
 
@@ -327,6 +333,13 @@ class _MyHomePageState extends State<MyHomePage> {
       print('$_firebaseLogTag onMessageOpenedApp \n ${event.data}');
     });
 
+    FirebaseMessaging.instance.onTokenRefresh.listen((refreshedToken) async {
+      print('$_firebaseLogTag onTokenRefresh \n $refreshedToken');
+      if (Platform.isIOS) {
+        await _reteno.setPushToken(refreshedToken);
+      }
+    });
+
     final message = await FirebaseMessaging.instance.getInitialMessage();
     print('$_firebaseLogTag getInitialMessage: $message');
 
@@ -337,9 +350,18 @@ class _MyHomePageState extends State<MyHomePage> {
         print('Message also contained a notification: ${message.notification}');
       }
     });
-    FirebaseMessaging.instance.getToken().then((value) {
-      print('$_firebaseLogTag getToken \n $value');
-    });
+  }
+
+  Future<void> _syncCurrentFirebaseToken() async {
+    if (!Platform.isIOS) {
+      return;
+    }
+
+    final token = await FirebaseMessaging.instance.getToken();
+    print('$_firebaseLogTag getToken \n $token');
+    if (token != null) {
+      await _reteno.setPushToken(token);
+    }
   }
 
   Future<void> initDeepLinks() async {
@@ -945,6 +967,7 @@ class _MyHomePageState extends State<MyHomePage> {
         userExternalId: value['externalUserId'],
         user: userInfo,
       );
+      await _syncCurrentFirebaseToken();
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');

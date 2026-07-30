@@ -1,7 +1,7 @@
 name: reteno_plugin_example
 description: Demonstrates how to use the reteno_plugin plugin.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.0.0+553
+version: 1.0.0+579
 environment:
   sdk: '>=3.4.0 <4.0.0'
 
@@ -30,3 +30,5 @@ dev_dependencies:
     sdk: flutter
 flutter:
   uses-material-design: true
+  config:
+    enable-swift-package-manager: false

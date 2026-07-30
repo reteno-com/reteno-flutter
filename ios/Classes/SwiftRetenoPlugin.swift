@@ -86,6 +86,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
 
 #if canImport(FirebaseMessaging)
     private func forwardFirebaseTokenIfAvailable() {
+        guard currentDeviceTokenHandlingMode != .external else { return }
         Messaging.messaging().token { [weak self] token, _ in
             guard let token = token else { return }
             self?.processFirebaseToken(token)
@@ -98,6 +99,8 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         case .automatic:
             return .automatic
         case .manual:
+            return .manual
+        case .external:
             return .manual
         }
     }
@@ -266,7 +269,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
             let configuration = RetenoConfiguration(
                 isAutomaticAppLifecycleReportingEnabled: trackingOptions.appLifecycleEnabled,
                 isApplicationForegroundLifecycleReportingEnabled: trackingOptions.appLifecycleEnabled,
-                isAutomaticPushSubsriptionReportingEnabled: trackingOptions.pushSubscriptionEnabled,
+                isAutomaticPushSubscriptionReportingEnabled: trackingOptions.pushSubscriptionEnabled,
                 sessionConfiguration: toRetenoSessionConfiguration(trackingOptions),
                 isPausedInAppMessages: isPausedInAppMessages,
                 isDebugMode: isDebug,
@@ -282,12 +285,14 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         isFlutterReady = true
 
 #if canImport(FirebaseMessaging)
-        if currentDeviceTokenHandlingMode == .manual
-            || Messaging.messaging().delegate == nil
-            || Messaging.messaging().delegate === self {
-            Messaging.messaging().delegate = self
+        if currentDeviceTokenHandlingMode != .external {
+            if currentDeviceTokenHandlingMode == .manual
+                || Messaging.messaging().delegate == nil
+                || Messaging.messaging().delegate === self {
+                Messaging.messaging().delegate = self
+            }
+            forwardFirebaseTokenIfAvailable()
         }
-        forwardFirebaseTokenIfAvailable()
 #endif
         if isRetenoReady {
             Reteno.pauseInAppMessages(isPaused: isPausedInAppMessages)
@@ -332,6 +337,23 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
                 }) ?? []
             )
         )
+    }
+
+    func setPushToken(token: String) throws {
+        let normalizedToken = token.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedToken.isEmpty else {
+            throw NSError(
+                domain: "RetenoPlugin",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Push token must not be empty"]
+            )
+        }
+        processPushToken(normalizedToken)
+    }
+
+    func setNotificationGroupingRule(rule: NativeNotificationGroupingRule?) throws {
+        // Android-only. Kept as a no-op to preserve a platform-consistent
+        // Flutter API.
     }
 
     func logEvent(event: NativeCustomEvent) throws {
@@ -552,8 +574,10 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
 
     public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
 #if canImport(FirebaseMessaging)
-        Messaging.messaging().setAPNSToken(deviceToken, type: .unknown)
-        forwardFirebaseTokenIfAvailable()
+        if currentDeviceTokenHandlingMode != .external {
+            Messaging.messaging().setAPNSToken(deviceToken, type: .unknown)
+            forwardFirebaseTokenIfAvailable()
+        }
 #endif
         let tokenString = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
         processAPNsToken(tokenString)

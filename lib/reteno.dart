@@ -8,6 +8,7 @@ export 'src/models/lifecycle_tracking_options.dart';
 export 'src/models/reteno_default_notification_channel_config.dart';
 export 'src/models/reteno_device_token_handling_mode.dart';
 export 'src/models/reteno_init_options.dart';
+export 'src/models/reteno_notification_grouping_rule.dart';
 export 'src/models/reteno_custom_event.dart';
 export 'src/models/reteno_custom_event_parameter.dart';
 export 'src/models/reteno_ecommerce_event.dart';

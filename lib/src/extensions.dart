@@ -7,6 +7,7 @@ import 'package:reteno_plugin/src/models/reteno_custom_event_parameter.dart';
 import 'package:reteno_plugin/src/models/reteno_default_notification_channel_config.dart';
 import 'package:reteno_plugin/src/models/reteno_device_token_handling_mode.dart';
 import 'package:reteno_plugin/src/models/reteno_ecommerce_event.dart';
+import 'package:reteno_plugin/src/models/reteno_notification_grouping_rule.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
 import 'package:reteno_plugin/src/models/reteno_user.dart';
@@ -225,7 +226,32 @@ extension RetenoDeviceTokenHandlingModeExt on RetenoDeviceTokenHandlingMode {
         return NativeDeviceTokenHandlingMode.automatic;
       case RetenoDeviceTokenHandlingMode.manual:
         return NativeDeviceTokenHandlingMode.manual;
+      case RetenoDeviceTokenHandlingMode.external:
+        return NativeDeviceTokenHandlingMode.external;
     }
+  }
+}
+
+extension RetenoNotificationGroupingRuleExt on RetenoNotificationGroupingRule {
+  NativeNotificationGroupingRule toNativeNotificationGroupingRule() {
+    final normalizedPayloadKey = payloadKey?.trim();
+    final normalizedFallbackGroupId = fallbackGroupId?.trim();
+    final hasPayloadKey =
+        normalizedPayloadKey != null && normalizedPayloadKey.isNotEmpty;
+    final hasFallbackGroupId = normalizedFallbackGroupId != null &&
+        normalizedFallbackGroupId.isNotEmpty;
+
+    if (!hasPayloadKey && !hasFallbackGroupId) {
+      throw ArgumentError(
+        'A notification grouping rule requires a non-empty group ID '
+        'or payload key.',
+      );
+    }
+
+    return NativeNotificationGroupingRule(
+      payloadKey: hasPayloadKey ? normalizedPayloadKey : null,
+      fallbackGroupId: hasFallbackGroupId ? normalizedFallbackGroupId : null,
+    );
   }
 }
 

@@ -504,6 +504,16 @@ class RetenoPlugin : FlutterPlugin, RetenoHostApi, ActivityAware {
         syncCurrentFcmToken()
     }
 
+    override fun setPushToken(token: String) {
+        val normalizedToken = token.trim()
+        require(normalizedToken.isNotEmpty()) { "Push token must not be empty" }
+        RetenoNotificationService(applicationContext).onNewToken(normalizedToken)
+    }
+
+    override fun setNotificationGroupingRule(rule: NativeNotificationGroupingRule?) {
+        RetenoNotificationGroupingRuleStore.update(applicationContext, rule)
+    }
+
     override fun logEvent(event: NativeCustomEvent) {
         Log.i(TAG, "logEvent")
         return Reteno.instance.logEvent(buildEventFromCustomEvent(event))

@@ -21,7 +21,12 @@ private const val TO = "to"
 private const val TITLE = "gcm.notification.title"
 private const val BODY = "gcm.notification.body"
 
-class RetenoFirebaseMessagingServiceBridge : RetenoFirebaseMessagingService() {
+open class RetenoFirebaseMessagingServiceBridge : RetenoFirebaseMessagingService() {
+    override fun onCreate() {
+        super.onCreate()
+        RetenoNotificationGroupingRuleStore.applyStoredRule(applicationContext)
+    }
+
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         notifyFlutterFirebaseAboutNewToken(token)

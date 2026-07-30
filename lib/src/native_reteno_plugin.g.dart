@@ -52,6 +52,7 @@ enum NativeInAppMessageStatus {
 enum NativeDeviceTokenHandlingMode {
   automatic,
   manual,
+  external,
 }
 
 enum NativeRecomEventType {
@@ -630,6 +631,53 @@ class NativeDefaultNotificationChannelConfig {
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   bool operator ==(Object other) {
     if (other is! NativeDefaultNotificationChannelConfig ||
+        other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList());
+}
+
+class NativeNotificationGroupingRule {
+  NativeNotificationGroupingRule({
+    this.payloadKey,
+    this.fallbackGroupId,
+  });
+
+  String? payloadKey;
+
+  String? fallbackGroupId;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      payloadKey,
+      fallbackGroupId,
+    ];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static NativeNotificationGroupingRule decode(Object result) {
+    result as List<Object?>;
+    return NativeNotificationGroupingRule(
+      payloadKey: result[0] as String?,
+      fallbackGroupId: result[1] as String?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeNotificationGroupingRule ||
         other.runtimeType != runtimeType) {
       return false;
     }
@@ -1667,44 +1715,47 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is NativeDefaultNotificationChannelConfig) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomFilter) {
+    } else if (value is NativeNotificationGroupingRule) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecommendation) {
+    } else if (value is NativeRecomFilter) {
       buffer.putUint8(143);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomEvent) {
+    } else if (value is NativeRecommendation) {
       buffer.putUint8(144);
       writeValue(buffer, value.encode());
-    } else if (value is NativeRecomEvents) {
+    } else if (value is NativeRecomEvent) {
       buffer.putUint8(145);
       writeValue(buffer, value.encode());
-    } else if (value is NativeLifecycleTrackingOptions) {
+    } else if (value is NativeRecomEvents) {
       buffer.putUint8(146);
       writeValue(buffer, value.encode());
-    } else if (value is NativeAppInboxMessages) {
+    } else if (value is NativeLifecycleTrackingOptions) {
       buffer.putUint8(147);
       writeValue(buffer, value.encode());
-    } else if (value is NativeAppInboxMessage) {
+    } else if (value is NativeAppInboxMessages) {
       buffer.putUint8(148);
       writeValue(buffer, value.encode());
-    } else if (value is NativeUserNotificationAction) {
+    } else if (value is NativeAppInboxMessage) {
       buffer.putUint8(149);
       writeValue(buffer, value.encode());
-    } else if (value is NativeEcommerceProduct) {
+    } else if (value is NativeUserNotificationAction) {
       buffer.putUint8(150);
       writeValue(buffer, value.encode());
-    } else if (value is NativeEcommerceCategory) {
+    } else if (value is NativeEcommerceProduct) {
       buffer.putUint8(151);
       writeValue(buffer, value.encode());
-    } else if (value is NativeEcommerceProductInCart) {
+    } else if (value is NativeEcommerceCategory) {
       buffer.putUint8(152);
       writeValue(buffer, value.encode());
-    } else if (value is NativeEcommerceItem) {
+    } else if (value is NativeEcommerceProductInCart) {
       buffer.putUint8(153);
       writeValue(buffer, value.encode());
-    } else if (value is NativeEcommerceOrder) {
+    } else if (value is NativeEcommerceItem) {
       buffer.putUint8(154);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeEcommerceOrder) {
+      buffer.putUint8(155);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -1747,30 +1798,32 @@ class _PigeonCodec extends StandardMessageCodec {
         return NativeDefaultNotificationChannelConfig.decode(
             readValue(buffer)!);
       case 142:
-        return NativeRecomFilter.decode(readValue(buffer)!);
+        return NativeNotificationGroupingRule.decode(readValue(buffer)!);
       case 143:
-        return NativeRecommendation.decode(readValue(buffer)!);
+        return NativeRecomFilter.decode(readValue(buffer)!);
       case 144:
-        return NativeRecomEvent.decode(readValue(buffer)!);
+        return NativeRecommendation.decode(readValue(buffer)!);
       case 145:
-        return NativeRecomEvents.decode(readValue(buffer)!);
+        return NativeRecomEvent.decode(readValue(buffer)!);
       case 146:
-        return NativeLifecycleTrackingOptions.decode(readValue(buffer)!);
+        return NativeRecomEvents.decode(readValue(buffer)!);
       case 147:
-        return NativeAppInboxMessages.decode(readValue(buffer)!);
+        return NativeLifecycleTrackingOptions.decode(readValue(buffer)!);
       case 148:
-        return NativeAppInboxMessage.decode(readValue(buffer)!);
+        return NativeAppInboxMessages.decode(readValue(buffer)!);
       case 149:
-        return NativeUserNotificationAction.decode(readValue(buffer)!);
+        return NativeAppInboxMessage.decode(readValue(buffer)!);
       case 150:
-        return NativeEcommerceProduct.decode(readValue(buffer)!);
+        return NativeUserNotificationAction.decode(readValue(buffer)!);
       case 151:
-        return NativeEcommerceCategory.decode(readValue(buffer)!);
+        return NativeEcommerceProduct.decode(readValue(buffer)!);
       case 152:
-        return NativeEcommerceProductInCart.decode(readValue(buffer)!);
+        return NativeEcommerceCategory.decode(readValue(buffer)!);
       case 153:
-        return NativeEcommerceItem.decode(readValue(buffer)!);
+        return NativeEcommerceProductInCart.decode(readValue(buffer)!);
       case 154:
+        return NativeEcommerceItem.decode(readValue(buffer)!);
+      case 155:
         return NativeEcommerceOrder.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -1872,6 +1925,55 @@ class RetenoHostApi {
     );
     final Future<Object?> pigeonVar_sendFuture =
         pigeonVar_channel.send(<Object?>[anonymousUserAttributes]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> setPushToken(String token) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.setPushToken$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[token]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> setNotificationGroupingRule(
+      NativeNotificationGroupingRule? rule) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.reteno_plugin.RetenoHostApi.setNotificationGroupingRule$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[rule]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);

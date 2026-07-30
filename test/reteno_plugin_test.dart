@@ -25,6 +25,9 @@ void main() {
       WidgetsFlutterBinding.ensureInitialized();
       registerFallbackValue(MockNativeRetenoUser());
       registerFallbackValue(MockNativeAnonymousUserAttributes());
+      registerFallbackValue(
+        NativeNotificationGroupingRule(),
+      );
     });
 
     test('setUserAttributes should call setUserAttributes on api', () async {
@@ -57,6 +60,76 @@ void main() {
 
       expect(result, true);
       verify(() => mockApi.setAnonymousUserAttributes(any())).called(1);
+    });
+
+    test('setPushToken trims and forwards token to api', () async {
+      when(() => mockApi.setPushToken('fcm-token')).thenAnswer((_) async {});
+
+      await pigeonChannel.setPushToken('  fcm-token  ');
+
+      verify(() => mockApi.setPushToken('fcm-token')).called(1);
+    });
+
+    test('setPushToken rejects an empty token', () async {
+      expect(
+        () => pigeonChannel.setPushToken('   '),
+        throwsArgumentError,
+      );
+
+      verifyNever(() => mockApi.setPushToken(any()));
+    });
+
+    test('setNotificationGroupingRule normalizes and forwards rule', () async {
+      when(() => mockApi.setNotificationGroupingRule(any()))
+          .thenAnswer((_) async {});
+
+      await pigeonChannel.setNotificationGroupingRule(
+        const RetenoNotificationGroupingRule.byPayloadKey(
+          ' orderNumber ',
+          fallbackGroupId: ' orders ',
+        ),
+      );
+
+      final captured = verify(
+        () => mockApi.setNotificationGroupingRule(captureAny()),
+      ).captured.single as NativeNotificationGroupingRule;
+      expect(captured.payloadKey, 'orderNumber');
+      expect(captured.fallbackGroupId, 'orders');
+    });
+
+    test('setNotificationGroupingRule supports a constant group', () async {
+      when(() => mockApi.setNotificationGroupingRule(any()))
+          .thenAnswer((_) async {});
+
+      await pigeonChannel.setNotificationGroupingRule(
+        const RetenoNotificationGroupingRule.constant(' orders '),
+      );
+
+      final captured = verify(
+        () => mockApi.setNotificationGroupingRule(captureAny()),
+      ).captured.single as NativeNotificationGroupingRule;
+      expect(captured.payloadKey, isNull);
+      expect(captured.fallbackGroupId, 'orders');
+    });
+
+    test('setNotificationGroupingRule can clear rule', () async {
+      when(() => mockApi.setNotificationGroupingRule(null))
+          .thenAnswer((_) async {});
+
+      await pigeonChannel.setNotificationGroupingRule(null);
+
+      verify(() => mockApi.setNotificationGroupingRule(null)).called(1);
+    });
+
+    test('setNotificationGroupingRule rejects an empty rule', () async {
+      expect(
+        () => pigeonChannel.setNotificationGroupingRule(
+          const RetenoNotificationGroupingRule.constant('   '),
+        ),
+        throwsArgumentError,
+      );
+
+      verifyNever(() => mockApi.setNotificationGroupingRule(any()));
     });
 
     test('getInitialNotification should return initial notification', () async {

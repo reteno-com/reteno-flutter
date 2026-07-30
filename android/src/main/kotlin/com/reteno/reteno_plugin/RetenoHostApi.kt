@@ -97,7 +97,8 @@ enum class NativeInAppMessageStatus(val raw: Int) {
 
 enum class NativeDeviceTokenHandlingMode(val raw: Int) {
   AUTOMATIC(0),
-  MANUAL(1);
+  MANUAL(1),
+  EXTERNAL(2);
 
   companion object {
     fun ofRaw(raw: Int): NativeDeviceTokenHandlingMode? {
@@ -489,6 +490,37 @@ data class NativeDefaultNotificationChannelConfig (
   }
   override fun equals(other: Any?): Boolean {
     if (other !is NativeDefaultNotificationChannelConfig) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return RetenoHostApiPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeNotificationGroupingRule (
+  val payloadKey: String? = null,
+  val fallbackGroupId: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NativeNotificationGroupingRule {
+      val payloadKey = pigeonVar_list[0] as String?
+      val fallbackGroupId = pigeonVar_list[1] as String?
+      return NativeNotificationGroupingRule(payloadKey, fallbackGroupId)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      payloadKey,
+      fallbackGroupId,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is NativeNotificationGroupingRule) {
       return false
     }
     if (this === other) {
@@ -1193,65 +1225,70 @@ private open class RetenoHostApiPigeonCodec : StandardMessageCodec() {
       }
       142.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomFilter.fromList(it)
+          NativeNotificationGroupingRule.fromList(it)
         }
       }
       143.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecommendation.fromList(it)
+          NativeRecomFilter.fromList(it)
         }
       }
       144.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomEvent.fromList(it)
+          NativeRecommendation.fromList(it)
         }
       }
       145.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeRecomEvents.fromList(it)
+          NativeRecomEvent.fromList(it)
         }
       }
       146.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeLifecycleTrackingOptions.fromList(it)
+          NativeRecomEvents.fromList(it)
         }
       }
       147.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeAppInboxMessages.fromList(it)
+          NativeLifecycleTrackingOptions.fromList(it)
         }
       }
       148.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeAppInboxMessage.fromList(it)
+          NativeAppInboxMessages.fromList(it)
         }
       }
       149.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeUserNotificationAction.fromList(it)
+          NativeAppInboxMessage.fromList(it)
         }
       }
       150.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeEcommerceProduct.fromList(it)
+          NativeUserNotificationAction.fromList(it)
         }
       }
       151.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeEcommerceCategory.fromList(it)
+          NativeEcommerceProduct.fromList(it)
         }
       }
       152.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeEcommerceProductInCart.fromList(it)
+          NativeEcommerceCategory.fromList(it)
         }
       }
       153.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeEcommerceItem.fromList(it)
+          NativeEcommerceProductInCart.fromList(it)
         }
       }
       154.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeEcommerceItem.fromList(it)
+        }
+      }
+      155.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           NativeEcommerceOrder.fromList(it)
         }
@@ -1313,56 +1350,60 @@ private open class RetenoHostApiPigeonCodec : StandardMessageCodec() {
         stream.write(141)
         writeValue(stream, value.toList())
       }
-      is NativeRecomFilter -> {
+      is NativeNotificationGroupingRule -> {
         stream.write(142)
         writeValue(stream, value.toList())
       }
-      is NativeRecommendation -> {
+      is NativeRecomFilter -> {
         stream.write(143)
         writeValue(stream, value.toList())
       }
-      is NativeRecomEvent -> {
+      is NativeRecommendation -> {
         stream.write(144)
         writeValue(stream, value.toList())
       }
-      is NativeRecomEvents -> {
+      is NativeRecomEvent -> {
         stream.write(145)
         writeValue(stream, value.toList())
       }
-      is NativeLifecycleTrackingOptions -> {
+      is NativeRecomEvents -> {
         stream.write(146)
         writeValue(stream, value.toList())
       }
-      is NativeAppInboxMessages -> {
+      is NativeLifecycleTrackingOptions -> {
         stream.write(147)
         writeValue(stream, value.toList())
       }
-      is NativeAppInboxMessage -> {
+      is NativeAppInboxMessages -> {
         stream.write(148)
         writeValue(stream, value.toList())
       }
-      is NativeUserNotificationAction -> {
+      is NativeAppInboxMessage -> {
         stream.write(149)
         writeValue(stream, value.toList())
       }
-      is NativeEcommerceProduct -> {
+      is NativeUserNotificationAction -> {
         stream.write(150)
         writeValue(stream, value.toList())
       }
-      is NativeEcommerceCategory -> {
+      is NativeEcommerceProduct -> {
         stream.write(151)
         writeValue(stream, value.toList())
       }
-      is NativeEcommerceProductInCart -> {
+      is NativeEcommerceCategory -> {
         stream.write(152)
         writeValue(stream, value.toList())
       }
-      is NativeEcommerceItem -> {
+      is NativeEcommerceProductInCart -> {
         stream.write(153)
         writeValue(stream, value.toList())
       }
-      is NativeEcommerceOrder -> {
+      is NativeEcommerceItem -> {
         stream.write(154)
+        writeValue(stream, value.toList())
+      }
+      is NativeEcommerceOrder -> {
+        stream.write(155)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -1376,6 +1417,8 @@ interface RetenoHostApi {
   fun initWith(accessKey: String, lifecycleTrackingOptions: NativeLifecycleTrackingOptions?, isPausedInAppMessages: Boolean, useCustomDeviceIdProvider: Boolean, customDeviceIdValue: String?, isDebug: Boolean, deviceTokenHandlingMode: NativeDeviceTokenHandlingMode, defaultNotificationChannelConfig: NativeDefaultNotificationChannelConfig?)
   fun setUserAttributes(externalUserId: String, user: NativeRetenoUser?)
   fun setAnonymousUserAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes)
+  fun setPushToken(token: String)
+  fun setNotificationGroupingRule(rule: NativeNotificationGroupingRule?)
   fun logEvent(event: NativeCustomEvent)
   fun requestPushPermission(provisional: Boolean, callback: (Result<Boolean>) -> Unit)
   fun updatePushPermissionStatus()
@@ -1462,6 +1505,42 @@ interface RetenoHostApi {
             val anonymousUserAttributesArg = args[0] as NativeAnonymousUserAttributes
             val wrapped: List<Any?> = try {
               api.setAnonymousUserAttributes(anonymousUserAttributesArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              RetenoHostApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.setPushToken$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val tokenArg = args[0] as String
+            val wrapped: List<Any?> = try {
+              api.setPushToken(tokenArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              RetenoHostApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.setNotificationGroupingRule$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val ruleArg = args[0] as NativeNotificationGroupingRule?
+            val wrapped: List<Any?> = try {
+              api.setNotificationGroupingRule(ruleArg)
               listOf(null)
             } catch (exception: Throwable) {
               RetenoHostApiPigeonUtils.wrapError(exception)

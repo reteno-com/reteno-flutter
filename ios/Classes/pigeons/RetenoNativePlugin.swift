@@ -143,6 +143,7 @@ enum NativeInAppMessageStatus: Int {
 enum NativeDeviceTokenHandlingMode: Int {
   case automatic = 0
   case manual = 1
+  case external = 2
 }
 
 enum NativeRecomEventType: Int {
@@ -530,6 +531,35 @@ struct NativeDefaultNotificationChannelConfig: Hashable {
     ]
   }
   static func == (lhs: NativeDefaultNotificationChannelConfig, rhs: NativeDefaultNotificationChannelConfig) -> Bool {
+    return deepEqualsRetenoNativePlugin(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashRetenoNativePlugin(value: toList(), hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeNotificationGroupingRule: Hashable {
+  var payloadKey: String? = nil
+  var fallbackGroupId: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NativeNotificationGroupingRule? {
+    let payloadKey: String? = nilOrValue(pigeonVar_list[0])
+    let fallbackGroupId: String? = nilOrValue(pigeonVar_list[1])
+
+    return NativeNotificationGroupingRule(
+      payloadKey: payloadKey,
+      fallbackGroupId: fallbackGroupId
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      payloadKey,
+      fallbackGroupId,
+    ]
+  }
+  static func == (lhs: NativeNotificationGroupingRule, rhs: NativeNotificationGroupingRule) -> Bool {
     return deepEqualsRetenoNativePlugin(lhs.toList(), rhs.toList())  }
   func hash(into hasher: inout Hasher) {
     deepHashRetenoNativePlugin(value: toList(), hasher: &hasher)
@@ -1251,30 +1281,32 @@ private class RetenoNativePluginPigeonCodecReader: FlutterStandardReader {
     case 141:
       return NativeDefaultNotificationChannelConfig.fromList(self.readValue() as! [Any?])
     case 142:
-      return NativeRecomFilter.fromList(self.readValue() as! [Any?])
+      return NativeNotificationGroupingRule.fromList(self.readValue() as! [Any?])
     case 143:
-      return NativeRecommendation.fromList(self.readValue() as! [Any?])
+      return NativeRecomFilter.fromList(self.readValue() as! [Any?])
     case 144:
-      return NativeRecomEvent.fromList(self.readValue() as! [Any?])
+      return NativeRecommendation.fromList(self.readValue() as! [Any?])
     case 145:
-      return NativeRecomEvents.fromList(self.readValue() as! [Any?])
+      return NativeRecomEvent.fromList(self.readValue() as! [Any?])
     case 146:
-      return NativeLifecycleTrackingOptions.fromList(self.readValue() as! [Any?])
+      return NativeRecomEvents.fromList(self.readValue() as! [Any?])
     case 147:
-      return NativeAppInboxMessages.fromList(self.readValue() as! [Any?])
+      return NativeLifecycleTrackingOptions.fromList(self.readValue() as! [Any?])
     case 148:
-      return NativeAppInboxMessage.fromList(self.readValue() as! [Any?])
+      return NativeAppInboxMessages.fromList(self.readValue() as! [Any?])
     case 149:
-      return NativeUserNotificationAction.fromList(self.readValue() as! [Any?])
+      return NativeAppInboxMessage.fromList(self.readValue() as! [Any?])
     case 150:
-      return NativeEcommerceProduct.fromList(self.readValue() as! [Any?])
+      return NativeUserNotificationAction.fromList(self.readValue() as! [Any?])
     case 151:
-      return NativeEcommerceCategory.fromList(self.readValue() as! [Any?])
+      return NativeEcommerceProduct.fromList(self.readValue() as! [Any?])
     case 152:
-      return NativeEcommerceProductInCart.fromList(self.readValue() as! [Any?])
+      return NativeEcommerceCategory.fromList(self.readValue() as! [Any?])
     case 153:
-      return NativeEcommerceItem.fromList(self.readValue() as! [Any?])
+      return NativeEcommerceProductInCart.fromList(self.readValue() as! [Any?])
     case 154:
+      return NativeEcommerceItem.fromList(self.readValue() as! [Any?])
+    case 155:
       return NativeEcommerceOrder.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -1323,44 +1355,47 @@ private class RetenoNativePluginPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? NativeDefaultNotificationChannelConfig {
       super.writeByte(141)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomFilter {
+    } else if let value = value as? NativeNotificationGroupingRule {
       super.writeByte(142)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecommendation {
+    } else if let value = value as? NativeRecomFilter {
       super.writeByte(143)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomEvent {
+    } else if let value = value as? NativeRecommendation {
       super.writeByte(144)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeRecomEvents {
+    } else if let value = value as? NativeRecomEvent {
       super.writeByte(145)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeLifecycleTrackingOptions {
+    } else if let value = value as? NativeRecomEvents {
       super.writeByte(146)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeAppInboxMessages {
+    } else if let value = value as? NativeLifecycleTrackingOptions {
       super.writeByte(147)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeAppInboxMessage {
+    } else if let value = value as? NativeAppInboxMessages {
       super.writeByte(148)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeUserNotificationAction {
+    } else if let value = value as? NativeAppInboxMessage {
       super.writeByte(149)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeEcommerceProduct {
+    } else if let value = value as? NativeUserNotificationAction {
       super.writeByte(150)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeEcommerceCategory {
+    } else if let value = value as? NativeEcommerceProduct {
       super.writeByte(151)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeEcommerceProductInCart {
+    } else if let value = value as? NativeEcommerceCategory {
       super.writeByte(152)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeEcommerceItem {
+    } else if let value = value as? NativeEcommerceProductInCart {
       super.writeByte(153)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeEcommerceOrder {
+    } else if let value = value as? NativeEcommerceItem {
       super.writeByte(154)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeEcommerceOrder {
+      super.writeByte(155)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -1388,6 +1423,8 @@ protocol RetenoHostApi {
   func initWith(accessKey: String, lifecycleTrackingOptions: NativeLifecycleTrackingOptions?, isPausedInAppMessages: Bool, useCustomDeviceIdProvider: Bool, customDeviceIdValue: String?, isDebug: Bool, deviceTokenHandlingMode: NativeDeviceTokenHandlingMode, defaultNotificationChannelConfig: NativeDefaultNotificationChannelConfig?) throws
   func setUserAttributes(externalUserId: String, user: NativeRetenoUser?) throws
   func setAnonymousUserAttributes(anonymousUserAttributes: NativeAnonymousUserAttributes) throws
+  func setPushToken(token: String) throws
+  func setNotificationGroupingRule(rule: NativeNotificationGroupingRule?) throws
   func logEvent(event: NativeCustomEvent) throws
   func requestPushPermission(provisional: Bool, completion: @escaping (Result<Bool, Error>) -> Void)
   func updatePushPermissionStatus() throws
@@ -1472,6 +1509,36 @@ class RetenoHostApiSetup {
       }
     } else {
       setAnonymousUserAttributesChannel.setMessageHandler(nil)
+    }
+    let setPushTokenChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.setPushToken\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setPushTokenChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let tokenArg = args[0] as! String
+        do {
+          try api.setPushToken(token: tokenArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      setPushTokenChannel.setMessageHandler(nil)
+    }
+    let setNotificationGroupingRuleChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.setNotificationGroupingRule\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setNotificationGroupingRuleChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let ruleArg: NativeNotificationGroupingRule? = nilOrValue(args[0])
+        do {
+          try api.setNotificationGroupingRule(rule: ruleArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      setNotificationGroupingRuleChannel.setMessageHandler(nil)
     }
     let logEventChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.reteno_plugin.RetenoHostApi.logEvent\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {

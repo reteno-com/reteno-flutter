@@ -45,7 +45,7 @@ final issues = await Reteno().diagnose();
 
 1. Add `NotificationServiceExtension` and follow iOS guide Step 1:
 [https://docs.reteno.com/reference/ios#step-1-add-the-notification-service-extension](https://docs.reteno.com/reference/ios#step-1-add-the-notification-service-extension)
-2. Add `pod 'Reteno', '2.7.2'` to app target and all Reteno notification extensions.
+2. Add `pod 'Reteno', '2.7.3'` to app target and all Reteno notification extensions.
 3. Configure App Group for app + extension.
 4. Do not initialize Reteno manually from `AppDelegate` when using this Flutter plugin. Initialization should be done via `Reteno().initialize(...)`.
 5. For push image carousel/GIF UI on iOS, add `NotificationContentExtension` with `RetenoCarouselNotificationViewController` and categories `ImageCarousel`/`ImageGif`.
@@ -59,10 +59,47 @@ Choose the mode based on the notification service configured for the Reteno mobi
 | Reteno mobile app configuration | iOS mode |
 | --- | --- |
 | APN for iOS, or FCM for Android + APN for iOS | `RetenoDeviceTokenHandlingMode.automatic` |
-| FCM for all platforms / FCM-only | `RetenoDeviceTokenHandlingMode.manual` |
+| FCM-only, token managed by the Reteno Flutter plugin | `RetenoDeviceTokenHandlingMode.manual` |
+| FCM-only, token managed by the application | `RetenoDeviceTokenHandlingMode.external` |
 
 In `automatic` mode the plugin reports the APNs device token through the native Reteno iOS SDK.
 In `manual` mode the plugin keeps APNs registration for Firebase Messaging, but reports only the FCM registration token to Reteno.
+In `external` mode the plugin does not assign a Firebase Messaging delegate,
+request an FCM token, or set Firebase's APNs token. The application owns the
+Firebase integration and supplies the FCM token through `setPushToken`.
+
+#### Explicit FCM token synchronization
+
+Use `external` mode when the application already sends the FCM token to its own
+backend and must be the single owner of Firebase token generation:
+
+```dart
+await Reteno().initialize(
+  accessKey: '<your_access_key>',
+  options: const RetenoInitOptions(
+    deviceTokenHandlingMode: RetenoDeviceTokenHandlingMode.external,
+  ),
+);
+
+final token = await FirebaseMessaging.instance.getToken();
+if (Platform.isIOS && token != null) {
+  await Reteno().setPushToken(token);
+}
+
+FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
+  if (Platform.isIOS) {
+    await Reteno().setPushToken(token);
+  }
+});
+```
+
+Call `setPushToken` after user identification and whenever Firebase refreshes
+the token. Pass the FCM token, not the APNs token. No native
+`MessagingDelegate` or direct Reteno native API call is needed.
+
+`setPushToken` is supported on both platforms. The `Platform.isIOS` check is
+optional and avoids a redundant explicit synchronization on Android, where
+Reteno already handles FCM tokens automatically.
 
 ### Android requirements
 
@@ -71,6 +108,32 @@ In `manual` mode the plugin keeps APNs registration for Firebase Messaging, but 
 2. `minSdkVersion` must be at least `21`.
 3. Do not add custom `FirebaseMessagingService` only for Reteno. The plugin handles Reteno push service wiring internally.
 
+### Android notification grouping
+
+Reteno push notifications can use a constant Android group:
+
+```dart
+await Reteno().setNotificationGroupingRule(
+  const RetenoNotificationGroupingRule.constant('orders'),
+);
+```
+
+Or derive the group ID from a push payload field:
+
+```dart
+await Reteno().setNotificationGroupingRule(
+  const RetenoNotificationGroupingRule.byPayloadKey(
+    'orderNumber',
+    fallbackGroupId: 'orders',
+  ),
+);
+```
+
+Pass `null` to disable grouping. The rule is stored on Android and remains
+available when a push arrives without a running Flutter engine. The rule sets
+the notification group key but does not create a group summary notification;
+the application remains responsible for custom summary behavior.
+
 ### Android advanced setup (if your app already has custom `FirebaseMessagingService`)
 
 Use this only when you already have app-specific FCM logic and need to keep it.
@@ -78,7 +141,7 @@ Use this only when you already have app-specific FCM logic and need to keep it.
 Rules:
 
 1. Your app must have exactly one app-level `MESSAGING_EVENT` service.
-2. That service should inherit from `RetenoFirebaseMessagingService`.
+2. That service should inherit from `RetenoFirebaseMessagingServiceBridge`.
 3. `onNewToken` and `onMessageReceived` must call `super`.
 4. Remove plugin bridge service from manifest merge in the app module.
 
@@ -104,9 +167,9 @@ Service example:
 
 ```kotlin
 import com.google.firebase.messaging.RemoteMessage
-import com.reteno.fcm.RetenoFirebaseMessagingService
+import com.reteno.reteno_plugin.RetenoFirebaseMessagingServiceBridge
 
-class MyMessagingService : RetenoFirebaseMessagingService() {
+class MyMessagingService : RetenoFirebaseMessagingServiceBridge() {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         // your token logic

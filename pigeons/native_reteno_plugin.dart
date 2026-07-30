@@ -27,6 +27,8 @@ abstract class RetenoHostApi {
   void setUserAttributes(String externalUserId, NativeRetenoUser? user);
   void setAnonymousUserAttributes(
       NativeAnonymousUserAttributes anonymousUserAttributes);
+  void setPushToken(String token);
+  void setNotificationGroupingRule(NativeNotificationGroupingRule? rule);
   void logEvent(NativeCustomEvent event);
   @async
   bool requestPushPermission({bool provisional = false});
@@ -219,6 +221,7 @@ enum NativeInAppMessageStatus {
 enum NativeDeviceTokenHandlingMode {
   automatic,
   manual,
+  external,
 }
 
 class NativeInAppMessageAction {
@@ -247,6 +250,16 @@ class NativeDefaultNotificationChannelConfig {
   final bool? showBadge;
   final bool? lightsEnabled;
   final bool? vibrationEnabled;
+}
+
+class NativeNotificationGroupingRule {
+  const NativeNotificationGroupingRule({
+    this.payloadKey,
+    this.fallbackGroupId,
+  });
+
+  final String? payloadKey;
+  final String? fallbackGroupId;
 }
 
 class NativeRecomFilter {

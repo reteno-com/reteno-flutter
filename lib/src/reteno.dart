@@ -9,6 +9,7 @@ import 'package:reteno_plugin/src/models/reteno_device_token_handling_mode.dart'
 import 'package:reteno_plugin/src/models/reteno_ecommerce_event.dart';
 import 'package:reteno_plugin/src/models/reteno_in_app_custom_data.dart';
 import 'package:reteno_plugin/src/models/reteno_init_options.dart';
+import 'package:reteno_plugin/src/models/reteno_notification_grouping_rule.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
 import 'package:reteno_plugin/src/models/reteno_user.dart';
@@ -87,6 +88,24 @@ class Reteno {
     required AnonymousUserAttributes anonymousUserAttributes,
   }) {
     return _platform.setAnonymousUserAttributes(anonymousUserAttributes);
+  }
+
+  /// Manually synchronizes the current push token with Reteno.
+  ///
+  /// This is primarily intended for custom Firebase Messaging integrations.
+  /// In iOS FCM-only setups, pass the FCM registration token after
+  /// [initialize] and whenever Firebase refreshes it.
+  Future<void> setPushToken(String token) {
+    return _platform.setPushToken(token);
+  }
+
+  /// Configures Android notification grouping for Reteno push notifications.
+  ///
+  /// Pass `null` to disable grouping. This method has no effect on iOS.
+  Future<void> setNotificationGroupingRule(
+    RetenoNotificationGroupingRule? rule,
+  ) {
+    return _platform.setNotificationGroupingRule(rule);
   }
 
   /// A static getter that provides a [Stream] of notifications received when application is in foreground.

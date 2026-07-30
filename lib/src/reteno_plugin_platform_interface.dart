@@ -8,6 +8,7 @@ import 'package:reteno_plugin/src/models/reteno_default_notification_channel_con
 import 'package:reteno_plugin/src/models/reteno_device_token_handling_mode.dart';
 import 'package:reteno_plugin/src/models/reteno_ecommerce_event.dart';
 import 'package:reteno_plugin/src/models/reteno_in_app_custom_data.dart';
+import 'package:reteno_plugin/src/models/reteno_notification_grouping_rule.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation.dart';
 import 'package:reteno_plugin/src/models/reteno_recommendation_event.dart';
 import 'package:reteno_plugin/src/models/reteno_user.dart';
@@ -35,6 +36,18 @@ abstract class RetenoPluginPlatform {
       AnonymousUserAttributes anonymousUserAttributes) {
     throw UnimplementedError(
         'setAnonymousUserAttributes() has not been implemented.');
+  }
+
+  Future<void> setPushToken(String token) {
+    throw UnimplementedError('setPushToken() has not been implemented.');
+  }
+
+  Future<void> setNotificationGroupingRule(
+    RetenoNotificationGroupingRule? rule,
+  ) {
+    throw UnimplementedError(
+      'setNotificationGroupingRule() has not been implemented.',
+    );
   }
 
   StreamController<Map<String, dynamic>> onRetenoNotificationReceived =
