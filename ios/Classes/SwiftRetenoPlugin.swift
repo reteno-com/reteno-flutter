@@ -628,9 +628,9 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         Reteno.inbox().markAllAsOpened() { (result: Result<Void, Error>)  in
             switch result {
             case .success():
-                break
-            case .failure(_):
-                break
+                completion(.success(()))
+            case .failure(let error):
+                completion(.failure(error))
             }
         }
     }
