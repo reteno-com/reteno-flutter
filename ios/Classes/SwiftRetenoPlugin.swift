@@ -5,12 +5,9 @@ import UserNotifications
 
 #if canImport(FirebaseMessaging)
 import FirebaseMessaging
-typealias RetenoMessagingDelegate = MessagingDelegate
-#else
-protocol RetenoMessagingDelegate: AnyObject {}
 #endif
 
-public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplicationDelegate, RetenoMessagingDelegate {
+public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplicationDelegate {
     static var _initialNotification : [String: Any]?
     private static var _flutterApi: RetenoFlutterApi?
     private static let retenoDidBecomeActiveNotification = Notification.Name(
@@ -21,34 +18,45 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     private var isFlutterReady: Bool = false
     private var isRetenoReady: Bool = false
     private var isApplicationActive: Bool = false
-    private var currentDeviceTokenHandlingMode: NativeDeviceTokenHandlingMode = .automatic
-    private var pendingDeviceToken: String?
     private var pendingFlutterEvents: [PendingFlutterEvent] = []
+    private let flutterEventStateLock = NSLock()
+    private var notificationCenterDelegate: RetenoNotificationCenterDelegate?
+    private let pendingAPNsTokenLock = NSLock()
+    private var pendingAPNsDeviceToken: Data?
+    private lazy var pushTokenRouter = PushTokenRouter { token in
+        Reteno.userNotificationService.processRemoteNotificationsToken(token)
+    }
 
-    private func processPushToken(_ token: String) {
-        if isRetenoReady {
-            Reteno.userNotificationService.processRemoteNotificationsToken(token)
-        } else {
-            pendingDeviceToken = token
+    private func pushTokenMode(
+        from mode: NativeDeviceTokenHandlingMode
+    ) -> PushTokenRouter.Mode {
+        switch mode {
+        case .automatic:
+            return .automatic
+        case .manual:
+            return .manual
+        case .external:
+            return .external
         }
     }
 
 #if canImport(FirebaseMessaging)
     private func processFirebaseToken(_ token: String) {
-        guard currentDeviceTokenHandlingMode == .manual else { return }
-        processPushToken(token)
+        pushTokenRouter.receive(token, from: .firebaseManaged)
     }
 #endif
 
     private func processAPNsToken(_ token: String) {
-        guard currentDeviceTokenHandlingMode == .automatic else { return }
-        processPushToken(token)
+        pushTokenRouter.receive(token, from: .apns)
     }
 
     private func emitFlutterEvent(_ event: @escaping PendingFlutterEvent) {
         guard let flutterApi = SwiftRetenoPlugin._flutterApi else {
             return
         }
+
+        flutterEventStateLock.lock()
+        defer { flutterEventStateLock.unlock() }
 
         guard isFlutterReady, isApplicationActive else {
             pendingFlutterEvents.append(event)
@@ -61,6 +69,9 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     }
 
     private func flushPendingFlutterEvents() {
+        flutterEventStateLock.lock()
+        defer { flutterEventStateLock.unlock() }
+
         guard isFlutterReady,
               isApplicationActive,
               let flutterApi = SwiftRetenoPlugin._flutterApi,
@@ -75,24 +86,59 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         }
     }
 
-    private func flushPendingDeviceTokenIfNeeded() {
-        guard isRetenoReady, let token = pendingDeviceToken else {
-            return
-        }
+    private func markFlutterReady() {
+        flutterEventStateLock.lock()
+        isFlutterReady = true
+        flutterEventStateLock.unlock()
+    }
 
-        pendingDeviceToken = nil
-        Reteno.userNotificationService.processRemoteNotificationsToken(token)
+    private func markRetenoReady() {
+        flutterEventStateLock.lock()
+        isRetenoReady = true
+        flutterEventStateLock.unlock()
+    }
+
+    private func setApplicationActive(_ isActive: Bool) {
+        flutterEventStateLock.lock()
+        isApplicationActive = isActive
+        flutterEventStateLock.unlock()
+    }
+
+    private var retenoIsReady: Bool {
+        flutterEventStateLock.lock()
+        defer { flutterEventStateLock.unlock() }
+        return isRetenoReady
     }
 
 #if canImport(FirebaseMessaging)
     private func forwardFirebaseTokenIfAvailable() {
-        guard currentDeviceTokenHandlingMode != .external else { return }
+        guard pushTokenRouter.configuredMode == .manual else { return }
         Messaging.messaging().token { [weak self] token, _ in
             guard let token = token else { return }
             self?.processFirebaseToken(token)
         }
     }
+
+    private func configureFirebaseMessaging(apnsToken: Data) {
+        guard pushTokenRouter.configuredMode == .manual else { return }
+        Messaging.messaging().setAPNSToken(apnsToken, type: .unknown)
+        forwardFirebaseTokenIfAvailable()
+    }
 #endif
+
+    private func storePendingAPNsDeviceToken(_ token: Data?) {
+        pendingAPNsTokenLock.lock()
+        pendingAPNsDeviceToken = token
+        pendingAPNsTokenLock.unlock()
+    }
+
+    private func takePendingAPNsDeviceToken() -> Data? {
+        pendingAPNsTokenLock.lock()
+        let token = pendingAPNsDeviceToken
+        pendingAPNsDeviceToken = nil
+        pendingAPNsTokenLock.unlock()
+        return token
+    }
 
     private func toRetenoDeviceTokenHandlingMode(_ mode: NativeDeviceTokenHandlingMode) -> DeviceTokenHandlingMode {
         switch mode {
@@ -130,6 +176,15 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         NotificationCenter.default.addObserver(instance, selector: #selector(applicationDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
         NotificationCenter.default.addObserver(instance, selector: #selector(applicationWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
         NotificationCenter.default.addObserver(instance, selector: #selector(retenoDidBecomeActive), name: SwiftRetenoPlugin.retenoDidBecomeActiveNotification, object: nil)
+#if canImport(FirebaseMessaging)
+        NotificationCenter.default.addObserver(
+            instance,
+            selector: #selector(firebaseRegistrationTokenDidRefresh),
+            name: .MessagingRegistrationTokenRefreshed,
+            object: nil
+        )
+#endif
+        instance.notificationCenterDelegate = RetenoNotificationCenterDelegate.install()
         Reteno.delayedStart()
         Reteno.userNotificationService.didReceiveNotificationResponseHandler = { response in
             let userInfo = response.notification.request.content.userInfo
@@ -259,13 +314,17 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         deviceTokenHandlingMode: NativeDeviceTokenHandlingMode,
         defaultNotificationChannelConfig: NativeDefaultNotificationChannelConfig?
     ) throws {
-        currentDeviceTokenHandlingMode = deviceTokenHandlingMode
+        try pushTokenRouter.configure(mode: pushTokenMode(from: deviceTokenHandlingMode))
+
         if !didStart {
             let trackingOptions = lifecycleTrackingOptions ?? NativeLifecycleTrackingOptions(
                 appLifecycleEnabled: true,
                 pushSubscriptionEnabled: true,
                 sessionEventsEnabled: true
             )
+            let effectiveCustomDeviceId = useCustomDeviceIdProvider
+                ? customDeviceIdValue
+                : nil
             let configuration = RetenoConfiguration(
                 isAutomaticAppLifecycleReportingEnabled: trackingOptions.appLifecycleEnabled,
                 isApplicationForegroundLifecycleReportingEnabled: trackingOptions.appLifecycleEnabled,
@@ -273,32 +332,50 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
                 sessionConfiguration: toRetenoSessionConfiguration(trackingOptions),
                 isPausedInAppMessages: isPausedInAppMessages,
                 isDebugMode: isDebug,
-                useCustomDeviceId: useCustomDeviceIdProvider
+                useCustomDeviceId: effectiveCustomDeviceId != nil
             )
             Reteno.delayedSetup(
                 apiKey: accessKey,
                 deviceTokenHandlingMode: toRetenoDeviceTokenHandlingMode(deviceTokenHandlingMode),
                 configuration: configuration
             )
+
+            // Native Reteno installs the custom provider's completion handler
+            // during delayedSetup. Supplying the value before delayedSetup
+            // would lose it and leave native initialization incomplete.
+            if let customDeviceId = effectiveCustomDeviceId {
+                Reteno.customDeviceIdProvider.setDeviceId(customDeviceId)
+            }
+
             didStart = true
         }
-        isFlutterReady = true
+
+        guard retenoIsReady else {
+            throw NSError(
+                domain: "RetenoPlugin",
+                code: 2,
+                userInfo: [
+                    NSLocalizedDescriptionKey:
+                        "Reteno native SDK did not complete initialization"
+                ]
+            )
+        }
+        markFlutterReady()
 
 #if canImport(FirebaseMessaging)
-        if currentDeviceTokenHandlingMode != .external {
-            if currentDeviceTokenHandlingMode == .manual
-                || Messaging.messaging().delegate == nil
-                || Messaging.messaging().delegate === self {
-                Messaging.messaging().delegate = self
+        if pushTokenRouter.configuredMode == .manual {
+            if let apnsToken = takePendingAPNsDeviceToken() {
+                configureFirebaseMessaging(apnsToken: apnsToken)
             }
             forwardFirebaseTokenIfAvailable()
+        } else {
+            storePendingAPNsDeviceToken(nil)
         }
+#else
+        storePendingAPNsDeviceToken(nil)
 #endif
-        if isRetenoReady {
-            Reteno.pauseInAppMessages(isPaused: isPausedInAppMessages)
-        }
+        Reteno.pauseInAppMessages(isPaused: isPausedInAppMessages)
         flushPendingFlutterEvents()
-        flushPendingDeviceTokenIfNeeded()
     }
 
     func setUserAttributes(externalUserId: String, user: NativeRetenoUser?) throws {
@@ -348,7 +425,20 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
                 userInfo: [NSLocalizedDescriptionKey: "Push token must not be empty"]
             )
         }
-        processPushToken(normalizedToken)
+        let routingResult = pushTokenRouter.receive(
+            normalizedToken,
+            from: .applicationManaged
+        )
+        if case let .ignoredSource(_, mode) = routingResult {
+            throw NSError(
+                domain: "RetenoPlugin",
+                code: 3,
+                userInfo: [
+                    NSLocalizedDescriptionKey:
+                        "setPushToken is not available in iOS \(mode.rawValue) token mode"
+                ]
+            )
+        }
     }
 
     func setNotificationGroupingRule(rule: NativeNotificationGroupingRule?) throws {
@@ -375,7 +465,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
 
     func diagnose(completion: @escaping (Result<[String], Error>) -> Void) {
         var issues = [String]()
-        if !didStart {
+        if !didStart || !retenoIsReady {
             issues.append("SDK_NOT_INITIALIZED")
         }
 
@@ -417,22 +507,6 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
             return options
         }()
 
-        if currentDeviceTokenHandlingMode == .automatic {
-            Reteno.userNotificationService.registerForRemoteNotifications(
-                with: options,
-                application: UIApplication.shared,
-                userResponse: { granted in
-#if canImport(FirebaseMessaging)
-                    if granted {
-                        self.forwardFirebaseTokenIfAvailable()
-                    }
-#endif
-                    completion(.success(granted))
-                }
-            )
-            return
-        }
-
         let center = UNUserNotificationCenter.current()
         center.getNotificationSettings { settings in
             let isAlreadyAuthorized: Bool
@@ -449,9 +523,6 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
                 DispatchQueue.main.async {
                     UIApplication.shared.registerForRemoteNotifications()
                 }
-#if canImport(FirebaseMessaging)
-                self.forwardFirebaseTokenIfAvailable()
-#endif
                 completion(.success(true))
                 return
             }
@@ -465,9 +536,6 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
                     DispatchQueue.main.async {
                         UIApplication.shared.registerForRemoteNotifications()
                     }
-#if canImport(FirebaseMessaging)
-                    self.forwardFirebaseTokenIfAvailable()
-#endif
                 }
                 completion(.success(granted))
             }
@@ -558,25 +626,33 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     }
 
     @objc private func retenoDidBecomeActive() {
-        isRetenoReady = true
-        flushPendingDeviceTokenIfNeeded()
+        markRetenoReady()
+        pushTokenRouter.markReady()
         flushPendingFlutterEvents()
     }
 
     @objc private func applicationDidBecomeActive() {
-        isApplicationActive = true
+        setApplicationActive(true)
         flushPendingFlutterEvents()
     }
 
     @objc private func applicationWillResignActive() {
-        isApplicationActive = false
+        setApplicationActive(false)
     }
 
     public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
 #if canImport(FirebaseMessaging)
-        if currentDeviceTokenHandlingMode != .external {
-            Messaging.messaging().setAPNSToken(deviceToken, type: .unknown)
-            forwardFirebaseTokenIfAvailable()
+        switch pushTokenRouter.configuredMode {
+        case .manual:
+            configureFirebaseMessaging(apnsToken: deviceToken)
+        case nil:
+            storePendingAPNsDeviceToken(deviceToken)
+        case .automatic, .external:
+            storePendingAPNsDeviceToken(nil)
+        }
+#else
+        if pushTokenRouter.configuredMode == nil {
+            storePendingAPNsDeviceToken(deviceToken)
         }
 #endif
         let tokenString = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
@@ -584,9 +660,12 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     }
 
 #if canImport(FirebaseMessaging)
-    public func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        guard let token = fcmToken else { return }
-        processFirebaseToken(token)
+    @objc private func firebaseRegistrationTokenDidRefresh(_ notification: Notification) {
+        if let token = notification.object as? String, !token.isEmpty {
+            processFirebaseToken(token)
+        } else {
+            forwardFirebaseTokenIfAvailable()
+        }
     }
 #endif
 
@@ -628,9 +707,9 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         Reteno.inbox().markAllAsOpened() { (result: Result<Void, Error>)  in
             switch result {
             case .success():
-                break
-            case .failure(_):
-                break
+                completion(.success(()))
+            case .failure(let error):
+                completion(.failure(error))
             }
         }
     }

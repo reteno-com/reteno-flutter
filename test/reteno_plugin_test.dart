@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -10,6 +12,45 @@ class MockRetenoHostApi extends Mock implements RetenoHostApi {}
 class MockNativeRetenoUser extends NativeRetenoUser {}
 
 class MockNativeAnonymousUserAttributes extends NativeAnonymousUserAttributes {}
+
+void stubInitialization(
+  MockRetenoHostApi api, {
+  required bool useCustomDeviceIdProvider,
+  required String? customDeviceIdValue,
+  void Function()? onCall,
+}) {
+  when(
+    () => api.initWith(
+      accessKey: 'access-key',
+      lifecycleTrackingOptions: null,
+      isPausedInAppMessages: false,
+      useCustomDeviceIdProvider: useCustomDeviceIdProvider,
+      customDeviceIdValue: customDeviceIdValue,
+      isDebug: false,
+      deviceTokenHandlingMode: NativeDeviceTokenHandlingMode.automatic,
+      defaultNotificationChannelConfig: null,
+    ),
+  ).thenAnswer((_) async => onCall?.call());
+}
+
+void verifyInitialization(
+  MockRetenoHostApi api, {
+  required bool useCustomDeviceIdProvider,
+  required String? customDeviceIdValue,
+}) {
+  verify(
+    () => api.initWith(
+      accessKey: 'access-key',
+      lifecycleTrackingOptions: null,
+      isPausedInAppMessages: false,
+      useCustomDeviceIdProvider: useCustomDeviceIdProvider,
+      customDeviceIdValue: customDeviceIdValue,
+      isDebug: false,
+      deviceTokenHandlingMode: NativeDeviceTokenHandlingMode.automatic,
+      defaultNotificationChannelConfig: null,
+    ),
+  ).called(1);
+}
 
 void main() {
   group('RetenoPigeonChannel', () {
@@ -27,6 +68,113 @@ void main() {
       registerFallbackValue(MockNativeAnonymousUserAttributes());
       registerFallbackValue(
         NativeNotificationGroupingRule(),
+      );
+    });
+
+    test('awaits customDeviceId before native init and forwards its value',
+        () async {
+      final providerResult = Completer<String?>();
+      final order = <String>[];
+      var providerCalls = 0;
+      stubInitialization(
+        mockApi,
+        useCustomDeviceIdProvider: true,
+        customDeviceIdValue: 'custom-device-id',
+        onCall: () => order.add('native-init'),
+      );
+
+      final initialization = pigeonChannel.initWith(
+        accessKey: 'access-key',
+        customDeviceId: () async {
+          providerCalls++;
+          order.add('provider-start');
+          final value = await providerResult.future;
+          order.add('provider-finish');
+          return value;
+        },
+      );
+
+      await Future<void>.delayed(Duration.zero);
+      expect(order, ['provider-start']);
+      verifyNoMoreInteractions(mockApi);
+
+      providerResult.complete('custom-device-id');
+      await initialization;
+
+      expect(providerCalls, 1);
+      expect(order, ['provider-start', 'provider-finish', 'native-init']);
+      verifyInitialization(
+        mockApi,
+        useCustomDeviceIdProvider: true,
+        customDeviceIdValue: 'custom-device-id',
+      );
+    });
+
+    test('uses the platform default for a null customDeviceId result',
+        () async {
+      var providerCalls = 0;
+      stubInitialization(
+        mockApi,
+        useCustomDeviceIdProvider: false,
+        customDeviceIdValue: null,
+      );
+
+      await pigeonChannel.initWith(
+        accessKey: 'access-key',
+        customDeviceId: () async {
+          providerCalls++;
+          return null;
+        },
+      );
+
+      expect(providerCalls, 1);
+      verifyInitialization(
+        mockApi,
+        useCustomDeviceIdProvider: false,
+        customDeviceIdValue: null,
+      );
+    });
+
+    test('rejects a blank customDeviceId before native init', () async {
+      await expectLater(
+        pigeonChannel.initWith(
+          accessKey: 'access-key',
+          customDeviceId: () async => '   ',
+        ),
+        throwsA(isA<ArgumentError>()),
+      );
+
+      verifyNoMoreInteractions(mockApi);
+    });
+
+    test('does not call native init when customDeviceId throws', () async {
+      final providerError = StateError('device ID unavailable');
+
+      await expectLater(
+        pigeonChannel.initWith(
+          accessKey: 'access-key',
+          customDeviceId: () async => throw providerError,
+        ),
+        throwsA(same(providerError)),
+      );
+
+      verifyNoMoreInteractions(mockApi);
+    });
+
+    test('disables the custom provider when customDeviceId is omitted',
+        () async {
+      stubInitialization(
+        mockApi,
+        useCustomDeviceIdProvider: false,
+        customDeviceIdValue: null,
+      );
+
+      await pigeonChannel.initWith(accessKey: 'access-key');
+
+      verifyInitialization(
+        mockApi,
+        useCustomDeviceIdProvider: false,
+        customDeviceIdValue: null,
       );
     });
 

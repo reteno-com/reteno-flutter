@@ -93,8 +93,6 @@ abstract class RetenoFlutterApi {
     String? error,
   );
   void onMessagesCountChanged(int count);
-  @async
-  String? getDeviceId();
 }
 
 class NativeInAppCustomData {

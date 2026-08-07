@@ -1,3 +1,13 @@
+## 1.11.0
+* iOS: make `automatic`, `manual`, and `external` push-token routing source-aware so an early APNs token can never be reported as an FCM token.
+* iOS: preserve FlutterFire and application notification callbacks while forwarding Reteno foreground, click, and action handling in every token mode.
+* iOS: stop replacing `Messaging.messaging().delegate`; Firebase token refreshes are observed without taking delegate ownership.
+* Add iOS `customDeviceId` support and report actual native SDK readiness in diagnostics.
+* Resolve `customDeviceId` exactly once before native initialization on both Android and iOS. A `null` result keeps the platform default device ID; a blank value is rejected before native setup.
+* Reject attempts to change the iOS token handling mode after the first initialization.
+* iOS: complete `markAllMessagesAsOpened()` on success and propagate native failures instead of leaving the Dart `Future` pending.
+* Migration: enabling `customDeviceId` on iOS can replace the previously stored default device ID. Use a stable value and review device-identity migration before rollout.
+
 ## 1.10.0
 * Add explicit push-token synchronization and an externally managed iOS FCM token mode.
 * Bump native SDKs: iOS `2.7.3`, Android `2.10.1`.

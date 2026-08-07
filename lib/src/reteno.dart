@@ -24,6 +24,12 @@ class Reteno {
   static AppInbox get appInbox => RetenoPigeonChannel.instance.appInbox;
 
   /// Canonical initialization entrypoint.
+  ///
+  /// [customDeviceId] is awaited before the native initialization call on
+  /// Android and iOS. Return `null` to use the platform default ID. A non-null
+  /// custom ID must be non-empty and remain stable between app launches. On
+  /// iOS, the returned future completes only after native readiness is
+  /// confirmed.
   Future<void> initialize({
     required String accessKey,
     RetenoInitOptions options = const RetenoInitOptions(),
@@ -95,6 +101,11 @@ class Reteno {
   /// This is primarily intended for custom Firebase Messaging integrations.
   /// In iOS FCM-only setups, pass the FCM registration token after
   /// [initialize] and whenever Firebase refreshes it.
+  /// Supplies an application-managed push token.
+  ///
+  /// On iOS this is the token source for
+  /// [RetenoDeviceTokenHandlingMode.external]. Pass an FCM token, not an APNs
+  /// token, after initialization and whenever Firebase refreshes it.
   Future<void> setPushToken(String token) {
     return _platform.setPushToken(token);
   }

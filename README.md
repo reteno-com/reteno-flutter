@@ -28,6 +28,23 @@ await Reteno().initialize(
 );
 ```
 
+An optional `customDeviceId` provider is awaited exactly once before the native
+initialization call on both Android and iOS. On iOS 1.11.0, `initialize` also
+verifies that native Reteno is ready before its future completes:
+
+```dart
+await Reteno().initialize(
+  accessKey: '<your_access_key>',
+  customDeviceId: () async => await loadStableDeviceId(),
+);
+```
+
+The provider may return `null` to use the platform default device ID. A custom
+ID must be non-empty and stable between launches; a blank value is rejected
+before native initialization. Enabling it for an existing iOS
+installation can replace the previously stored default ID and update the device
+identity associated with that installation.
+
 ### 3. Request push permission
 
 ```dart
@@ -45,7 +62,7 @@ final issues = await Reteno().diagnose();
 
 1. Add `NotificationServiceExtension` and follow iOS guide Step 1:
 [https://docs.reteno.com/reference/ios#step-1-add-the-notification-service-extension](https://docs.reteno.com/reference/ios#step-1-add-the-notification-service-extension)
-2. Add `pod 'Reteno', '2.7.3'` to app target and all Reteno notification extensions.
+2. The plugin already pins Reteno `2.7.3` for the app target. Add the same pod version only to each Reteno notification extension target.
 3. Configure App Group for app + extension.
 4. Do not initialize Reteno manually from `AppDelegate` when using this Flutter plugin. Initialization should be done via `Reteno().initialize(...)`.
 5. For push image carousel/GIF UI on iOS, add `NotificationContentExtension` with `RetenoCarouselNotificationViewController` and categories `ImageCarousel`/`ImageGif`.
@@ -68,38 +85,56 @@ In `external` mode the plugin does not assign a Firebase Messaging delegate,
 request an FCM token, or set Firebase's APNs token. The application owns the
 Firebase integration and supplies the FCM token through `setPushToken`.
 
+Starting with `1.11.0`, token source is retained until the selected mode is
+known: an early APNs callback is discarded for `manual`/`external` and can
+never be flushed as an FCM token. Reteno notification foreground, click, and
+action processing is chained with FlutterFire/application delegates in all
+three modes. `manual` also preserves the existing Firebase Messaging delegate.
+
 #### Explicit FCM token synchronization
 
 Use `external` mode when the application already sends the FCM token to its own
 backend and must be the single owner of Firebase token generation:
 
 ```dart
-await Reteno().initialize(
+final reteno = Reteno();
+
+await reteno.initialize(
   accessKey: '<your_access_key>',
   options: const RetenoInitOptions(
     deviceTokenHandlingMode: RetenoDeviceTokenHandlingMode.external,
   ),
 );
 
-final token = await FirebaseMessaging.instance.getToken();
-if (Platform.isIOS && token != null) {
-  await Reteno().setPushToken(token);
+Future<void> syncCurrentFcmToken() async {
+  // On Apple platforms, do not request an FCM token until APNs registration
+  // has completed. If this is null, retry when the app resumes.
+  final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+  if (apnsToken == null) return;
+
+  final token = await FirebaseMessaging.instance.getToken();
+  if (token != null) {
+    await reteno.setPushToken(token);
+  }
 }
 
 FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
-  if (Platform.isIOS) {
-    await Reteno().setPushToken(token);
-  }
+  await reteno.setPushToken(token);
 });
+
+final granted = await reteno.requestPushPermission();
+if (granted) await syncCurrentFcmToken();
 ```
 
 Call `setPushToken` after user identification and whenever Firebase refreshes
-the token. Pass the FCM token, not the APNs token. No native
-`MessagingDelegate` or direct Reteno native API call is needed.
+the token. Retry `syncCurrentFcmToken()` when the app resumes if APNs was not
+ready, or use the bounded retry helper in the full iOS integration guide. Pass
+the FCM token, not the APNs token. No native `MessagingDelegate` or direct
+Reteno native API call is needed.
 
-`setPushToken` is supported on both platforms. The `Platform.isIOS` check is
-optional and avoids a redundant explicit synchronization on Android, where
-Reteno already handles FCM tokens automatically.
+`setPushToken` is supported on both platforms, but `external` token ownership
+is an iOS mode. Android already handles FCM tokens automatically, so an
+application-side synchronization there is normally redundant.
 
 ### Android requirements
 
@@ -538,11 +573,11 @@ You can personalize the user experience and increase sales by adding recommendat
   ```
   ### Marking message as opened
   ```dart
-  Reteno.appInbox.markAsOpened(message.id);
+  await Reteno.appInbox.markAsOpened(message.id);
   ```
   ### Marking all messages as opened
   ```dart
-  Reteno.appInbox.markAllMessagesAsOpened();
+  await Reteno.appInbox.markAllMessagesAsOpened();
   ```
   ### Obtaining messages count
   ```dart

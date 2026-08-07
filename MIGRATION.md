@@ -31,7 +31,7 @@ Some apps already have business logic inside custom `FirebaseMessagingService`.
 In this case:
 
 1. Keep a single app-level `MESSAGING_EVENT` service.
-2. Make that service inherit from `RetenoFirebaseMessagingService`.
+2. Make that service inherit from `RetenoFirebaseMessagingServiceBridge`.
 3. Call `super.onNewToken(...)` and `super.onMessageReceived(...)`.
 4. Remove plugin bridge service in app manifest with `tools:node="remove"`.
 
@@ -54,6 +54,33 @@ If your app previously initialized Reteno from `AppDelegate`, move initializatio
 5. Use `Reteno().requestPushPermission()` to request permission and register for remote notifications.
 
 `NotificationServiceExtension` + App Group remain mandatory for full iOS Reteno push behavior. `NotificationContentExtension` is additionally required for carousel/GIF push UI.
+
+### Migrating to 1.11.0
+
+Select the final iOS token mode in the first `initialize()` call. Repeating the
+same mode is supported, but changing it after initialization now returns an
+error instead of leaving Dart and native token ownership out of sync.
+
+- `automatic` forwards only APNs tokens.
+- `manual` forwards current and refreshed plugin-managed FCM tokens without
+  replacing the application's Firebase Messaging delegate.
+- `external` forwards only FCM tokens supplied by the application through
+  `setPushToken()`.
+
+Early APNs callbacks are now source-aware and cannot be flushed into either FCM
+mode. Remove Reteno-only `MessagingDelegate` workarounds. From every legacy
+notification-center multiplexer, remove the leg that forwards callbacks to
+`Reteno.userNotificationService`, even when that multiplexer must remain for
+other SDKs; otherwise Reteno processes the same notification twice. The 1.11.0
+bridge coordinates Reteno with the surrounding FlutterFire/application
+delegate chain in every token mode. Any delegate installed later must still
+forward to the previous delegate.
+
+`customDeviceId` is now supported on iOS. Its asynchronous provider is awaited
+once before native initialization; returning `null` keeps the default device
+ID. Enabling a non-null custom ID on an existing installation can replace its
+stored default ID, so use a stable value and validate the identity migration
+before rollout.
 
 ## Verify migration
 

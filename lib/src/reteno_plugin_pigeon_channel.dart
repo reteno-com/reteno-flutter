@@ -42,8 +42,6 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
   late final RetenoHostApi _api;
   late final AppInbox appInbox;
 
-  static Future<String?> Function()? _getCustomDeviceId;
-
   RetenoPigeonChannel._({
     RetenoHostApi? api,
   }) : _api = api ?? RetenoHostApi() {
@@ -111,18 +109,24 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
       );
     }
 
-    final resolvedCustomDeviceId = Platform.isAndroid && customDeviceId != null
-        ? await customDeviceId()
-        : null;
+    final resolvedCustomDeviceId =
+        customDeviceId == null ? null : await customDeviceId();
+    if (resolvedCustomDeviceId != null &&
+        resolvedCustomDeviceId.trim().isEmpty) {
+      throw ArgumentError.value(
+        resolvedCustomDeviceId,
+        'customDeviceId',
+        'Custom device ID must not be empty',
+      );
+    }
 
-    _getCustomDeviceId = Platform.isAndroid ? null : customDeviceId;
     return _api.initWith(
       accessKey: accessKey,
       isPausedInAppMessages: isPausedInAppMessages,
       isDebug: isDebug,
       lifecycleTrackingOptions:
           lifecycleTrackingOptions?.toNativeLifecycleTrackingOptions(),
-      useCustomDeviceIdProvider: customDeviceId != null,
+      useCustomDeviceIdProvider: resolvedCustomDeviceId != null,
       customDeviceIdValue: resolvedCustomDeviceId,
       deviceTokenHandlingMode:
           deviceTokenHandlingMode.toNativeDeviceTokenHandlingMode(),
@@ -311,10 +315,6 @@ class RetenoPigeonChannel extends RetenoPluginPlatform {
         _api.logEcommerceSearchRequest(query, isFound),
     };
   }
-
-  static Future<String?>? _getCustomDeviceIdInternal() {
-    return _getCustomDeviceId?.call();
-  }
 }
 
 class _RetenoFlutterApi extends RetenoFlutterApi {
@@ -390,11 +390,6 @@ class _RetenoFlutterApi extends RetenoFlutterApi {
   @override
   void onMessagesCountChanged(int count) {
     onMessagesCountChangedCallback(count);
-  }
-
-  @override
-  Future<String?> getDeviceId() async {
-    return await RetenoPigeonChannel._getCustomDeviceIdInternal();
   }
 }
 

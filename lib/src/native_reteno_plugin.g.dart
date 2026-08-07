@@ -2630,8 +2630,6 @@ abstract class RetenoFlutterApi {
 
   void onMessagesCountChanged(int count);
 
-  Future<String?> getDeviceId();
-
   static void setUp(
     RetenoFlutterApi? api, {
     BinaryMessenger? binaryMessenger,
@@ -2856,27 +2854,6 @@ abstract class RetenoFlutterApi {
           try {
             api.onMessagesCountChanged(arg_count!);
             return wrapResponse(empty: true);
-          } on PlatformException catch (e) {
-            return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
-          }
-        });
-      }
-    }
-    {
-      final pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.reteno_plugin.RetenoFlutterApi.getDeviceId$messageChannelSuffix',
-          pigeonChannelCodec,
-          binaryMessenger: binaryMessenger);
-      if (api == null) {
-        pigeonVar_channel.setMessageHandler(null);
-      } else {
-        pigeonVar_channel.setMessageHandler((Object? message) async {
-          try {
-            final String? output = await api.getDeviceId();
-            return wrapResponse(result: output);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
           } catch (e) {
