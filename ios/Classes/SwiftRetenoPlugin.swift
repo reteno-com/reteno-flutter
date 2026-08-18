@@ -21,6 +21,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     private var pendingFlutterEvents: [PendingFlutterEvent] = []
     private let flutterEventStateLock = NSLock()
     private var notificationCenterDelegate: RetenoNotificationCenterDelegate?
+    private var didInstallNotificationCenterDelegate = false
     private let pendingAPNsTokenLock = NSLock()
     private var pendingAPNsDeviceToken: Data?
     private lazy var pushTokenRouter = PushTokenRouter { token in
@@ -48,6 +49,35 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
 
     private func processAPNsToken(_ token: String) {
         pushTokenRouter.receive(token, from: .apns)
+    }
+
+    /// Keeps the Reteno coordinator installed as the notification center
+    /// delegate whatever order the application configures its own delegate in.
+    /// A delegate assigned after `GeneratedPluginRegistrant.register(with:)`
+    /// detaches Reteno from notification taps, so the coordinator is
+    /// re-installed around whatever the application left behind.
+    private func ensureNotificationCenterDelegateInstalled() {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in
+                self?.ensureNotificationCenterDelegateInstalled()
+            }
+            return
+        }
+
+        // A foreign delegate before the first install was assigned ahead of
+        // plugin registration, which is the supported order. Only a takeover
+        // afterwards is a misconfiguration.
+        if didInstallNotificationCenterDelegate,
+           !RetenoNotificationCenterDelegate.isInstalled() {
+            NSLog(
+                "[Reteno] UNUserNotificationCenter.current().delegate was replaced after "
+                + "plugin registration; Reteno reclaimed it and kept the application "
+                + "delegate downstream. Assign it before "
+                + "GeneratedPluginRegistrant.register(with:), or not at all."
+            )
+        }
+        notificationCenterDelegate = RetenoNotificationCenterDelegate.install()
+        didInstallNotificationCenterDelegate = true
     }
 
     private func emitFlutterEvent(_ event: @escaping PendingFlutterEvent) {
@@ -184,7 +214,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
             object: nil
         )
 #endif
-        instance.notificationCenterDelegate = RetenoNotificationCenterDelegate.install()
+        instance.ensureNotificationCenterDelegateInstalled()
         Reteno.delayedStart()
         Reteno.userNotificationService.didReceiveNotificationResponseHandler = { response in
             let userInfo = response.notification.request.content.userInfo
@@ -315,6 +345,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         defaultNotificationChannelConfig: NativeDefaultNotificationChannelConfig?
     ) throws {
         try pushTokenRouter.configure(mode: pushTokenMode(from: deviceTokenHandlingMode))
+        ensureNotificationCenterDelegateInstalled()
 
         if !didStart {
             let trackingOptions = lifecycleTrackingOptions ?? NativeLifecycleTrackingOptions(
@@ -480,6 +511,10 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
             }
 
             DispatchQueue.main.async {
+                if !RetenoNotificationCenterDelegate.isInstalled() {
+                    issues.append("NOTIFICATION_DELEGATE_OVERRIDDEN")
+                }
+
                 let isEphemeralAuthorized: Bool
                 if #available(iOS 14.0, *) {
                     isEphemeralAuthorized = settings.authorizationStatus == .ephemeral
@@ -614,6 +649,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     }
 
     @objc func application_onDidFinishLaunchingNotification(notification: NSNotification){
+        ensureNotificationCenterDelegateInstalled()
         guard let userInfo = notification.userInfo else {
           return
         }
@@ -633,6 +669,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
 
     @objc private func applicationDidBecomeActive() {
         setApplicationActive(true)
+        ensureNotificationCenterDelegateInstalled()
         flushPendingFlutterEvents()
     }
 

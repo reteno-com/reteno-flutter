@@ -21,6 +21,13 @@ final class RetenoNotificationCenterDelegate: NSObject, UNUserNotificationCenter
     private let completionTimeout: TimeInterval
     private weak var previousDelegate: UNUserNotificationCenterDelegate?
 
+    /// Reports whether the notification center is currently owned by a
+    /// coordinator. Reteno callbacks are unreachable while this is false.
+    /// Must be called on the main thread.
+    static func isInstalled(on center: UNUserNotificationCenter = .current()) -> Bool {
+        center.delegate is RetenoNotificationCenterDelegate
+    }
+
     /// Installs a coordinator around the notification center's current
     /// delegate. Calling this while an instance is already installed is
     /// idempotent and returns that instance.

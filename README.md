@@ -69,6 +69,44 @@ final issues = await Reteno().diagnose();
 
 `NotificationServiceExtension` + App Group are required for full iOS Reteno push functionality.
 
+### iOS notification center delegate
+
+The plugin owns `UNUserNotificationCenter.current().delegate`. It installs a
+coordinator that handles Reteno notifications and forwards every callback to
+the delegate that was already installed, so application and FlutterFire
+handling keeps working.
+
+The application does not need to assign that delegate at all. If it must (for
+another SDK), assign it **before** `GeneratedPluginRegistrant.register(with:)`:
+
+```swift
+override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+) -> Bool {
+    // Assign your delegate first, so Reteno can chain to it.
+    UNUserNotificationCenter.current().delegate = self
+
+    GeneratedPluginRegistrant.register(with: self)
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+}
+```
+
+Do not assign it **after** registration: that assignment replaces the Reteno
+coordinator and detaches Reteno from notification taps. The symptom is a push
+that is delivered and reported as `DELIVERED`, while `CLICKED` never arrives
+and `onRetenoNotificationReceived` never fires — delivery is reported by the
+notification service extension in a separate process, while the tap goes to the
+application delegate instead of Reteno.
+
+Since `1.11.1` the plugin reclaims delegate ownership after registration (next
+main runloop turn, launch completion, `initialize()`, every foreground) and
+chains the delegate the application left behind, so the assignment order no
+longer breaks push tracking. A delegate that is still not owned by the plugin
+when `Reteno().diagnose()` runs is reported as
+`NOTIFICATION_DELEGATE_OVERRIDDEN`, and repeated takeovers are logged as a
+`[Reteno]` warning in the device console.
+
 ### iOS token handling mode
 
 Choose the mode based on the notification service configured for the Reteno mobile app:
@@ -230,6 +268,7 @@ class MyMessagingService : RetenoFirebaseMessagingServiceBridge() {
 | `PUSH_PERMISSION_DENIED` | Notification runtime permission denied |
 | `PUSH_PERMISSION_NOT_DETERMINED` | iOS permission dialog not shown yet |
 | `REMOTE_NOTIFICATIONS_NOT_REGISTERED` | iOS permission granted but APNs registration not completed |
+| `NOTIFICATION_DELEGATE_OVERRIDDEN` | iOS `UNUserNotificationCenter` delegate is not the Reteno coordinator, so notification taps are not reported. Assign the application delegate before `GeneratedPluginRegistrant.register(with:)` |
 | `FCM_MESSAGING_SERVICE_MISSING` | Android has no active `MESSAGING_EVENT` handler |
 | `RETENO_MESSAGING_SERVICE_MISSING` | Android has no Reteno push handler among `MESSAGING_EVENT` services |
 | `FCM_MESSAGING_SERVICE_CONFLICT` | Multiple app-level `MESSAGING_EVENT` services detected on Android |

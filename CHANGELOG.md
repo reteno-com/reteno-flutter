@@ -1,3 +1,7 @@
+## 1.11.1
+* iOS: fix lost notification taps when the app assigns `UNUserNotificationCenter` delegate after plugin registration.
+* iOS: add `NOTIFICATION_DELEGATE_OVERRIDDEN` diagnose code.
+
 ## 1.11.0
 * iOS: make `automatic`, `manual`, and `external` push-token routing source-aware so an early APNs token can never be reported as an FCM token.
 * iOS: preserve FlutterFire and application notification callbacks while forwarding Reteno foreground, click, and action handling in every token mode.

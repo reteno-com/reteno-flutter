@@ -82,6 +82,14 @@ ID. Enabling a non-null custom ID on an existing installation can replace its
 stored default ID, so use a stable value and validate the identity migration
 before rollout.
 
+### Migrating to 1.11.1
+
+The plugin owns `UNUserNotificationCenter.current().delegate` and chains to the
+delegate installed before it. Assign an application delegate before
+`GeneratedPluginRegistrant.register(with:)`, or do not assign one at all.
+`Reteno().diagnose()` returns `NOTIFICATION_DELEGATE_OVERRIDDEN` while that
+delegate belongs to anyone else.
+
 ## Verify migration
 
 Run diagnostics after initialization:
