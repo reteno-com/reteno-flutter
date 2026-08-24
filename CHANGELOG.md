@@ -1,3 +1,6 @@
+## 1.11.2
+* Bump native SDKs: iOS `2.7.4`, Android `2.10.2`.
+
 ## 1.11.1
 * iOS: fix lost notification taps when the app assigns `UNUserNotificationCenter` delegate after plugin registration.
 * iOS: add `NOTIFICATION_DELEGATE_OVERRIDDEN` diagnose code.
