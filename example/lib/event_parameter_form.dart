@@ -41,7 +41,7 @@ class _EventParameterFormState extends State<EventParameterForm> {
   final TextEditingController _valueContoller = TextEditingController();
 
   final formKey = GlobalKey<FormState>();
-  inputDecoration(String labelText) => InputDecoration(
+  InputDecoration inputDecoration(String labelText) => InputDecoration(
         labelText: labelText,
         border: OutlineInputBorder(
           borderSide: const BorderSide(

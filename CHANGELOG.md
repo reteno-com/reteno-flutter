@@ -1,3 +1,6 @@
+## 1.12.0
+* iOS: added Swift Package Manager support. CocoaPods keeps working.
+
 ## 1.11.2
 * Bump native SDKs: iOS `2.7.4`, Android `2.10.2`.
 

@@ -3,7 +3,7 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/src/native_reteno_plugin.g.dart',
-    swiftOut: 'ios/Classes/pigeons/RetenoNativePlugin.swift',
+    swiftOut: 'ios/reteno_plugin/Sources/reteno_plugin/RetenoNativePlugin.swift',
     kotlinOptions: KotlinOptions(
       package: 'com.reteno.reteno_plugin',
     ),

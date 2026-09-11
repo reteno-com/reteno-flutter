@@ -182,7 +182,7 @@ class _EventsPageState extends State<EventsPage> {
   }
 
   //Delete specific form
-  onRemove(TempParameterModel contact) {
+  void onRemove(TempParameterModel contact) {
     setState(() {
       contactForms
           .removeWhere((element) => element.contactModel.id == contact.id);
@@ -190,7 +190,7 @@ class _EventsPageState extends State<EventsPage> {
   }
 
   int counter = 0;
-  onAdd() {
+  void onAdd() {
     setState(() {
       counter++;
       TempParameterModel contactModel = TempParameterModel(counter, '', '');

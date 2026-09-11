@@ -5,17 +5,20 @@
 Pod::Spec.new do |s|
   s.name             = 'reteno_plugin'
   s.version          = '0.0.1'
-  s.summary          = 'A new Flutter plugin project.'
+  s.summary          = 'The Reteno Flutter Plugin for Mobile Customer Engagement and Analytics solutions'
   s.description      = <<-DESC
-A new Flutter plugin project.
+The Reteno Flutter Plugin for Mobile Customer Engagement and Analytics solutions.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'https://github.com/reteno-com/reteno-flutter'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'Reteno' => 'support@reteno.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'reteno_plugin/Sources/reteno_plugin/**/*.swift'
   s.dependency 'Flutter'
-  s.dependency 'FirebaseMessaging'
+  # Floor only, no ceiling: FlutterFire pins Firebase exactly on the CocoaPods path, and a
+  # ceiling here would hard-conflict the day it pins a newer major. CocoaPods consumers can
+  # still override via `$FirebaseSDKVersion` in their Podfile.
+  s.dependency 'FirebaseMessaging', '>= 11.0'
   s.dependency 'Reteno', '2.7.4'
   s.platform = :ios, '12.0'
 

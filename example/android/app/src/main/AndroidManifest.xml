@@ -96,5 +96,9 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="reteno_id" />
+        <!-- Icon used by the flutter_foreground_task notification. -->
+        <meta-data
+            android:name="com.reteno.sample.NOTIFICATION_ICON"
+            android:resource="@mipmap/ic_launcher" />
     </application>
 </manifest>

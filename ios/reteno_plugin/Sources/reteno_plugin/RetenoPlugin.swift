@@ -7,7 +7,7 @@ import UserNotifications
 import FirebaseMessaging
 #endif
 
-public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplicationDelegate {
+public class RetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplicationDelegate {
     static var _initialNotification : [String: Any]?
     private static var _flutterApi: RetenoFlutterApi?
     private static let retenoDidBecomeActiveNotification = Notification.Name(
@@ -81,7 +81,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     }
 
     private func emitFlutterEvent(_ event: @escaping PendingFlutterEvent) {
-        guard let flutterApi = SwiftRetenoPlugin._flutterApi else {
+        guard let flutterApi = RetenoPlugin._flutterApi else {
             return
         }
 
@@ -104,7 +104,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
 
         guard isFlutterReady,
               isApplicationActive,
-              let flutterApi = SwiftRetenoPlugin._flutterApi,
+              let flutterApi = RetenoPlugin._flutterApi,
               !pendingFlutterEvents.isEmpty else {
             return
         }
@@ -194,7 +194,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
 
         let messenger : FlutterBinaryMessenger = registrar.messenger()
 
-        let instance = SwiftRetenoPlugin()
+        let instance = RetenoPlugin()
 
         RetenoHostApiSetup.setUp(binaryMessenger: messenger, api: instance)
 
@@ -205,7 +205,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
         NotificationCenter.default.addObserver(instance, selector: #selector(application_onDidFinishLaunchingNotification), name: UIApplication.didFinishLaunchingNotification, object: nil)
         NotificationCenter.default.addObserver(instance, selector: #selector(applicationDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
         NotificationCenter.default.addObserver(instance, selector: #selector(applicationWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
-        NotificationCenter.default.addObserver(instance, selector: #selector(retenoDidBecomeActive), name: SwiftRetenoPlugin.retenoDidBecomeActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(instance, selector: #selector(retenoDidBecomeActive), name: RetenoPlugin.retenoDidBecomeActiveNotification, object: nil)
 #if canImport(FirebaseMessaging)
         NotificationCenter.default.addObserver(
             instance,
@@ -578,9 +578,9 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
     }
 
     func getInitialNotification() throws -> [String : Any]? {
-        if(SwiftRetenoPlugin._initialNotification != nil){
-            let notification = SwiftRetenoPlugin._initialNotification
-            SwiftRetenoPlugin._initialNotification = nil
+        if(RetenoPlugin._initialNotification != nil){
+            let notification = RetenoPlugin._initialNotification
+            RetenoPlugin._initialNotification = nil
             return notification
         }
         return nil
@@ -657,7 +657,7 @@ public class SwiftRetenoPlugin: NSObject, FlutterPlugin, RetenoHostApi, UIApplic
             return
         }
         if let remoteNotification = userInfo[UIApplication.LaunchOptionsKey.remoteNotification] as? NSDictionary {
-            SwiftRetenoPlugin._initialNotification = remoteNotification as? [String: Any]
+            RetenoPlugin._initialNotification = remoteNotification as? [String: Any]
         }
     }
 

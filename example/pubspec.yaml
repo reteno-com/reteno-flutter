@@ -3,32 +3,29 @@ description: Demonstrates how to use the reteno_plugin plugin.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+586
 environment:
-  sdk: '>=3.4.0 <4.0.0'
+  sdk: '>=3.10.0 <4.0.0'
 
 dependencies:
-  app_links: ^3.4.3
-  cupertino_icons: ^1.0.2
-  firebase_core: ^3.13.0
-  firebase_messaging: ^15.2.5
+  app_links: ^7.2.1
+  cupertino_icons: ^1.0.9
+  firebase_core: ^3.15.2
+  firebase_messaging: ^15.2.10
   flutter:
     sdk: flutter
-  flutter_form_builder: ^7.7.0
-  flutter_foreground_task: ^6.1.3
-  form_builder_validators: ^8.4.0
-  go_router: ^7.1.1
+  flutter_form_builder: ^10.3.0
+  flutter_foreground_task: ^11.0.3
+  form_builder_validators: ^11.3.0
+  go_router: ^18.0.1
   reteno_plugin:
     path: ../
-  shared_preferences: ^2.2.2
-  uuid: ^3.0.7
-
-dependency_overrides:
-  intl: ^0.18.1
+  shared_preferences: ^2.5.5
+  uuid: ^4.6.0
 
 dev_dependencies:
-  flutter_lints: ^2.0.0
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
 flutter:
   uses-material-design: true
   config:
-    enable-swift-package-manager: false
+    enable-swift-package-manager: true

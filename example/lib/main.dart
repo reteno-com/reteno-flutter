@@ -3,7 +3,6 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
-import 'dart:isolate';
 import 'dart:math' show Random;
 import 'dart:ui';
 
@@ -58,38 +57,35 @@ void startCallback() {
 }
 
 class MyTaskHandler extends TaskHandler {
-  SendPort? _sendPort;
   int _eventCount = 0;
 
   // Called when the task is started.
   @override
-  void onStart(DateTime timestamp, SendPort? sendPort) async {
-    _sendPort = sendPort;
-
+  Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
     // You can use the getData function to get the stored data.
     final customData =
         await FlutterForegroundTask.getData<String>(key: 'customData');
     print('customData: $customData');
   }
 
-  // Called every [interval] milliseconds in [ForegroundTaskOptions].
+  // Called based on the eventAction set in [ForegroundTaskOptions].
   @override
-  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
+  void onRepeatEvent(DateTime timestamp) {
     FlutterForegroundTask.updateService(
       notificationTitle: 'MyTaskHandler',
       notificationText: 'eventCount: $_eventCount',
     );
 
     // Send data to the main isolate.
-    sendPort?.send(_eventCount);
+    FlutterForegroundTask.sendDataToMain(_eventCount);
 
     _eventCount++;
   }
 
-  // Called when the notification button on the Android platform is pressed.
+  // Called when the task is destroyed.
   @override
-  void onDestroy(DateTime timestamp, SendPort? sendPort) async {
-    print('onDestroy');
+  Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {
+    print('onDestroy >> isTimeout: $isTimeout');
   }
 
   // Called when the notification button on the Android platform is pressed.
@@ -105,15 +101,19 @@ class MyTaskHandler extends TaskHandler {
   @override
   void onNotificationPressed() {
     // Note that the app will only route to "/resume-route" when it is exited so
-    // it will usually be necessary to send a message through the send port to
+    // it will usually be necessary to send a message to the main isolate to
     // signal it to restore state when the app is already started.
     FlutterForegroundTask.launchApp("/");
-    _sendPort?.send('onNotificationPressed');
+    FlutterForegroundTask.sendDataToMain('onNotificationPressed');
   }
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the port for communication between the TaskHandler and the UI.
+  FlutterForegroundTask.initCommunicationPort();
+
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -240,7 +240,6 @@ class _MyHomePageState extends State<MyHomePage> {
   late AppLinks _appLinks;
   StreamSubscription<Uri>? _linkSubscription;
   StreamSubscription<String>? _stringLinkSubscription;
-  ReceivePort? _receivePort;
 
   @override
   void initState() {
@@ -321,17 +320,14 @@ class _MyHomePageState extends State<MyHomePage> {
     _initFirebaseNotifications();
     initDeepLinks();
 
+    // Receive data sent from the TaskHandler.
+    FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _requestPermissionForAndroid();
       await _requestPermissionForIos();
       _initForegroundTask();
       await _runRetenoDiagnose();
-
-      // You can get the previous ReceivePort without restarting the service.
-      if (await FlutterForegroundTask.isRunningService) {
-        final newReceivePort = FlutterForegroundTask.receivePort;
-        _registerReceivePort(newReceivePort);
-      }
     });
   }
 
@@ -360,9 +356,9 @@ class _MyHomePageState extends State<MyHomePage> {
     _appLinks = AppLinks();
 
     // Check initial link if app was in cold state (terminated)
-    final appLink = await _appLinks.getInitialAppLink();
+    final appLink = await _appLinks.getInitialLink();
     if (appLink != null) {
-      log('getInitialAppLink: $appLink');
+      log('getInitialLink: $appLink');
       openAppLink(appLink);
     }
 
@@ -392,7 +388,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     _linkSubscription?.cancel();
     _stringLinkSubscription?.cancel();
-    _closeReceivePort();
+    FlutterForegroundTask.removeTaskDataCallback(_onReceiveTaskData);
     super.dispose();
   }
 
@@ -1010,39 +1006,19 @@ class _MyHomePageState extends State<MyHomePage> {
   void _initForegroundTask() {
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
-        id: 500,
         channelId: 'foreground_service',
         channelName: 'Foreground Service Notification',
         channelDescription:
             'This notification appears when the foreground service is running.',
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
-        iconData: const NotificationIconData(
-          resType: ResourceType.mipmap,
-          resPrefix: ResourcePrefix.ic,
-          name: 'launcher',
-          backgroundColor: Colors.orange,
-        ),
-        buttons: [
-          const NotificationButton(
-            id: 'sendButton',
-            text: 'Send',
-            textColor: Colors.orange,
-          ),
-          const NotificationButton(
-            id: 'testButton',
-            text: 'Test',
-            textColor: Colors.grey,
-          ),
-        ],
       ),
       iosNotificationOptions: const IOSNotificationOptions(
         showNotification: true,
         playSound: false,
       ),
-      foregroundTaskOptions: const ForegroundTaskOptions(
-        interval: 5000,
-        isOnceEvent: false,
+      foregroundTaskOptions: ForegroundTaskOptions(
+        eventAction: ForegroundTaskEventAction.repeat(5000),
         autoRunOnBoot: true,
         allowWakeLock: true,
         allowWifiLock: true,
@@ -1054,56 +1030,63 @@ class _MyHomePageState extends State<MyHomePage> {
     // You can save data using the saveData function.
     await FlutterForegroundTask.saveData(key: 'customData', value: 'hello');
 
-    // Register the receivePort before starting the service.
-    final ReceivePort? receivePort = FlutterForegroundTask.receivePort;
-    final bool isRegistered = _registerReceivePort(receivePort);
-    if (!isRegistered) {
-      print('Failed to register receivePort!');
-      return false;
-    }
-
+    final ServiceRequestResult result;
     if (await FlutterForegroundTask.isRunningService) {
-      return FlutterForegroundTask.restartService();
+      result = await FlutterForegroundTask.restartService();
     } else {
-      return FlutterForegroundTask.startService(
+      result = await FlutterForegroundTask.startService(
+        serviceId: 500,
+        serviceTypes: [ForegroundServiceTypes.specialUse],
         notificationTitle: 'Foreground Service is running',
         notificationText: 'Tap to return to the app',
+        notificationIcon: const NotificationIcon(
+          metaDataName: 'com.reteno.sample.NOTIFICATION_ICON',
+          backgroundColor: Colors.orange,
+        ),
+        notificationButtons: const [
+          NotificationButton(
+            id: 'sendButton',
+            text: 'Send',
+            textColor: Colors.orange,
+          ),
+          NotificationButton(
+            id: 'testButton',
+            text: 'Test',
+            textColor: Colors.grey,
+          ),
+        ],
         callback: startCallback,
       );
     }
+
+    return _handleServiceRequestResult(result);
   }
 
   Future<bool> _stopForegroundTask() async {
     final result = await FlutterForegroundTask.stopService();
     DartPluginRegistrant.ensureInitialized();
-    return result;
+    return _handleServiceRequestResult(result);
   }
 
-  bool _registerReceivePort(ReceivePort? newReceivePort) {
-    if (newReceivePort == null) {
-      return false;
+  bool _handleServiceRequestResult(ServiceRequestResult result) {
+    switch (result) {
+      case ServiceRequestSuccess():
+        return true;
+      case ServiceRequestFailure(:final error):
+        print('Foreground service request failed: $error');
+        return false;
     }
-
-    _closeReceivePort();
-
-    _receivePort = newReceivePort;
-    _receivePort?.listen((data) {
-      if (data is int) {
-        print('eventCount: $data');
-      } else if (data is String) {
-        if (data == 'onNotificationPressed') {
-          Navigator.of(context).pushNamed('/resume-route');
-        }
-      } else if (data is DateTime) {
-        print('timestamp: ${data.toString()}');
-      }
-    });
-
-    return _receivePort != null;
   }
 
-  void _closeReceivePort() {
-    _receivePort?.close();
-    _receivePort = null;
+  void _onReceiveTaskData(Object data) {
+    if (data is int) {
+      print('eventCount: $data');
+    } else if (data is String) {
+      if (data == 'onNotificationPressed') {
+        Navigator.of(context).pushNamed('/resume-route');
+      }
+    } else if (data is DateTime) {
+      print('timestamp: ${data.toString()}');
+    }
   }
 }

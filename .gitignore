@@ -26,3 +26,9 @@ example/ios/build/*
 
 # FVM Version Cache
 .fvm/
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Flutter tool logs
+flutter_*.log
