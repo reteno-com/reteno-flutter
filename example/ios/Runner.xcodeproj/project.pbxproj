@@ -496,10 +496,10 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_ENTITLEMENTS = NotificationServiceExtension/NotificationServiceExtension.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = 94BE286AF3012ADA7FB3EC708B3760DB59BC08A4;
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = X9JJR3XKX7;
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = X9JJR3XKX7;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -519,8 +519,8 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.reteno.example-app.NotificationServiceExtension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.reteno.example-app.NotificationServiceExtension 1772209384";
+				PROVISIONING_PROFILE_SPECIFIER = "Oleh Lapko Development Extension";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Oleh Lapko Development Extension";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -815,11 +815,11 @@
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_IDENTITY = 94BE286AF3012ADA7FB3EC708B3760DB59BC08A4;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = 94BE286AF3012ADA7FB3EC708B3760DB59BC08A4;
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = X9JJR3XKX7;
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = X9JJR3XKX7;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
@@ -830,8 +830,8 @@
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.reteno.example-app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.reteno.example-app 1772209380";
+				PROVISIONING_PROFILE_SPECIFIER = "Oleh Lapko Development";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Oleh Lapko Development";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -876,11 +876,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = NotificationContentExtension/NotificationContentExtension.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_IDENTITY = 94BE286AF3012ADA7FB3EC708B3760DB59BC08A4;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = 94BE286AF3012ADA7FB3EC708B3760DB59BC08A4;
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = X9JJR3XKX7;
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = X9JJR3XKX7;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = NotificationContentExtension/Info.plist;
@@ -896,8 +896,8 @@
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.reteno.example-app.NotificationContentExtension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.reteno.example-app.NotificationContentExtension 1772734093";
+				PROVISIONING_PROFILE_SPECIFIER = "Oleh Lapko Development Content Extension";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Oleh Lapko Development Content Extension";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
