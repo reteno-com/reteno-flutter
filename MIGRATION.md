@@ -90,6 +90,12 @@ delegate installed before it. Assign an application delegate before
 `Reteno().diagnose()` returns `NOTIFICATION_DELEGATE_OVERRIDDEN` while that
 delegate belongs to anyone else.
 
+### Migrating to 1.13.0
+
+iOS 15 is now required. Set the deployment target to `15.0` for the Runner and
+notification extension targets (and `platform :ios, '15.0'` in `ios/Podfile`
+with CocoaPods). Use `Reteno` `2.7.7` in notification extensions.
+
 ## Verify migration
 
 Run diagnostics after initialization:

@@ -19,8 +19,8 @@ The Reteno Flutter Plugin for Mobile Customer Engagement and Analytics solutions
   # ceiling here would hard-conflict the day it pins a newer major. CocoaPods consumers can
   # still override via `$FirebaseSDKVersion` in their Podfile.
   s.dependency 'FirebaseMessaging', '>= 11.0'
-  s.dependency 'Reteno', '2.7.4'
-  s.platform = :ios, '12.0'
+  s.dependency 'Reteno', '2.7.7'
+  s.platform = :ios, '15.0'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }

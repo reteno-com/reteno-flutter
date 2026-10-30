@@ -1,3 +1,7 @@
+## 1.13.0
+* Bump native SDKs: iOS `2.7.7`, Android `2.11.0`.
+* iOS: minimum deployment target is now `15.0`.
+
 ## 1.12.0
 * iOS: added Swift Package Manager support. CocoaPods keeps working.
 

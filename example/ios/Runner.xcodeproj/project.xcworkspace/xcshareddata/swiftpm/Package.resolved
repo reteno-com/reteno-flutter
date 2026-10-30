@@ -1,4 +1,5 @@
 {
+  "originHash" : "f50beb7e5364ac4dc52e37d66e972baf0c49a104b04402a1efa36eabad0a1362",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -131,8 +132,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/reteno-com/reteno-mobile-ios-sdk",
       "state" : {
-        "revision" : "98df9f07458abe8747fc535cef272aa5e4e5ac07",
-        "version" : "2.7.4"
+        "revision" : "862ed2acecc404a1e58572f7950a3dd347d4b672",
+        "version" : "2.7.7"
       }
     },
     {
@@ -145,5 +146,5 @@
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }

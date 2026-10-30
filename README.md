@@ -60,9 +60,11 @@ final issues = await Reteno().diagnose();
 
 ### iOS requirements
 
+Minimum iOS deployment target is `15.0` (required by Reteno iOS SDK `2.7.7`). Set it for the Runner target and every notification extension target.
+
 1. Add `NotificationServiceExtension` and follow iOS guide Step 1:
 [https://docs.reteno.com/reference/ios#step-1-add-the-notification-service-extension](https://docs.reteno.com/reference/ios#step-1-add-the-notification-service-extension)
-2. The plugin already pins Reteno `2.7.4` for the app target. Add the same pod version only to each Reteno notification extension target.
+2. The plugin already pins Reteno `2.7.7` for the app target. Add the same pod version only to each Reteno notification extension target.
 3. Configure App Group for app + extension.
 4. Do not initialize Reteno manually from `AppDelegate` when using this Flutter plugin. Initialization should be done via `Reteno().initialize(...)`.
 5. For push image carousel/GIF UI on iOS, add `NotificationContentExtension` with `RetenoCarouselNotificationViewController` and categories `ImageCarousel`/`ImageGif`.
